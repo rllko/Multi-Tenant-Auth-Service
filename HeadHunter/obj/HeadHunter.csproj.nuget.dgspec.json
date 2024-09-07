@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\HeadHunter.csproj": {}
+    "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\HeadHunter.csproj": {
+    "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\HeadHunter.csproj",
+        "projectUniqueName": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj",
         "projectName": "HeadHunter",
-        "projectPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\HeadHunter.csproj",
+        "projectPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj",
         "packagesPath": "C:\\Users\\ricar\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\obj\\",
+        "outputPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

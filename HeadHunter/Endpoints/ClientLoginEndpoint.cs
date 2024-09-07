@@ -1,8 +1,11 @@
-﻿namespace HeadHunter.Endpoints
+﻿using HeadHunter.Services.Users;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HeadHunter.Endpoints
 {
     public static class ClientLoginEndpoint
     {
-        public static IResult Handle(HttpContext httpContext)
+        public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
             var page = httpContext.Request.Query.TryGetValue("key",out var Key);
 
@@ -11,7 +14,14 @@
                 return Results.BadRequest("Key is null or empty.");
             }
 
-            return Results.Ok();
+            var key = await userManagerService.GetUserByLicenseAsync(Key);
+
+            if(key == null)
+            {
+                return Results.BadRequest("Key is invalid.");
+            }
+
+            return Results.Ok(key);
         }
     }
 }

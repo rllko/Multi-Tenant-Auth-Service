@@ -1,162 +1,126 @@
-﻿//using HeadHunter.OauthRequest;
-//using Microsoft.AspNetCore.Identity;
-//using Microsoft.AspNetCore.Identity.Data;
+﻿using HeadHunter.Models.Context;
+using HeadHunter.Models.Entities;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.EntityFrameworkCore;
 
-//namespace HeadHunter.Services.Users
-//{
-//    public class UserManagerService : IUserManagerService
-//    {
-//        private readonly UserManager<AppUser> _userManager;
-//        private readonly SignInManager<AppUser> _signInManager;
-//        private readonly ILogger<UserManagerService> _logger;
+namespace HeadHunter.Services.Users
+{
+    public class UserManagerService : IUserManagerService
+    {
+        private readonly HeadhunterDbContext dbContext;
+        private readonly ILogger<UserManagerService> _logger;
 
-//        public UserManagerService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-//            ILogger<UserManagerService> logger)
-//        {
-//            _userManager = userManager;
-//            _signInManager = signInManager;
-//            _logger = logger;
-//        }
+        public UserManagerService(HeadhunterDbContext dbContext,
+            ILogger<UserManagerService> logger)
+        {
+            this.dbContext = dbContext;
+            _logger = logger;
+        }
 
-//        public async Task<AppUser> GetUserAsync(string userId)
-//        {
-//            var user = await _userManager.FindByIdAsync(userId);
-//            if(user == null)
-//                return null;
-//            else
-//                return user;
-//        }
+        public async Task<User?> GetUserByIdAsync(long userId)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
+            return user;
+        }
 
-//        public async Task<LoginResponse> LoginUserAsync(LoginRequest request)
-//        {
-//            var validationResult = validateLoginRequest(request);
+        public async Task<User?> GetUserByEmailAsync(string userEmail)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+            return user;
+        }
 
-//            if(!validationResult)
-//            {
-//                _logger.LogInformation("validation for login process is failed {request}", request);
-//                return new LoginResponse { Error = "login process is failed" };
-//            }
+        public async Task<User?> GetUserByLicenseAsync(string license)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.License == license);
+            return user;
+        }
 
-//            AppUser user = null;
+        public async Task<User?> GetUserByDiscordAsync(long discordId)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Discord == discordId);
+            return user;
+        }
 
-//            user = await _userManager.FindByNameAsync(request.UserName);
-//            if(user == null && request.UserName.Contains("@"))
-//                user = await _userManager.FindByEmailAsync(request.UserName);
+        public Task<User> AuthenticateUserAsync(LoginRequest request)
+        {
+            throw new NotImplementedException();
+        }
 
-//            if(user == null)
-//            {
-//                _logger.LogInformation("creditioanl {userName}", request.UserName);
-//                return new LoginResponse { Error = "No user has this creditioanl" };
-//            }
+        public async Task<User> CreateUserAsync()
+        {
+            var user = new User
+            {
+                License = Guid.NewGuid().ToString(),
+            };
 
-//            await _signInManager.SignOutAsync();
+            var createUserResult = await dbContext.Users.AddAsync(user);
+            await dbContext.SaveChangesAsync();
 
-
-//            Microsoft.AspNetCore.Identity.SignInResult loginResult = await _signInManager
-//                .PasswordSignInAsync(user, request.Password, false, false);
-
-//            if(loginResult.Succeeded)
-//            {
-//                return new LoginResponse { Succeeded = true };
-//            }
-
-//            return new LoginResponse { Succeeded = false, Error = "Login is not Succeeded" };
-
-//        }
-
-//        public async Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request)
-//        {
-//            var validationResult = validateCreateUserRequest(request);
-
-//            if(!validationResult)
-//            {
-//                _logger.LogInformation("The create user request is failed please check your input {request}", request);
-//                return new CreateUserResponse { Error = "The create user request is failed please check your input" };
-//            }
+            return user;
+        }
 
 
-//            var user = new AppUser
-//            {
-//                UserName = request.UserName,
-//                Email = request.Email,
-//                EmailConfirmed = true,
-//                PhoneNumberConfirmed = true,
-//                PhoneNumber = request.PhoneNumber,
-//                TwoFactorEnabled = false,
-//            };
-//            var createUserResult = await _userManager.CreateAsync(user, request.Password);
+        //public async Task<OpenIdConnectLoginResponse> LoginUserByOpenIdAsync(OpenIdConnectLoginRequest request)
+        //{
+        //    bool validationResult = validateOpenIdLoginRequest(request);
+        //    if(!validationResult)
+        //    {
+        //        _logger.LogInformation("login process is failed for request: {request}", request);
+        //        return new OpenIdConnectLoginResponse { Error = "The login process is failed" };
+        //    }
 
-//            if(createUserResult.Succeeded)
-//                return new CreateUserResponse { Succeeded = true };
+        //    AppUser user = null;
 
-//            return new CreateUserResponse { Error = createUserResult.Errors.Select(x => x.Description).FirstOrDefault() };
+        //    user = await _userManager.FindByNameAsync(request.UserName);
+        //    if(user == null && request.UserName.Contains("@"))
+        //        user = await _userManager.FindByEmailAsync(request.UserName);
 
+        //    if(user == null)
+        //    {
+        //        _logger.LogInformation("creditioanl {userName}", request.UserName);
+        //        return new OpenIdConnectLoginResponse { Error = "No user has this creditioanl" };
+        //    }
 
-
-//        }
-
-
-//        public async Task<OpenIdConnectLoginResponse> LoginUserByOpenIdAsync(OpenIdConnectLoginRequest request)
-//        {
-//            bool validationResult = validateOpenIdLoginRequest(request);
-//            if(!validationResult)
-//            {
-//                _logger.LogInformation("login process is failed for request: {request}", request);
-//                return new OpenIdConnectLoginResponse { Error = "The login process is failed" };
-//            }
-
-//            AppUser user = null;
-
-//            user = await _userManager.FindByNameAsync(request.UserName);
-//            if(user == null && request.UserName.Contains("@"))
-//                user = await _userManager.FindByEmailAsync(request.UserName);
-
-//            if(user == null)
-//            {
-//                _logger.LogInformation("creditioanl {userName}", request.UserName);
-//                return new OpenIdConnectLoginResponse { Error = "No user has this creditioanl" };
-//            }
-
-//            await _signInManager.SignOutAsync();
+        //    await _signInManager.SignOutAsync();
 
 
-//            Microsoft.AspNetCore.Identity.SignInResult loginResult = await _signInManager
-//                .PasswordSignInAsync(user, request.Password, false, false);
+        //    Microsoft.AspNetCore.Identity.SignInResult loginResult = await _signInManager
+        //        .PasswordSignInAsync(user, request.Password, false, false);
 
-//            if(loginResult.Succeeded)
-//            {
-//                return new OpenIdConnectLoginResponse { Succeeded = true, AppUser = user };
-//            }
+        //    if(loginResult.Succeeded)
+        //    {
+        //        return new OpenIdConnectLoginResponse { Succeeded = true, AppUser = user };
+        //    }
 
-//            return new OpenIdConnectLoginResponse { Succeeded = false, Error = "Login is not Succeeded" };
-//        }
+        //    return new OpenIdConnectLoginResponse { Succeeded = false, Error = "Login is not Succeeded" };
+        //}
 
-//        #region Helper Functions
-//        private bool validateLoginRequest(LoginRequest request)
-//        {
-//            if(request.UserName == null || request.Password == null)
-//                return false;
+        //#region Helper Functions
+        //private bool validateLoginRequest(LoginRequest request)
+        //{
+        //    if(request.UserName == null || request.Password == null)
+        //        return false;
 
-//            if(request.Password.Length < 8)
-//                return false;
+        //    if(request.Password.Length < 8)
+        //        return false;
 
-//            return true;
-//        }
+        //    return true;
+        //}
 
-//        private bool validateOpenIdLoginRequest(OpenIdConnectLoginRequest request)
-//        {
-//            if(request.Code == null || request.UserName == null || request.Password == null)
-//                return false;
-//            return true;
-//        }
+        //private bool validateOpenIdLoginRequest(OpenIdConnectLoginRequest request)
+        //{
+        //    if(request.Code == null || request.UserName == null || request.Password == null)
+        //        return false;
+        //    return true;
+        //}
 
-//        private bool validateCreateUserRequest(CreateUserRequest request)
-//        {
-//            if(request.UserName == null || request.Password == null || request.Email == null)
-//                return false;
-//            return true;
-//        }
+        //private bool validateCreateUserRequest(CreateUserRequest request)
+        //{
+        //    if(request.UserName == null || request.Password == null || request.Email == null)
+        //        return false;
+        //    return true;
+        //}
 
-//        #endregion
-//    }
-//}
+        //#endregion
+    }
+}

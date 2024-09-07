@@ -1,10 +1,17 @@
-﻿namespace HeadHunter.Services.Users
+﻿using HeadHunter.Models.Entities;
+using Microsoft.AspNetCore.Identity.Data;
+
+namespace HeadHunter.Services.Users
 {
     public interface IUserManagerService
     {
-        //Task<AppUser> GetUserAsync(string userId);
-        //Task<LoginResponse> LoginUserAsync(LoginRequest request);
-        //Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request);
-        //Task<OpenIdConnectLoginResponse> LoginUserByOpenIdAsync(OpenIdConnectLoginRequest request);
+        Task<User?> GetUserByIdAsync(long userId);
+        Task<User?> GetUserByEmailAsync(string userEmail);
+        Task<User?> GetUserByLicenseAsync(string license);
+        Task<User?> GetUserByDiscordAsync(long discordId);
+        Task<User> AuthenticateUserAsync(LoginRequest request);
+        Task<User> CreateUserAsync();
+
+
     }
 }

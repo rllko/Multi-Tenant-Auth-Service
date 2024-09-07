@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "THjy7dCYjio=",
+  "dgSpecHash": "nteWssdnp88=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter\\HeadHunter.csproj",
+  "projectFilePath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ricar\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.8\\microsoft.aspnetcore.openapi.8.0.8.nupkg.sha512",
