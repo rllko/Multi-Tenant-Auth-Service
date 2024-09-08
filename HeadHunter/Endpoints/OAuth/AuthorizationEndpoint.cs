@@ -6,7 +6,7 @@ namespace HeadHunter.Endpoints.OAuth
 {
     public static class AuthorizationEndpoint
     {
-        public static async Task Handle(
+        public static IResult Handle(
             HttpContext httpContext,
             [FromServices] IAuthorizeResultService authorizeResultService)
 
@@ -45,8 +45,7 @@ namespace HeadHunter.Endpoints.OAuth
 
             if(result.HasError)
             {
-                httpContext.Response.Redirect("/error");
-                return;
+                return Results.BadRequest(result.ErrorDescription);
             }
 
             var loginModel = new OpenIdConnectLoginRequest
@@ -57,7 +56,7 @@ namespace HeadHunter.Endpoints.OAuth
                 Nonce = result.Nonce,
             };
 
-            httpContext.Response.Redirect(loginModel.RedirectUri);
+            return Results.Redirect(loginModel.RedirectUri);
         }
     }
 }

@@ -169,7 +169,6 @@ namespace HeadHunter.Services.Interfaces
             if(clientCodeChecker == null)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
 
-
             // check if the current client who is one made this authentication request
 
             if(request.ClientId != clientCodeChecker.ClientId)
@@ -197,6 +196,9 @@ namespace HeadHunter.Services.Interfaces
                         [JwtRegisteredClaimNames.Aud] = request.ClientId,
                         [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
                         [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
+                        [JwtRegisteredClaimNames.Nickname] = "MY NIGGERRRRR",
+                        ["code"] = request.Code,
+
                     },
                     Expires = DateTime.Now.AddMinutes(15),
                     IssuedAt = DateTime.Now,
@@ -206,13 +208,13 @@ namespace HeadHunter.Services.Interfaces
 
             }
 
-
             var access_token = handler.CreateToken(new SecurityTokenDescriptor()
             {
                 Claims = new Dictionary<string, object>()
                 {
                     [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
                     [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
+
                 },
                 Expires = DateTime.Now.AddMinutes(2),
                 IssuedAt = DateTime.Now,

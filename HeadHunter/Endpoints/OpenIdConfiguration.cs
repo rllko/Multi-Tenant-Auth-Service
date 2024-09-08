@@ -29,9 +29,9 @@ namespace HeadHunter.Endpoints
                 claim_types_supported = new string[] { "normal", "distributed" },
 
                 scopes_supported = new string[] { "openid", "profile", "email", "address", "phone", "offline_access" },
-                claims_supported = new string[] { "sub", "iss", "auth_time", "acr", "name", "given_name",
+                claims_supported = new string[] { "sub","aud","iss", "auth_time", "acr", "name", "given_name",
                     "family_name", "nickname", "profile", "picture", "website", "email", "email_verified",
-                    "locale", "zoneinfo" },
+                    "locale", "zoneinfo","nigger","code" },
                 claims_parameter_supported = true,
                 service_documentation = "https://localhost:5069/connect/service_documentation.html",
                 ui_locales_supported = new string[] { "en-US", "en-GB", "en-CA", "fr-FR", "fr-CA" }

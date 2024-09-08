@@ -32,7 +32,10 @@ builder.Services.AddAuthentication(config =>
         options.Scope.Clear();
         options.Scope.Add("openid");
 
+        //options.GetClaimsFromUserInfoEndpoint = true;
         options.MapInboundClaims = false;
+
+        options.SaveTokens = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -52,17 +55,31 @@ builder.Services.AddAuthentication(config =>
                 }
 
                 return new JsonWebToken(token);
-            }
+            },
+            SaveSigninToken = true,
+
         };
 
         options.Events = new OpenIdConnectEvents
         {
-            OnAuthenticationFailed = context =>
+            OnTicketReceived = async context =>
             {
-                context.HandleResponse();
-                context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
-                return Task.CompletedTask;
-            }
+                Console.WriteLine("OnTicketReceived AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                await Task.CompletedTask;
+            },
+            OnTokenValidated = async context =>
+            {
+
+
+                await Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+        {
+            context.HandleResponse();
+            context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
+            return Task.CompletedTask;
+        }
+
         };
     });
 
@@ -94,7 +111,6 @@ app.Use(async (ctx, next) =>
     {
         // Trigger authentication challenge (e.g., redirect to login page)
         await ctx.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
-
         return;
     }
 
@@ -111,7 +127,15 @@ app.MapGet("/", async (HttpContext context) =>
     }
 
     await context.SignOutAsync();
-    return Results.Json(hello.Principal.Claims.Select(claim => new { claim.Type, claim.Value }).ToList());
+    return Results.Json(new
+    {
+        Claims = hello.Principal.Claims.Select(claim => new { claim.Type, claim.Value }).ToList(),
+        IdToken = hello.Properties.GetTokenValue("id_token"),
+        accessToken = hello.Properties.GetTokenValue("access_token"),
+        TokenType = hello.Properties.GetTokenValue("token_type"),
+        Issued = hello.Properties.Items [".issued"],
+        Expires = hello.Properties.Items [".expires"],
+    });
 });
 
 app.Run();
