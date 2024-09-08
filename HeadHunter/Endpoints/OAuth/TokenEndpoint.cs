@@ -1,4 +1,4 @@
-﻿using HeadHunter.Services;
+﻿using HeadHunter.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.OAuth

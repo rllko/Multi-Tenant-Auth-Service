@@ -1,6 +1,5 @@
 ﻿using HeadHunter.OauthRequest;
-using HeadHunter.Services;
-using Microsoft.AspNetCore.DataProtection;
+using HeadHunter.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.OAuth
@@ -9,8 +8,9 @@ namespace HeadHunter.Endpoints.OAuth
     {
         public static async Task Handle(
             HttpContext httpContext,
-            [FromServices] IAuthorizeResultService authorizeResultService,
-            [FromServices] IDataProtectionProvider dataProtectionProvider)
+            [FromServices] IAuthorizeResultService authorizeResultService)
+
+
         {
             var request = httpContext.Request;
 

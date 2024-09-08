@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace HeadHunter.Services.CodeService;
@@ -16,7 +15,7 @@ public class CodeStoreService : ICodeStoreService
     // Here I genrate the code for authorization, and I will store it 
     // in the Concurrent Dictionary, PKCE
 
-    public string GenerateAuthorizationCode(string clientId, AuthorizationCode authorizationCode)
+    public string? GenerateAuthorizationCode(string clientId, AuthorizationCode authorizationCode)
     {
         var client = _clientStore.Clients.Where(x => x.Clientid == clientId).FirstOrDefault();
 
@@ -33,17 +32,13 @@ public class CodeStoreService : ICodeStoreService
         return code;
     }
 
-    public string GenerateAuthorizationCode(AuthorizationCode authorizationCode)
+    public string? GenerateAuthorizationCode(AuthorizationCode authorizationCode)
     {
         var client = _clientStore.Clients.Where(x => x.Clientid == authorizationCode.ClientId).SingleOrDefault();
 
         if(client != null)
         {
-            var rand = RandomNumberGenerator.Create();
-            byte[] bytes = new byte[32];
-            rand.GetBytes(bytes);
-            var code = Base64UrlEncoder.Encode(bytes);
-
+            var code = Base64UrlEncoder.Encode(Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
             _codeIssued [code] = authorizationCode;
 
             return code;
@@ -53,7 +48,7 @@ public class CodeStoreService : ICodeStoreService
 
     public AuthorizationCode? GetClientDataByCode(string key)
     {
-        if(_codeIssued.TryGetValue(key, out AuthorizationCode authorizationCode))
+        if(_codeIssued.TryGetValue(key, out AuthorizationCode? authorizationCode))
         {
             return authorizationCode;
         }
@@ -62,7 +57,7 @@ public class CodeStoreService : ICodeStoreService
 
     public AuthorizationCode? RemoveClientDataByCode(string key)
     {
-        _codeIssued.TryRemove(key, value: out AuthorizationCode authorizationCode);
+        _codeIssued.TryRemove(key, value: out AuthorizationCode? authorizationCode);
         return null;
     }
 
@@ -111,7 +106,7 @@ public class CodeStoreService : ICodeStoreService
     }
 
     public AuthorizationCode? UpdatedClientDataByCode(string key, IList<string> requestdScopes,
-         string nonce = null)
+         string? nonce = null)
     {
         var oldValue = GetClientDataByCode(key);
 
@@ -126,6 +121,8 @@ public class CodeStoreService : ICodeStoreService
                                    where requestdScopes.Contains(m)
                                    select m).ToList();
 
+
+
                 if(clientScope.Count == 0)
                     return null;
 
@@ -136,7 +133,7 @@ public class CodeStoreService : ICodeStoreService
                     IsOpenId = requestdScopes.Contains("openid") || requestdScopes.Contains("profile"),
                     RedirectUri = oldValue.RedirectUri,
                     RequestedScopes = requestdScopes,
-                    Nonce = nonce
+                    Nonce = nonce ?? oldValue.Nonce,
                 };
 
 

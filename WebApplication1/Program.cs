@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -8,6 +8,9 @@ using System.IdentityModel.Tokens.Jwt;
 var builder = WebApplication.CreateBuilder(args);
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services.AddSingleton<IHttpContextAccessor,
+           HttpContextAccessor>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(config =>
@@ -23,12 +26,13 @@ builder.Services.AddAuthentication(config =>
         options.ClientSecret = "123456789";
         options.ResponseType = "code";
         options.CallbackPath = "/signin-oidc";
-        options.SaveTokens = false;
 
         options.RequireHttpsMetadata = false;
 
         options.Scope.Clear();
         options.Scope.Add("openid");
+
+        options.MapInboundClaims = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -53,30 +57,10 @@ builder.Services.AddAuthentication(config =>
 
         options.Events = new OpenIdConnectEvents
         {
-            OnAuthorizationCodeReceived = context =>
-            {
-                // You can inspect or modify the token here
-                // Handle authentication failures
-
-
-                return Task.CompletedTask;
-            },
-            OnTokenResponseReceived = (context) =>
-            {
-                var tokenResponse = context.TokenEndpointResponse;
-                var id_token = context.TokenEndpointResponse?.AccessToken;
-                var token = context.TokenEndpointResponse?.IdToken;
-
-                IMemoryCache cache = context.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-                cache.Set("message", id_token, TimeSpan.FromMinutes(60));
-
-                return Task.CompletedTask;
-            },
             OnAuthenticationFailed = context =>
             {
-
-                //context.HandleResponse();
-                //context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
+                context.HandleResponse();
+                context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
                 return Task.CompletedTask;
             }
         };
@@ -102,7 +86,32 @@ if(app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/", (HttpContext context) => Results.Challenge());
+app.Use(async (ctx, next) =>
+{
+    if(!ctx.User.Identity?.IsAuthenticated ?? false)
+    {
+        // Trigger authentication challenge (e.g., redirect to login page)
+        await ctx.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+
+        return;
+    }
+
+    await next(ctx);
+});
+
+app.MapGet("/", async (HttpContext context) =>
+{
+    var hello = await context.AuthenticateAsync();
+
+    if(!hello.Succeeded)
+    {
+        return Results.BadRequest();
+    }
+
+    await context.SignOutAsync();
+    return Results.Json(hello.Principal.Claims.Select(claim => new { claim.Type, claim.Value }).ToList());
+});
 
 app.Run();

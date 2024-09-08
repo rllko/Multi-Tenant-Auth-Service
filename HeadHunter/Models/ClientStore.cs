@@ -10,7 +10,7 @@
                 Clientsecret = "123456789",
                 Allowedscopes = ["openid", "generateKey","AssociateDiscord","profiles"],
                 Granttype = GrantTypes.Code.ToString(),
-                Clienturi = "https://localhost:5420",
+                Clienturi = "https://localhost:7016",
                 Redirecturi = "https://localhost:7016/signin-oidc"
             }
         ];

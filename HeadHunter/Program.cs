@@ -1,25 +1,24 @@
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Models.Context;
-using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
+using HeadHunter.Services.Interfaces;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddCors();
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<ICodeStoreService, CodeStoreService>();
-builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddDataProtection();
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+
+builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
+
+builder.Services.AddHttpContextAccessor();
 
 var connectionString = builder.Configuration["BaseDBConnection"];
 builder.Services.AddDbContext<HeadhunterDbContext>(options =>
@@ -65,5 +64,4 @@ app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
 
 app.MapGet("/authorize", ClientLoginEndpoint.Handle);
 
-app.MapGet("/error", ErrorEndpoint.Handler);
 app.Run();

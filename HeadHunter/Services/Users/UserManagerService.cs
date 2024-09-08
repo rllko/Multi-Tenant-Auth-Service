@@ -1,5 +1,6 @@
 ﻿using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
+using HeadHunter.Services.CodeService;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,12 +9,15 @@ namespace HeadHunter.Services.Users
     public class UserManagerService : IUserManagerService
     {
         private readonly HeadhunterDbContext dbContext;
+        private readonly ICodeStoreService codeStoreService;
         private readonly ILogger<UserManagerService> _logger;
 
         public UserManagerService(HeadhunterDbContext dbContext,
+            ICodeStoreService codeStoreService,
             ILogger<UserManagerService> logger)
         {
             this.dbContext = dbContext;
+            this.codeStoreService = codeStoreService;
             _logger = logger;
         }
 
