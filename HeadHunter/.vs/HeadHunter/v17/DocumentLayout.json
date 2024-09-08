@@ -57,8 +57,7 @@
               "RelativeToolTip": "Models\\GrantTypes.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-08T18:03:36.719Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-08T18:03:36.719Z"
             },
             {
               "$type": "Document",
@@ -70,8 +69,7 @@
               "RelativeToolTip": "Models\\ClientCredentials.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAmwBEAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-08T17:32:50.271Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-08T17:32:50.271Z"
             },
             {
               "$type": "Document",
@@ -96,8 +94,7 @@
               "RelativeToolTip": "Endpoints\\OAuth\\TokenEndpoint.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-08T16:03:58.356Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-08T16:03:58.356Z"
             },
             {
               "$type": "Document",
@@ -109,8 +106,7 @@
               "RelativeToolTip": "Endpoints\\ClientLoginEndpoint.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-08T16:03:42.143Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-08T16:03:42.143Z"
             },
             {
               "$type": "Document",
@@ -135,8 +131,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AQIAAB0AAAAAAAAAAAAAwC8AAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-08T14:18:42.902Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-08T14:18:42.902Z"
             },
             {
               "$type": "Document",
@@ -146,7 +141,7 @@
               "RelativeDocumentMoniker": "..\\WebApplication1\\Program.cs",
               "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\WebApplication1\\Program.cs",
               "RelativeToolTip": "..\\WebApplication1\\Program.cs",
-              "ViewState": "AQIAAGkAAAAAAAAAAAAMwIAAAAAEAAAA",
+              "ViewState": "AQIAAFAAAAAAAAAAAAAIwGsAAAAHAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-07T23:12:35.482Z",
               "EditorCaption": ""

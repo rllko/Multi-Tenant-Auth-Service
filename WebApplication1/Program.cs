@@ -32,9 +32,11 @@ builder.Services.AddAuthentication(config =>
         options.Scope.Clear();
         options.Scope.Add("openid");
 
+        //enable to get all claims
         //options.GetClaimsFromUserInfoEndpoint = true;
-        options.MapInboundClaims = false;
 
+        // Disables the automatic claim mapping that microsoft has
+        options.MapInboundClaims = false;
         options.SaveTokens = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -56,31 +58,15 @@ builder.Services.AddAuthentication(config =>
 
                 return new JsonWebToken(token);
             },
-            SaveSigninToken = true,
-
         };
 
-        options.Events = new OpenIdConnectEvents
-        {
-            OnTicketReceived = async context =>
-            {
-                Console.WriteLine("OnTicketReceived AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                await Task.CompletedTask;
-            },
-            OnTokenValidated = async context =>
-            {
-
-
-                await Task.CompletedTask;
-            },
-            OnAuthenticationFailed = context =>
+        options.Events.OnAuthenticationFailed = context =>
         {
             context.HandleResponse();
             context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
             return Task.CompletedTask;
-        }
-
         };
+
     });
 
 builder.Services.AddMemoryCache(o =>
@@ -109,7 +95,7 @@ app.Use(async (ctx, next) =>
 {
     if(!ctx.User.Identity?.IsAuthenticated ?? false)
     {
-        // Trigger authentication challenge (e.g., redirect to login page)
+        // Trigger authentication challenge
         await ctx.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
         return;
     }
@@ -119,14 +105,16 @@ app.Use(async (ctx, next) =>
 
 app.MapGet("/", async (HttpContext context) =>
 {
+    // Authenticate Client Credentials
     var hello = await context.AuthenticateAsync();
-
     if(!hello.Succeeded)
     {
         return Results.BadRequest();
     }
 
+    // Sign the user out after successful authentication
     await context.SignOutAsync();
+
     return Results.Json(new
     {
         Claims = hello.Principal.Claims.Select(claim => new { claim.Type, claim.Value }).ToList(),
