@@ -1,7 +1,7 @@
 ﻿using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeadHunter.Endpoints.OAuth
+namespace HeadHunter.Endpoints.ProtectedResources
 {
     public static class CreateEndpoint
     {

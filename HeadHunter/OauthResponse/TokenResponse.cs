@@ -10,9 +10,9 @@ namespace HeadHunter.OauthResponse
         /// </summary>
         public string access_token { get; set; }
 
-        /// <summary>
-        /// OpenId Connect
-        /// </summary>
+        ///// <summary>
+        ///// OpenId Connect
+        ///// </summary>
         public string id_token { get; set; }
 
         /// <summary>
@@ -25,6 +25,9 @@ namespace HeadHunter.OauthResponse
         /// Authorization Code. This is always returned when using the Hybrid Flow.
         /// </summary>
         public string code { get; set; }
+
+
+        public string requested_scopes { get; set; }
 
         /// <summary>
         /// For Error Details if any

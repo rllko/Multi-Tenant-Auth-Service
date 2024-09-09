@@ -1,21 +1,19 @@
 ﻿using HeadHunter.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.IdentityModel.Tokens;
+using HeadHunter.Models.Context;
 using System.Collections.Concurrent;
 using System.Security.Claims;
-using System.Text;
 
 namespace HeadHunter.Services.CodeService;
 
-public class CodeStoreService : ICodeStoreService
+public class CodeStorageService : ICodeStorageService
 {
     private readonly ConcurrentDictionary<string, AuthorizationCode> _codeIssued = new();
-    private readonly ClientStore _clientStore = new();
+    private readonly InMemoryClientDatabase _clientStore = new();
 
     // Here I genrate the code for authorization, and I will store it 
     // in the Concurrent Dictionary, PKCE
 
-    public string? GenerateAuthorizationCode(string clientId, AuthorizationCode authorizationCode)
+    public string? GenerateCode(string clientId, AuthorizationCode authorizationCode)
     {
         var client = _clientStore.Clients.Where(x => x.Clientid == clientId).FirstOrDefault();
 
@@ -24,7 +22,7 @@ public class CodeStoreService : ICodeStoreService
             return null;
         }
 
-        var code = Base64UrlEncoder.Encode(Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
+        var code = Guid.NewGuid().ToString();
 
         // then store the code is the Concurrent Dictionary
         _codeIssued [code] = authorizationCode;
@@ -32,21 +30,7 @@ public class CodeStoreService : ICodeStoreService
         return code;
     }
 
-    public string? GenerateAuthorizationCode(AuthorizationCode authorizationCode)
-    {
-        var client = _clientStore.Clients.Where(x => x.Clientid == authorizationCode.ClientId).SingleOrDefault();
-
-        if(client != null)
-        {
-            var code = Base64UrlEncoder.Encode(Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
-            _codeIssued [code] = authorizationCode;
-
-            return code;
-        }
-        return null;
-    }
-
-    public AuthorizationCode? GetClientDataByCode(string key)
+    public AuthorizationCode? GetClientByCode(string key)
     {
         if(_codeIssued.TryGetValue(key, out AuthorizationCode? authorizationCode))
         {
@@ -55,7 +39,7 @@ public class CodeStoreService : ICodeStoreService
         return null;
     }
 
-    public AuthorizationCode? RemoveClientDataByCode(string key)
+    public AuthorizationCode? RemoveClientByCode(string key)
     {
         _codeIssued.TryRemove(key, value: out AuthorizationCode? authorizationCode);
         return null;
@@ -65,9 +49,9 @@ public class CodeStoreService : ICodeStoreService
     // Before updated the Concurrent Dictionary I have to Process User Sign In,
     // and check the user credienail first
     // But here I merge this process here inside update Concurrent Dictionary method
-    public AuthorizationCode? UpdatedClientDataByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes)
+    public AuthorizationCode? UpdatedClientByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes)
     {
-        var oldValue = GetClientDataByCode(key);
+        var oldValue = GetClientByCode(key);
 
         if(oldValue != null)
         {
@@ -108,7 +92,7 @@ public class CodeStoreService : ICodeStoreService
     public AuthorizationCode? UpdatedClientDataByCode(string key, IList<string> requestdScopes,
          string? nonce = null)
     {
-        var oldValue = GetClientDataByCode(key);
+        var oldValue = GetClientByCode(key);
 
         if(oldValue != null)
         {
@@ -149,8 +133,8 @@ public class CodeStoreService : ICodeStoreService
 
                 }
 
-                var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                newValue.Subject = new ClaimsPrincipal(claimIdentity);
+                //var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                //newValue.Subject = new Client();
                 // ------------------ -----------------------------------------------  -----------------
 
                 var result = _codeIssued.TryUpdate(key, newValue, oldValue);

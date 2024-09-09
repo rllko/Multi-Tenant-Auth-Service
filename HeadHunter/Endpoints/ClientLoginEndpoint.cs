@@ -7,7 +7,7 @@ namespace HeadHunter.Endpoints
     {
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
-            var page = httpContext.Request.Query.TryGetValue("key",out var Key);
+            var page = httpContext.Request.Query.TryGetValue("key", out var Key);
 
             if(string.IsNullOrEmpty(Key))
             {

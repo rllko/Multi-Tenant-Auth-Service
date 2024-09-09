@@ -27,13 +27,12 @@ namespace HeadHunter.Endpoints.OAuth
             request.Query.TryGetValue("code_challenge_method", out var codeChallengeMethod);
             request.Query.TryGetValue("scope", out var scope);
             request.Query.TryGetValue("state", out var state);
-            request.Query.TryGetValue("nonce", out var nonce);
+
 
             var authorizationRequest = new AuthorizationRequest
             {
                 response_type = responseType,
                 client_id = clientId,
-                nonce = nonce,
                 code_challenge = codeChallenge,
                 code_challenge_method = codeChallengeMethod,
                 scope = scope,
@@ -48,15 +47,7 @@ namespace HeadHunter.Endpoints.OAuth
                 return Results.BadRequest(result.ErrorDescription);
             }
 
-            var loginModel = new OpenIdConnectLoginRequest
-            {
-                RedirectUri = result.RedirectUri,
-                Code = result.Code,
-                RequestedScopes = result.RequestedScopes,
-                Nonce = result.Nonce,
-            };
-
-            return Results.Redirect(loginModel.RedirectUri);
+            return Results.Redirect(result.RedirectUri);
         }
     }
 }

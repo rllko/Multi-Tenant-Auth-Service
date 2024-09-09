@@ -1,34 +1,49 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Models;
+using HeadHunter.Models.Context;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Web;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace HeadHunter.Services.Interfaces
 {
     public class AuthorizeResultService : IAuthorizeResultService
     {
-        private static readonly string keyAlg = "66007d41-6924-49f2-ac0c-e63c4b1a1730";
-        private readonly ClientStore _clientStore = new();
-        private readonly ICodeStoreService _codeStoreService;
+        private readonly InMemoryClientDatabase _clientStore = new();
+        private readonly ICodeStorageService _codeStoreService;
+        private readonly IAcessTokenStorageService _acessTokenStorageService;
 
-        public AuthorizeResultService(ICodeStoreService codeStoreService) => _codeStoreService = codeStoreService;
+        // gotta change this to a RSA later!!!!
+        // to do ig
+        private static readonly string keyAlg = "66007d41-6924-49f2-ac0c-e63c4b1a1730";
+
+        public AuthorizeResultService(ICodeStorageService codeStoreService, IAcessTokenStorageService acessTokenStorageService)
+        {
+            _codeStoreService = codeStoreService;
+            _acessTokenStorageService = acessTokenStorageService;
+        }
+
         public AuthorizeResponse AuthorizeRequest(ref HttpContext httpContext, AuthorizationRequest authorizationRequest)
         {
             AuthorizeResponse response = new();
 
-            var client = VerifyClientById(authorizationRequest.client_id);
-            if(!client.IsSuccess)
+            var client = VerifyClientById(clientId:authorizationRequest.client_id);
+
+            #region Domain Checking
+
+            if(client.IsSuccess is false)
             {
                 response.Error = client.ErrorDescription;
                 return response;
             }
 
-            if(string.IsNullOrEmpty(authorizationRequest.response_type) || authorizationRequest.response_type != "code")
+            if(string.IsNullOrEmpty(authorizationRequest.response_type) ||
+                authorizationRequest.response_type != "code")
             {
                 response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
                 response.ErrorDescription = "response type is required or is not valid";
@@ -48,7 +63,6 @@ namespace HeadHunter.Services.Interfaces
                 response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
                 response.ErrorDescription = "code challenge required";
                 return response;
-
             }
 
             // check the return url is match the one that in the client store
@@ -59,43 +73,47 @@ namespace HeadHunter.Services.Interfaces
                 response.ErrorDescription = "redirect uri is not matched the one in the client store";
                 return response;
             }
+
             // check the scope in the client store with the
             // one that is comming from the request MUST be matched at leaset one
 
+            #endregion
+
             var scopes = authorizationRequest.scope.Split(' ');
 
-            var clientScopes = client.Client.Allowedscopes.Where(x => scopes.Contains(x)).AsQueryable();
-
-            if(!clientScopes.Any())
+            if(scopes.Length == 0)
             {
-                response.Error = ErrorTypeEnum.InValidScope.GetEnumDescription();
-                response.ErrorDescription = "scopes are invalids";
-                return response;
-
+                //response.Error = ErrorTypeEnum.InValidScope.GetEnumDescription();
+                //response.ErrorDescription = "scopes are invalids";
+                //return response;
+                scopes = new string [] { "default" };
             }
+
+            var clientScopes = client.Client.Allowedscopes.Where(x => scopes.Contains(x)).AsQueryable();
 
             var authoCode = new AuthorizationCode
             {
                 ClientId = authorizationRequest.client_id,
                 RedirectUri = authorizationRequest.redirect_uri,
                 RequestedScopes = [.. clientScopes],
-                IsOpenId = clientScopes.Contains("openid") || clientScopes.Contains("profile"),
-                Nonce = authorizationRequest.nonce,
+                IsOpenId = clientScopes.Contains("openid"),
                 CodeChallenge = authorizationRequest.code_challenge,
                 CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
                 Subject = httpContext.User //as ClaimsPrincipal
-
             };
 
-            string? code = _codeStoreService.GenerateAuthorizationCode(authorizationRequest.client_id, authoCode);
+            string? code = _codeStoreService.GenerateCode(authorizationRequest.client_id, authoCode);
             if(code == null)
             {
                 response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
                 return response;
             }
 
-            response.RedirectUri = client.Client.Redirecturi + "?code=" + code + "&state=" + httpContext.Request.Query ["state"];
+            response.RedirectUri = client.Client.Redirecturi
+                + "?code=" + code
+                + "&state=" + httpContext.Request.Query ["state"]
+                + "&iss=" + response.Issuer;
             response.Code = code;
             response.State = authorizationRequest.state;
             response.RequestedScopes = [.. clientScopes];
@@ -103,60 +121,28 @@ namespace HeadHunter.Services.Interfaces
             return response;
         }
 
-        private CheckClientResult VerifyClientById(string clientId, bool checkWithSecret = false, string clientSecret = null)
-        {
-            CheckClientResult result = new() { IsSuccess = false };
-
-            if(!string.IsNullOrWhiteSpace(clientId))
-            {
-                var client = _clientStore.Clients
-                    .Where(x => x.Clientid.Equals(clientId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-                if(client != null)
-                {
-                    if(checkWithSecret && !string.IsNullOrEmpty(clientSecret))
-                    {
-                        bool hasSamesecretId = client.Clientsecret.Equals(clientSecret, StringComparison.Ordinal);
-                        if(!hasSamesecretId)
-                        {
-                            result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
-                            return result;
-                        }
-                    }
 
 
-                    //// check if client is enabled or not
-
-                    result.IsSuccess = true;
-                    result.Client = client;
-
-                    return result;
-
-                }
-            }
-
-            result.ErrorDescription = ErrorTypeEnum.AccessDenied.GetEnumDescription();
-            return result;
-        }
-
-        public TokenResponse? GenerateTokenAsync(HttpContext httpContext)
+        public async Task<TokenResponse> GenerateTokenAsync(HttpContext httpContext)
         {
             var httpRequest = httpContext.Request;
 
-            if(httpRequest?.Form.Count == 0)
-            {
-                return null;
-            }
+            httpRequest.EnableBuffering();
+
+            var bodyBytes = httpRequest.BodyReader.ReadAsync();
+            await bodyBytes;
+
+            var bodyContent = Encoding.UTF8.GetString(bodyBytes.Result.Buffer);
+            var query = HttpUtility.ParseQueryString(bodyContent);
 
             var request = new TokenRequest
             {
-                ClientId = httpRequest?.Form["client_id"]!,
-                ClientSecret = httpRequest?.Form["client_secret"]!,
-                Code = httpRequest?.Form["code"]!,
-                GrantType = httpRequest?.Form["grant_type"]!,
-                RedirectUri = httpRequest?.Form["redirect_uri"]
+                ClientId = query["client_id"]!,
+                ClientSecret = query["client_secret"]!,
+                Code = query["code"]!,
+                GrantType = query["grant_type"]!,
+                RedirectUri = query["redirect_uri"]
             };
-
 
             var checkClientResult = VerifyClientById(request.ClientId, true, request.ClientSecret);
             if(!checkClientResult.IsSuccess)
@@ -165,7 +151,7 @@ namespace HeadHunter.Services.Interfaces
             }
 
             // check code from the Concurrent Dictionary
-            var clientCodeChecker = _codeStoreService.GetClientDataByCode(request.Code);
+            var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code);
             if(clientCodeChecker == null)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
 
@@ -188,6 +174,7 @@ namespace HeadHunter.Services.Interfaces
                 // TO DO :D
                 // Generate Identity Token
 
+
                 id_token = handler.CreateToken(new SecurityTokenDescriptor()
                 {
                     Claims = new Dictionary<string, object>()
@@ -197,8 +184,6 @@ namespace HeadHunter.Services.Interfaces
                         [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
                         [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
                         [JwtRegisteredClaimNames.Nickname] = "MY NIGGERRRRR",
-                        ["code"] = request.Code,
-
                     },
                     Expires = DateTime.Now.AddMinutes(15),
                     IssuedAt = DateTime.Now,
@@ -207,32 +192,73 @@ namespace HeadHunter.Services.Interfaces
                 });
 
             }
+            //var access_token = handler.CreateToken(new SecurityTokenDescriptor()
+            //{
+            //    Claims = new Dictionary<string, object>()
+            //    {
+            //        [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
+            //        [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
 
-            var access_token = handler.CreateToken(new SecurityTokenDescriptor()
-            {
-                Claims = new Dictionary<string, object>()
-                {
-                    [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
-                    [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
+            //    },
+            //    Expires = DateTime.Now.AddMinutes(2),
+            //    IssuedAt = DateTime.Now,
+            //    TokenType = "Bearer",
+            //    SigningCredentials = credentials_at,
+            //});
 
-                },
-                Expires = DateTime.Now.AddMinutes(2),
-                IssuedAt = DateTime.Now,
-                TokenType = "Bearer",
-                SigningCredentials = credentials_at,
-            });
+            var access_token = _acessTokenStorageService.Generate(request.Code);
 
             // here remoce the code from the Concurrent Dictionary
-            _codeStoreService.RemoveClientDataByCode(request.Code);
+            _codeStoreService.RemoveClientByCode(request.Code);
 
             var tokenResponse = new TokenResponse
             {
-                access_token = access_token,
+                requested_scopes = string.Join(" ", clientCodeChecker.RequestedScopes),
+                access_token = access_token ?? null,
                 id_token = id_token ?? null,
                 code = request.Code,
             };
 
             return tokenResponse;
+        }
+
+        private CheckClientResult VerifyClientById(string clientId, bool checkWithSecret = false, string clientSecret = null)
+        {
+            var result = new CheckClientResult();
+
+            if(string.IsNullOrWhiteSpace(clientId))
+            {
+                result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
+                return result;
+            }
+
+            // check if client exists
+            var storedClient = _clientStore.Clients
+                    .Where(x => x.Clientid.Equals(clientId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+            if(storedClient == null)
+            {
+                result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
+                return result;
+            }
+
+            if(checkWithSecret && !string.IsNullOrEmpty(clientSecret))
+            {
+                bool hasSamesecretId =
+                    storedClient.Clientsecret.Equals(clientSecret, StringComparison.Ordinal);
+                if(!hasSamesecretId)
+                {
+                    result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
+                    return result;
+                }
+            }
+
+            //// check if client is enabled or not
+
+            result.IsSuccess = true;
+            result.Client = storedClient;
+
+            return result;
         }
     }
 }

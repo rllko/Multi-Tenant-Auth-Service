@@ -9,11 +9,11 @@ namespace HeadHunter.Services.Users
     public class UserManagerService : IUserManagerService
     {
         private readonly HeadhunterDbContext dbContext;
-        private readonly ICodeStoreService codeStoreService;
+        private readonly ICodeStorageService codeStoreService;
         private readonly ILogger<UserManagerService> _logger;
 
         public UserManagerService(HeadhunterDbContext dbContext,
-            ICodeStoreService codeStoreService,
+            ICodeStorageService codeStoreService,
             ILogger<UserManagerService> logger)
         {
             this.dbContext = dbContext;

@@ -1,6 +1,6 @@
-﻿namespace HeadHunter.Models
+﻿namespace HeadHunter.Models.Context
 {
-    public class ClientStore
+    public class InMemoryClientDatabase
     {
         public IEnumerable<Client> Clients =
         [

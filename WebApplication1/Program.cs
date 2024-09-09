@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,63 +13,45 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(config =>
 {
     config.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    config.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = "custom";
 })
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    .AddOAuth("custom", options =>
     {
-        options.Authority = "https://localhost:5069";
         options.ClientId = "defaultChangeLater";
         options.ClientSecret = "123456789";
-        options.ResponseType = "code";
         options.CallbackPath = "/signin-oidc";
 
-        options.RequireHttpsMetadata = false;
+        options.AuthorizationEndpoint = "https://localhost:5069/skibidiAuth/authorize";
+        options.TokenEndpoint = "https://localhost:5069/skibidiAuth/token";
 
         options.Scope.Clear();
-        options.Scope.Add("openid");
+        //options.Scope.Add("openid");
+        options.Scope.Add("generateKey");
+        options.Scope.Add("AssociateDiscord");
+        options.Scope.Add("niggers");
+        //options.Scope.Add("profile");
 
-        //enable to get all claims
-        //options.GetClaimsFromUserInfoEndpoint = true;
+        options.UsePkce = true;
+        options.ClaimActions.MapUniqueJsonKey("id_token", "id_token");
+        options.ClaimActions.MapUniqueJsonKey("scope", "scope");
 
-        // Disables the automatic claim mapping that microsoft has
-        options.MapInboundClaims = false;
         options.SaveTokens = true;
-
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.Events.OnCreatingTicket = context =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidIssuer = "https://localhost:5069",
-            ValidAudience = "defaultChangeLater",
-
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-
-            SignatureValidator = (string token, TokenValidationParameters _) =>
-            {
-                if(string.IsNullOrEmpty(token))
-                {
-                    throw new SecurityTokenInvalidSignatureException("Token is null or empty.");
-                }
-
-                return new JsonWebToken(token);
-            },
-        };
-
-        options.Events.OnAuthenticationFailed = context =>
-        {
-            context.HandleResponse();
-            context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
+            context.RunClaimActions(context.TokenResponse.Response.RootElement);
             return Task.CompletedTask;
         };
 
-    });
 
-builder.Services.AddMemoryCache(o =>
-{
-    o.ExpirationScanFrequency = TimeSpan.FromMinutes(60);
-});
+        //options.Events.OnAuthenticationFailed = context =>
+        //{
+        //    context.HandleResponse();
+        //    context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
+        //    return Task.CompletedTask;
+        //};
+
+    });
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -96,13 +75,14 @@ app.Use(async (ctx, next) =>
     if(!ctx.User.Identity?.IsAuthenticated ?? false)
     {
         // Trigger authentication challenge
-        await ctx.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+        await ctx.ChallengeAsync();
         return;
     }
 
     await next(ctx);
 });
 
+// Test Endpoint
 app.MapGet("/", async (HttpContext context) =>
 {
     // Authenticate Client Credentials
@@ -115,15 +95,18 @@ app.MapGet("/", async (HttpContext context) =>
     // Sign the user out after successful authentication
     await context.SignOutAsync();
 
-    return Results.Json(new
+    var list = new Dictionary<string,string>();
+
+    list.Add("access_token", hello.Properties.GetTokenValue("access_token"));
+    list.Add("token_type", hello.Properties.GetTokenValue("token_type"));
+
+    foreach(var item in hello.Principal.Claims)
     {
-        Claims = hello.Principal.Claims.Select(claim => new { claim.Type, claim.Value }).ToList(),
-        IdToken = hello.Properties.GetTokenValue("id_token"),
-        accessToken = hello.Properties.GetTokenValue("access_token"),
-        TokenType = hello.Properties.GetTokenValue("token_type"),
-        Issued = hello.Properties.Items [".issued"],
-        Expires = hello.Properties.Items [".expires"],
-    });
+        list.Add(item.Type, item.Value);
+    }
+
+
+    return Results.Json(list);
 });
 
 app.Run();

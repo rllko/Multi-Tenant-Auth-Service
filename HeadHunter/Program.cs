@@ -1,5 +1,6 @@
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
+using HeadHunter.Endpoints.ProtectedResources;
 using HeadHunter.Models.Context;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
@@ -13,7 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ICodeStoreService, CodeStoreService>();
+builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
+builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
+
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
@@ -25,6 +28,7 @@ builder.Services.AddDbContext<HeadhunterDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
+
 builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 
 var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -53,8 +57,6 @@ app.UseCors(MyAllowSpecificOrigins);
 
 //https://dev.to/mohammedahmed/build-your-own-oauth-20-server-and-openid-connect-provider-in-aspnet-core-60-1g1m
 app.UseHttpsRedirection();
-
-app.MapGet(".well-known/openid-configuration", OpenIdConfiguration.Handler);
 
 app.MapGet("/skibidiAuth/authorize", AuthorizationEndpoint.Handle);
 
