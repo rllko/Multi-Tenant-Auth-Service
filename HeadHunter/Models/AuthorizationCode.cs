@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace HeadHunter.Models
+﻿namespace HeadHunter.Models
 {
     public class AuthorizationCode
     {
@@ -10,11 +8,10 @@ namespace HeadHunter.Models
 
         public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 
-
         public bool IsOpenId { get; set; }
         public IList<string> RequestedScopes { get; set; }
 
-        public ClaimsPrincipal Subject { get; set; }
+        public string Subject { get; set; }
         public string Nonce { get; set; }
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }

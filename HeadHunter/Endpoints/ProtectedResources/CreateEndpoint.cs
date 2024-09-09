@@ -1,10 +1,12 @@
 ﻿using HeadHunter.Services.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.ProtectedResources
 {
     public static class CreateEndpoint
     {
+        [Authorize(Policy = "GenerateUser")]
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
             //var page = httpContext.Request.Headers.FirstOrDefault(u => u.Key == "Authorization");

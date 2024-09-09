@@ -76,9 +76,9 @@ public class CodeStorageService : ICodeStorageService
                     RequestedScopes = requestdScopes,
                     Nonce = oldValue.Nonce,
                     CodeChallenge = oldValue.CodeChallenge,
-                    CodeChallengeMethod = oldValue.CodeChallengeMethod,
-                    Subject = claimsPrincipal,
+                    CodeChallengeMethod = oldValue.CodeChallengeMethod
                 };
+
                 var result = _codeIssued.TryUpdate(key, newValue, oldValue);
 
                 if(result)

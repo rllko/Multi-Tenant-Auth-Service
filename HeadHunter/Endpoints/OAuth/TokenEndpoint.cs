@@ -1,14 +1,16 @@
-﻿using HeadHunter.Services.Interfaces;
+﻿using HeadHunter.Services;
+using HeadHunter.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.OAuth
 {
     public static class TokenEndpoint
     {
-        public static async Task<IResult> Handle(HttpContext httpContext, [FromServices] IAuthorizeResultService authorizeResultService)
+        [HttpPost]
+        public static async Task<IResult> Handle(HttpContext httpContext, [FromServices] IAuthorizeResultService authorizeResultService, [FromServices] DevKeys devKeys)
         {
 
-            var result =  await authorizeResultService.GenerateTokenAsync(httpContext);
+            var result =  await authorizeResultService.GenerateTokenAsync(httpContext,devKeys);
 
             if(result.HasError)
                 return Results.Json(new { Error = "Something happened during token creation", Debug = result.Error.ToList() });

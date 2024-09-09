@@ -4,6 +4,7 @@ using HeadHunter.Models.Context;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -17,15 +18,19 @@ namespace HeadHunter.Services.Interfaces
         private readonly InMemoryClientDatabase _clientStore = new();
         private readonly ICodeStorageService _codeStoreService;
         private readonly IAcessTokenStorageService _acessTokenStorageService;
+        private readonly DevKeys _devKeys;
 
         // gotta change this to a RSA later!!!!
         // to do ig
-        private static readonly string keyAlg = "66007d41-6924-49f2-ac0c-e63c4b1a1730";
 
-        public AuthorizeResultService(ICodeStorageService codeStoreService, IAcessTokenStorageService acessTokenStorageService)
+        public AuthorizeResultService(ICodeStorageService codeStoreService,
+            IAcessTokenStorageService acessTokenStorageService,
+            DevKeys devKeys
+            )
         {
             _codeStoreService = codeStoreService;
             _acessTokenStorageService = acessTokenStorageService;
+            _devKeys = devKeys;
         }
 
         public AuthorizeResponse AuthorizeRequest(ref HttpContext httpContext, AuthorizationRequest authorizationRequest)
@@ -100,7 +105,6 @@ namespace HeadHunter.Services.Interfaces
                 CodeChallenge = authorizationRequest.code_challenge,
                 CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
-                Subject = httpContext.User //as ClaimsPrincipal
             };
 
             string? code = _codeStoreService.GenerateCode(authorizationRequest.client_id, authoCode);
@@ -123,7 +127,7 @@ namespace HeadHunter.Services.Interfaces
 
 
 
-        public async Task<TokenResponse> GenerateTokenAsync(HttpContext httpContext)
+        public async Task<TokenResponse> GenerateTokenAsync(HttpContext httpContext, [FromServices] DevKeys devKeys)
         {
             var httpRequest = httpContext.Request;
 
@@ -162,8 +166,6 @@ namespace HeadHunter.Services.Interfaces
 
             // TODO: 
             // also I have to check the rediret uri 
-            var key_at = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyAlg));
-            var credentials_at = new SigningCredentials(key_at, SecurityAlgorithms.HmacSha256);
 
             // Now here I will Issue the Id_token
             var handler = new JsonWebTokenHandler();
@@ -174,7 +176,7 @@ namespace HeadHunter.Services.Interfaces
                 // TO DO :D
                 // Generate Identity Token
 
-
+                var key = new RsaSecurityKey(devKeys.RsaKey);
                 id_token = handler.CreateToken(new SecurityTokenDescriptor()
                 {
                     Claims = new Dictionary<string, object>()
@@ -188,7 +190,7 @@ namespace HeadHunter.Services.Interfaces
                     Expires = DateTime.Now.AddMinutes(15),
                     IssuedAt = DateTime.Now,
                     TokenType = "Bearer",
-                    SigningCredentials = credentials_at
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
                 });
 
             }

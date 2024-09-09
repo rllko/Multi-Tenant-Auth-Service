@@ -29,7 +29,6 @@ builder.Services.AddAuthentication(config =>
         //options.Scope.Add("openid");
         options.Scope.Add("generateKey");
         options.Scope.Add("AssociateDiscord");
-        options.Scope.Add("niggers");
         //options.Scope.Add("profile");
 
         options.UsePkce = true;
@@ -42,14 +41,6 @@ builder.Services.AddAuthentication(config =>
             context.RunClaimActions(context.TokenResponse.Response.RootElement);
             return Task.CompletedTask;
         };
-
-
-        //options.Events.OnAuthenticationFailed = context =>
-        //{
-        //    context.HandleResponse();
-        //    context.Response.WriteAsJsonAsync(new { Error = context.Exception.Message });
-        //    return Task.CompletedTask;
-        //};
 
     });
 
@@ -92,9 +83,6 @@ app.MapGet("/", async (HttpContext context) =>
         return Results.BadRequest();
     }
 
-    // Sign the user out after successful authentication
-    await context.SignOutAsync();
-
     var list = new Dictionary<string,string>();
 
     list.Add("access_token", hello.Properties.GetTokenValue("access_token"));
@@ -106,7 +94,14 @@ app.MapGet("/", async (HttpContext context) =>
     }
 
 
+
     return Results.Json(list);
+});
+
+app.MapGet("/out", async (HttpContext context) =>
+{
+    await context.SignOutAsync();
+    context.Response.Redirect("/");
 });
 
 app.Run();
