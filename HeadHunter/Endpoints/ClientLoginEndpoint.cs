@@ -24,6 +24,12 @@ namespace HeadHunter.Endpoints
                 return Results.BadRequest("Key is invalid.");
             }
 
+
+            //if(key.DiscordUserNavigation.Confirmed == false)
+            //{
+            //    return Results.BadRequest("Key is not confirmed.");
+            //}
+
             return Results.Ok(key);
         }
     }

@@ -41,8 +41,9 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByDiscordAsync(long discordId)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Discord == discordId);
-            return user;
+            //var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Discord == discordId);
+            //return user;
+            return null;
         }
 
         public Task<User> AuthenticateUserAsync(LoginRequest request)

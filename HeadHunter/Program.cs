@@ -58,7 +58,8 @@ builder.Services.AddAuthentication(x =>
         OnMessageReceived = context =>
         {
 
-            if(context.Request.Headers.TryGetValue("Authorization", out var Token))
+            if(context.Request.Headers.
+            TryGetValue("Authorization", out var Token))
             {
                 context.Token = Token;
             }

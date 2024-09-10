@@ -16,6 +16,6 @@ public partial class DiscordUser
     [Column("date_linked", TypeName = "timestamp without time zone")]
     public DateTime? DateLinked { get; set; }
 
-    [InverseProperty("DiscordNavigation")]
+    [InverseProperty("DiscordUserNavigation")]
     public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -1,5 +1,4 @@
-﻿
-using HeadHunter.Models.Entities;
+﻿using HeadHunter.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Models.Context;
@@ -23,31 +22,11 @@ public partial class HeadhunterDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-       => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Pooling=true;Database=headhunter;User Id=postgres;Password=posgres;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.ClientId).HasName("clients_pkey");
-
-            entity.HasMany(d => d.Scopes).WithMany(p => p.Clients)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ClientScope",
-                    r => r.HasOne<Scope>().WithMany()
-                        .HasForeignKey("ScopeId")
-                        .HasConstraintName("client_scopes_scope_id_fkey"),
-                    l => l.HasOne<Client>().WithMany()
-                        .HasForeignKey("ClientId")
-                        .HasConstraintName("client_scopes_client_id_fkey"),
-                    j =>
-                    {
-                        j.HasKey("ClientId", "ScopeId").HasName("client_scopes_pkey");
-                        j.ToTable("client_scopes");
-                        j.IndexerProperty<int>("ClientId").HasColumnName("client_id");
-                        j.IndexerProperty<int>("ScopeId").HasColumnName("scope_id");
-                    });
         });
 
         modelBuilder.Entity<DiscordUser>(entity =>
@@ -66,7 +45,7 @@ public partial class HeadhunterDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
-            entity.HasOne(d => d.DiscordNavigation).WithMany(p => p.Users).HasConstraintName("users_discord_fkey");
+            entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users).HasConstraintName("users_discord_user_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

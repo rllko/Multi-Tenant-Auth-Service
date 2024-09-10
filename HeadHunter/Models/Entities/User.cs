@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Models.Entities;
 
 [Table("users")]
+[Index("License", Name = "users_license_key", IsUnique = true)]
+[Index("RecoveryKey", Name = "users_recovery_key_key", IsUnique = true)]
 public partial class User
 {
     [Key]
@@ -29,14 +29,14 @@ public partial class User
     [StringLength(35)]
     public string? RecoveryKey { get; set; }
 
-    [Column("discord")]
-    public long? Discord { get; set; }
-
     [Column("ip_address")]
     [StringLength(40)]
     public string? IpAddress { get; set; }
 
-    [ForeignKey("Discord")]
+    [Column("discord_user")]
+    public long DiscordUser { get; set; }
+
+    [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
-    public virtual DiscordUser? DiscordNavigation { get; set; }
+    public virtual DiscordUser DiscordUserNavigation { get; set; } = null!;
 }

@@ -7,7 +7,8 @@ namespace HeadHunter.Services.CodeService;
 
 public class CodeStorageService : ICodeStorageService
 {
-    private readonly ConcurrentDictionary<string, AuthorizationCode> _codeIssued = new();
+    private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
+    private readonly ConcurrentDictionary<string, AuthorizationCode> _discordCodeIssued = new();
 
     //private readonly InMemoryClientDatabase _clientStore = new();
 
@@ -30,14 +31,14 @@ public class CodeStorageService : ICodeStorageService
         var code = Guid.NewGuid().ToString();
 
         // then store the code is the Concurrent Dictionary
-        _codeIssued [code] = authorizationCode;
+        _authorizeCodeIssued [code] = authorizationCode;
 
         return code;
     }
 
     public AuthorizationCode? GetClientByCode(string key)
     {
-        if(_codeIssued.TryGetValue(key, out AuthorizationCode? authorizationCode))
+        if(_authorizeCodeIssued.TryGetValue(key, out AuthorizationCode? authorizationCode))
         {
             return authorizationCode;
         }
@@ -46,7 +47,7 @@ public class CodeStorageService : ICodeStorageService
 
     public AuthorizationCode? RemoveClientByCode(string key)
     {
-        _codeIssued.TryRemove(key, value: out AuthorizationCode? authorizationCode);
+        _authorizeCodeIssued.TryRemove(key, value: out AuthorizationCode? authorizationCode);
         return null;
     }
 
