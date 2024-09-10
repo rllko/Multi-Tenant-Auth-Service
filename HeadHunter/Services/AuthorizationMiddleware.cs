@@ -34,12 +34,14 @@ namespace HeadHunter.Services
                 return;
             }
 
+            ;
+
             var handler = new JwtSecurityTokenHandler();
             var key = new RsaSecurityKey(_devKeys.RsaKey);
             var token = new JwtSecurityToken(
                 issuer:IdentityData.Issuer,
                 audience:IdentityData.Audience,
-                claims:new List<Claim>{new Claim("nigga","nigga") },
+                claims:authorizationCode.RequestedScopes.Select(u => new Claim("scope", u)),
                 notBefore:DateTime.Now,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.RsaSha256));

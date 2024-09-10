@@ -12,9 +12,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,12 +43,12 @@ builder.Services.AddAuthentication(x =>
 
     x.TokenValidationParameters = new TokenValidationParameters
     {
-        //ValidateIssuerSigningKey = true,
+        ValidateIssuerSigningKey = true,
         ValidateAudience = true,
         ValidAudience = IdentityData.Audience,
         ValidIssuer = IdentityData.Issuer,
         ValidateIssuer = true,
-        //IssuerSigningKey = new RsaSecurityKey(devKeys.RsaKey),
+        IssuerSigningKey = new RsaSecurityKey(devKeys.RsaKey),
 
         ValidateLifetime = true,
     };
@@ -75,7 +72,7 @@ builder.Services.AddAuthentication(x =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(IdentityData.GenerateUserClaimName, p => p.RequireClaim("nigga", "nigga"));
+    options.AddPolicy(IdentityData.GenerateUserClaimName, p => p.RequireClaim("scope", "generateKey"));
 });
 
 var connectionString = builder.Configuration["BaseDBConnection"];
@@ -125,36 +122,9 @@ app.MapGet("/skibidiAuth/authorize", AuthorizationEndpoint.Handle);
 
 app.MapPost("/skibidiAuth/token", TokenEndpoint.Handle);
 
-app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle).RequireAuthorization(x => x.RequireClaim("nigga"));
+app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
 
 app.MapGet("authorize", ClientLoginEndpoint.Handle);
-
-app.MapGet("authenticate", (HttpContext context) =>
-{
-    var claims = new[]
-            {
-                new Claim("FullName","Fiqri Ismail"),
-                new Claim(JwtRegisteredClaimNames.Sub, "user_id")
-            };
-
-    var keyBytes = Encoding.UTF8.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-    var key = new SymmetricSecurityKey(keyBytes);
-
-    var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-    var token = new JwtSecurityToken(
-                IdentityData.Audience,
-                IdentityData.Issuer,
-                claims,
-                notBefore: DateTime.Now,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials);
-
-    var tokenString = new  JwtSecurityTokenHandler().WriteToken(token);
-
-    return Results.Ok(new { accessToken = tokenString });
-});
 
 
 app.Run();
