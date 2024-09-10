@@ -1,4 +1,6 @@
-﻿namespace HeadHunter.Models
+﻿using HeadHunter.Models.Entities;
+
+namespace HeadHunter.Models
 {
     public class CheckClientResult
     {

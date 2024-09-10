@@ -18,17 +18,16 @@ builder.Services.AddAuthentication(config =>
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddOAuth("custom", options =>
     {
-        options.ClientId = "defaultChangeLater";
-        options.ClientSecret = "123456789";
+        options.ClientId = "a72JD81Y76LH2D9Q";
+        options.ClientSecret = "vK!@82msN7#$bTgF47Aq5pYx!Zw6E3";
         options.CallbackPath = "/signin-oidc";
 
         options.AuthorizationEndpoint = "https://localhost:5069/skibidiAuth/authorize";
         options.TokenEndpoint = "https://localhost:5069/skibidiAuth/token";
 
         options.Scope.Clear();
-        //options.Scope.Add("openid");
-        options.Scope.Add("generateKey");
-        options.Scope.Add("AssociateDiscord");
+        options.Scope.Add("openid");
+        options.Scope.Add("admin");
         //options.Scope.Add("profile");
 
         options.UsePkce = true;

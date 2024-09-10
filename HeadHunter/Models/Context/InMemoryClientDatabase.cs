@@ -1,4 +1,6 @@
-﻿namespace HeadHunter.Models.Context
+﻿using HeadHunter.Models.Entities;
+
+namespace HeadHunter.Models.Context
 {
     public class InMemoryClientDatabase
     {
@@ -6,12 +8,13 @@
         [
             new Client
             {
-                Clientid = "defaultChangeLater",
-                Clientsecret = "123456789",
-                Allowedscopes = ["openid", "generateKey","AssociateDiscord","profiles"],
-                Granttype = GrantTypes.Code.ToString(),
-                Clienturi = "https://localhost:7016",
-                Redirecturi = "https://localhost:7016/signin-oidc"
+                ClientId = 1,
+                ClientIdentifier = "defaultChangeLater",
+                ClientSecret = "123456789",
+                //sc = ["openid", "generateKey","AssociateDiscord","profiles"],
+                GrantType = GrantTypes.Code.ToString(),
+                ClientUri = "https://localhost:7016",
+                RedirectUri = "https://localhost:7016/signin-oidc"
             }
         ];
     }

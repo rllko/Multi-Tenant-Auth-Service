@@ -6,7 +6,7 @@ namespace HeadHunter.Endpoints.ProtectedResources
 {
     public static class CreateEndpoint
     {
-        [Authorize(Policy = "GenerateUser")]
+        [Authorize(Policy = "Special")]
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
             //var page = httpContext.Request.Headers.FirstOrDefault(u => u.Key == "Authorization");

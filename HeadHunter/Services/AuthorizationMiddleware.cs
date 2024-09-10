@@ -21,40 +21,52 @@ namespace HeadHunter.Services
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // extract guid token form from header
             context.Request.Headers.TryGetValue("Authorization", out var authHeader);
-
             authHeader = authHeader.Select(u => u.Split(" ") [1]).FirstOrDefault();
 
+            if(string.IsNullOrEmpty(authHeader))
+            {
+                await _next(context);
+            }
+
+            // obtain code from database
             var authorizationCode = _acessTokenStorageService.GetByCode(authHeader);
 
             if(authorizationCode == null)
             {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized");
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync("Invalid Token");
                 return;
             }
 
-            ;
-
+            // create token handler
             var handler = new JwtSecurityTokenHandler();
             var key = new RsaSecurityKey(_devKeys.RsaKey);
+
+            // create authentication token from valid code
             var token = new JwtSecurityToken(
                 issuer:IdentityData.Issuer,
                 audience:IdentityData.Audience,
-                claims:authorizationCode.RequestedScopes.Select(u => new Claim("scope", u)),
+                claims:
+                [..
+                    authorizationCode.RequestedScopes.Select(u => new Claim("scope", u)),
+                    new Claim("sub",authorizationCode.Subject),
+                    new Claim("client_id",authorizationCode.ClientIdentifier),
+                    new Claim("jti",authHeader!),
+                    new Claim("jti_created_at",authorizationCode.CreationTime.ToString())
+                  ],
                 notBefore:DateTime.Now,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
 
+            // sign token
             var tokenstr = handler.WriteToken(token);
 
+            // insert token into request
             context.Request.Headers ["Authorization"] = $"{tokenstr}";
 
-            //context.Response.OnStarting(() =>
-            //{
-            //    return Task.CompletedTask;
-            //});
-
+            // Permission handling is taken care by each endpoint
             await _next(context);
         }
     }

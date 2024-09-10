@@ -19,12 +19,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
+builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
+
 
 builder.Services.AddSingleton<DevKeys>();
 var devKeys = new DevKeys();
@@ -61,7 +61,6 @@ builder.Services.AddAuthentication(x =>
             if(context.Request.Headers.TryGetValue("Authorization", out var Token))
             {
                 context.Token = Token;
-                //context.Success();
             }
             return Task.CompletedTask;
         },
@@ -72,7 +71,11 @@ builder.Services.AddAuthentication(x =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(IdentityData.GenerateUserClaimName, p => p.RequireClaim("scope", "generateKey"));
+    options.AddPolicy("Special", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == "scope" &&
+            (c.Value == "admin" || c.Value == "license:write")
+            && c.Issuer == IdentityData.Issuer)));
 });
 
 var connectionString = builder.Configuration["BaseDBConnection"];

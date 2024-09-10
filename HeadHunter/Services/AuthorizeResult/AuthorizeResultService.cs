@@ -1,12 +1,14 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Models;
 using HeadHunter.Models.Context;
+using HeadHunter.Models.Entities;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Web;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
@@ -15,9 +17,10 @@ namespace HeadHunter.Services.Interfaces
 {
     public class AuthorizeResultService : IAuthorizeResultService
     {
-        private readonly InMemoryClientDatabase _clientStore = new();
+        //private readonly InMemoryClientDatabase _clientStore = new();
         private readonly ICodeStorageService _codeStoreService;
         private readonly IAcessTokenStorageService _acessTokenStorageService;
+        private readonly HeadhunterDbContext _dbContext;
         private readonly DevKeys _devKeys;
 
         // gotta change this to a RSA later!!!!
@@ -25,25 +28,34 @@ namespace HeadHunter.Services.Interfaces
 
         public AuthorizeResultService(ICodeStorageService codeStoreService,
             IAcessTokenStorageService acessTokenStorageService,
+            HeadhunterDbContext dbContext,
             DevKeys devKeys
             )
         {
             _codeStoreService = codeStoreService;
             _acessTokenStorageService = acessTokenStorageService;
+            _dbContext = dbContext;
             _devKeys = devKeys;
         }
 
-        public AuthorizeResponse AuthorizeRequest(ref HttpContext httpContext, AuthorizationRequest authorizationRequest)
+        public async Task<AuthorizeResponse> AuthorizeRequest(HttpContext httpContext, AuthorizationRequest authorizationRequest)
         {
             AuthorizeResponse response = new();
 
-            var client = VerifyClientById(clientId:authorizationRequest.client_id);
+            var clientResult = VerifyClientById(clientIdentifier:authorizationRequest.client_id);
 
             #region Domain Checking
 
-            if(client.IsSuccess is false)
+            if(clientResult.IsSuccess is false)
             {
-                response.Error = client.ErrorDescription;
+                response.Error = clientResult.ErrorDescription;
+                return response;
+            }
+
+            if(clientResult.Client.Scopes.Count == 0)
+            {
+                response.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
+                response.ErrorDescription = "client has no scopes";
                 return response;
             }
 
@@ -71,7 +83,7 @@ namespace HeadHunter.Services.Interfaces
             }
 
             // check the return url is match the one that in the client store
-            bool redirectUriIsMatched = client.Client.Redirecturi!.Equals(authorizationRequest.redirect_uri, StringComparison.OrdinalIgnoreCase);
+            bool redirectUriIsMatched = clientResult.Client.RedirectUri!.Equals(authorizationRequest.redirect_uri, StringComparison.OrdinalIgnoreCase);
             if(!redirectUriIsMatched)
             {
                 response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
@@ -94,27 +106,28 @@ namespace HeadHunter.Services.Interfaces
                 scopes = new string [] { "default" };
             }
 
-            var clientScopes = client.Client.Allowedscopes.Where(x => scopes.Contains(x)).AsQueryable();
+            var clientScopes = scopes.Intersect(clientResult.Client.Scopes.Select(s => s.ScopeName));
 
             var authoCode = new AuthorizationCode
             {
-                ClientId = authorizationRequest.client_id,
+                ClientIdentifier = authorizationRequest.client_id,
                 RedirectUri = authorizationRequest.redirect_uri,
                 RequestedScopes = [.. clientScopes],
                 IsOpenId = clientScopes.Contains("openid"),
                 CodeChallenge = authorizationRequest.code_challenge,
                 CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
+                Subject = clientResult.Client.ClientIdentifier,
             };
 
-            string? code = _codeStoreService.GenerateCode(authorizationRequest.client_id, authoCode);
+            string? code = _codeStoreService.GenerateCode(_dbContext,authorizationRequest.client_id, authoCode);
             if(code == null)
             {
                 response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
                 return response;
             }
 
-            response.RedirectUri = client.Client.Redirecturi
+            response.RedirectUri = clientResult.Client.RedirectUri
                 + "?code=" + code
                 + "&state=" + httpContext.Request.Query ["state"]
                 + "&iss=" + response.Issuer;
@@ -161,56 +174,44 @@ namespace HeadHunter.Services.Interfaces
 
             // check if the current client who is one made this authentication request
 
-            if(request.ClientId != clientCodeChecker.ClientId)
+            if(request.ClientId != clientCodeChecker.ClientIdentifier)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
 
-            // TODO: 
             // also I have to check the rediret uri 
+            if(request.RedirectUri != clientCodeChecker.RedirectUri)
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
 
             // Now here I will Issue the Id_token
-            var handler = new JsonWebTokenHandler();
+            var handler = new JwtSecurityTokenHandler();
 
             string? id_token = null;
             if(clientCodeChecker.IsOpenId)
             {
-                // TO DO :D
-                // Generate Identity Token
-
                 var key = new RsaSecurityKey(devKeys.RsaKey);
-                id_token = handler.CreateToken(new SecurityTokenDescriptor()
+                var token = handler.CreateJwtSecurityToken(new SecurityTokenDescriptor()
                 {
                     Claims = new Dictionary<string, object>()
                     {
-                        [JwtRegisteredClaimNames.Sub] = "nigger",
-                        [JwtRegisteredClaimNames.Aud] = request.ClientId,
-                        [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
-                        [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
-                        [JwtRegisteredClaimNames.Nickname] = "MY NIGGERRRRR",
+                        [JwtRegisteredClaimNames.Sub] = request.ClientId,
+                        [JwtRegisteredClaimNames.Aud] = IdentityData.Audience,
+                        [JwtRegisteredClaimNames.Iss] = IdentityData.Issuer,
+                        [JwtRegisteredClaimNames.Iat] = DateTime.Now.Second,
+                        ["scope"] = clientCodeChecker.RequestedScopes,
+                        [JwtRegisteredClaimNames.Exp] = DateTime.Now.AddMinutes(15) - DateTime.Now,
+                        [JwtRegisteredClaimNames.Nickname] = clientCodeChecker.Subject,
                     },
                     Expires = DateTime.Now.AddMinutes(15),
                     IssuedAt = DateTime.Now,
-                    TokenType = "Bearer",
+                    TokenType = "JWT",
                     SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
                 });
 
+                id_token = handler.WriteToken(token);
             }
-            //var access_token = handler.CreateToken(new SecurityTokenDescriptor()
-            //{
-            //    Claims = new Dictionary<string, object>()
-            //    {
-            //        [JwtRegisteredClaimNames.Iss] = "https://localhost:5069",
-            //        [JwtRegisteredClaimNames.Nonce] = clientCodeChecker.Nonce,
-
-            //    },
-            //    Expires = DateTime.Now.AddMinutes(2),
-            //    IssuedAt = DateTime.Now,
-            //    TokenType = "Bearer",
-            //    SigningCredentials = credentials_at,
-            //});
 
             var access_token = _acessTokenStorageService.Generate(request.Code);
 
-            // here remoce the code from the Concurrent Dictionary
+            // here remove the code from the Concurrent Dictionary
             _codeStoreService.RemoveClientByCode(request.Code);
 
             var tokenResponse = new TokenResponse
@@ -224,19 +225,19 @@ namespace HeadHunter.Services.Interfaces
             return tokenResponse;
         }
 
-        private CheckClientResult VerifyClientById(string clientId, bool checkWithSecret = false, string clientSecret = null)
+        private CheckClientResult VerifyClientById(string clientIdentifier, bool checkWithSecret = false, string clientSecret = null)
         {
             var result = new CheckClientResult();
 
-            if(string.IsNullOrWhiteSpace(clientId))
+            if(string.IsNullOrWhiteSpace(clientIdentifier))
             {
                 result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
                 return result;
             }
 
             // check if client exists
-            var storedClient = _clientStore.Clients
-                    .Where(x => x.Clientid.Equals(clientId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var storedClient = _dbContext.Clients.Include(x => x.Scopes)
+                    .FirstOrDefault(x => x.ClientIdentifier.Equals(clientIdentifier));
 
             if(storedClient == null)
             {
@@ -247,7 +248,7 @@ namespace HeadHunter.Services.Interfaces
             if(checkWithSecret && !string.IsNullOrEmpty(clientSecret))
             {
                 bool hasSamesecretId =
-                    storedClient.Clientsecret.Equals(clientSecret, StringComparison.Ordinal);
+                    storedClient.ClientSecret.Equals(clientSecret, StringComparison.Ordinal);
                 if(!hasSamesecretId)
                 {
                     result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();

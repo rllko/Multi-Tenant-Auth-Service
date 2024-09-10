@@ -6,7 +6,7 @@ namespace HeadHunter.Endpoints.OAuth
 {
     public static class AuthorizationEndpoint
     {
-        public static IResult Handle(
+        public async static Task<IResult> Handle(
             HttpContext httpContext,
             [FromServices] IAuthorizeResultService authorizeResultService)
 
@@ -40,7 +40,7 @@ namespace HeadHunter.Endpoints.OAuth
                 redirect_uri = redirectUri
             };
 
-            var result = authorizeResultService.AuthorizeRequest(ref httpContext, authorizationRequest);
+            var result = await authorizeResultService.AuthorizeRequest( httpContext, authorizationRequest);
 
             if(result.HasError)
             {

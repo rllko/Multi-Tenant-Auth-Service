@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Entities;
+namespace HeadHunter.DatabaseShaita;
 
 [Table("users")]
 public partial class User
