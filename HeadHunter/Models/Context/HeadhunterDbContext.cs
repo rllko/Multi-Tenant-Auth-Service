@@ -27,6 +27,23 @@ public partial class HeadhunterDbContext : DbContext
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.ClientId).HasName("clients_pkey");
+
+            entity.HasMany(d => d.Scopes).WithMany(p => p.Clients)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ClientScope",
+                    r => r.HasOne<Scope>().WithMany()
+                        .HasForeignKey("ScopeId")
+                        .HasConstraintName("client_scopes_scope_id_fkey"),
+                    l => l.HasOne<Client>().WithMany()
+                        .HasForeignKey("ClientId")
+                        .HasConstraintName("client_scopes_client_id_fkey"),
+                    j =>
+                    {
+                        j.HasKey("ClientId", "ScopeId").HasName("client_scopes_pkey");
+                        j.ToTable("client_scopes");
+                        j.IndexerProperty<int>("ClientId").HasColumnName("client_id");
+                        j.IndexerProperty<int>("ScopeId").HasColumnName("scope_id");
+                    });
         });
 
         modelBuilder.Entity<DiscordUser>(entity =>

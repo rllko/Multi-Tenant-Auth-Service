@@ -22,10 +22,6 @@ namespace HeadHunter.Services.Interfaces
         private readonly IAcessTokenStorageService _acessTokenStorageService;
         private readonly HeadhunterDbContext _dbContext;
         private readonly DevKeys _devKeys;
-
-        // gotta change this to a RSA later!!!!
-        // to do ig
-
         public AuthorizeResultService(ICodeStorageService codeStoreService,
             IAcessTokenStorageService acessTokenStorageService,
             HeadhunterDbContext dbContext,

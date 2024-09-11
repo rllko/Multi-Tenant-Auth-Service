@@ -12,6 +12,7 @@ public class AcessTokenStorageService : IAcessTokenStorageService
     public AcessTokenStorageService(ICodeStorageService codeStorageService)
     {
         _codeStorageService = codeStorageService;
+        StartCleanupTask(TimeSpan.FromMinutes(1));
     }
 
     // Here I genrate the code for authorization, and I will store it 
@@ -39,6 +40,10 @@ public class AcessTokenStorageService : IAcessTokenStorageService
     {
         if(_accessTokenDictionary.TryGetValue(code, out AuthorizationCode? authorizationCode))
         {
+            if(authorizationCode.isExpired)
+            {
+                return null;
+            }
             return authorizationCode;
         }
         return null;
@@ -151,4 +156,37 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         //    }
         return null;
     }
+
+    private void CleanupExpiredItems()
+    {
+        if(_accessTokenDictionary.IsEmpty)
+        {
+            return;  // No elements to clean up
+        }
+
+        foreach(var key in _accessTokenDictionary.Keys)
+        {
+            if(_accessTokenDictionary.TryGetValue(key, out var expiringValue) && expiringValue.isExpired)
+            {
+                _accessTokenDictionary.TryRemove(key, out _); // Remove expired items
+            }
+        }
+    }
+
+    private void StartCleanupTask(TimeSpan cleanupInterval)
+    {
+        Task.Run(async () =>
+        {
+            while(true)
+            {
+                await Task.Delay(cleanupInterval);
+
+                if(_accessTokenDictionary.Count > 0)  // Only run if there are elements in the dictionary
+                {
+                    CleanupExpiredItems();
+                }
+            }
+        });
+    }
+
 }
