@@ -1,36 +1,64 @@
-﻿using HeadHunter.Services.Users;
-using Microsoft.AspNetCore.Authorization;
+﻿using HeadHunter.Models.Entities;
+using HeadHunter.Services;
+using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace HeadHunter.Endpoints
 {
     public static class ClientLoginEndpoint
     {
-        [Authorize]
+
         [HttpGet("{key:guid}")]
-        public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
+        public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService, [FromServices] DevKeys _devKeys)
         {
-            var page = httpContext.Request.Query.TryGetValue("key", out var Key);
+            if(!httpContext.Request.Query.TryGetValue("key", out var Key))
+            {
+                return Results.NotFound();
+            }
 
             if(string.IsNullOrEmpty(Key))
             {
                 return Results.BadRequest("Key is null or empty.");
             }
 
-            var key = await userManagerService.GetUserByLicenseAsync(Key);
+            var userKey = await userManagerService.GetUserByLicenseAsync(Key);
 
-            if(key == null)
+            if(userKey == null)
             {
                 return Results.BadRequest("Key is invalid.");
             }
 
 
-            //if(key.DiscordUserNavigation.Confirmed == false)
-            //{
-            //    return Results.BadRequest("Key is not confirmed.");
-            //}
+            var handler = new JwtSecurityTokenHandler();
 
-            return Results.Ok(key);
+
+            var token = new SecurityTokenDescriptor
+            {
+                Audience = IdentityData.Audience,
+                Issuer = IdentityData.Issuer,
+                Expires = DateTime.Now.AddDays(30),
+                NotBefore = DateTime.Now,
+                Claims = new Dictionary<string,object>()
+                {
+                    [JwtRegisteredClaimNames.Jti] = userKey.License,
+                    [JwtRegisteredClaimNames.Sub] = userKey.Id,
+                    ["Hwid"]                      = userKey.Hwid,
+                    [JwtRegisteredClaimNames.Iat] = DateTime.Now,
+                },
+                EncryptingCredentials = new EncryptingCredentials(new RsaSecurityKey(_devKeys.RsaEncryptKey),
+                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.RsaPKCS1)
+            };
+
+            if(userKey.DiscordUser == null)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                await httpContext.Response.WriteAsJsonAsync("Key is not confirmed.");
+                return Results.BadRequest();
+            }
+
+            return Results.Json(new { Error = "None", Result = handler.CreateEncodedJwt(token) });
         }
     }
 }

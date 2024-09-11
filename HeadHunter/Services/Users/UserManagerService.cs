@@ -35,14 +35,50 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByLicenseAsync(string license)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.License == license);
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
+            return user;
+        }
+
+        public async Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string hwid, string? email = null)
+        {
+            if(string.IsNullOrEmpty(license) || string.IsNullOrEmpty(hwid))
+            {
+                return null;
+            }
+
+            if(discord <= 0)
+            {
+                return null;
+            }
+
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
+
+            if(user == null)
+            {
+                return null;
+            }
+
+            user.Hwid = hwid;
+            var discordUser = await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discord, DateLinked = DateTime.Now });
+            user.DiscordUser = discordUser.Entity.DiscordId;
+
+            if(email != null)
+            {
+                user.Email = email;
+            }
+
+            await dbContext.SaveChangesAsync();
             return user;
         }
 
         public async Task<User?> GetUserByDiscordAsync(long discordId)
         {
-            //var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Discord == discordId);
-            //return user;
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.DiscordUser == discordId);
+            if(user != null)
+            {
+                return user;
+            }
+
             return null;
         }
 
@@ -63,69 +99,5 @@ namespace HeadHunter.Services.Users
 
             return user;
         }
-
-
-        //public async Task<OpenIdConnectLoginResponse> LoginUserByOpenIdAsync(OpenIdConnectLoginRequest request)
-        //{
-        //    bool validationResult = validateOpenIdLoginRequest(request);
-        //    if(!validationResult)
-        //    {
-        //        _logger.LogInformation("login process is failed for request: {request}", request);
-        //        return new OpenIdConnectLoginResponse { Error = "The login process is failed" };
-        //    }
-
-        //    AppUser user = null;
-
-        //    user = await _userManager.FindByNameAsync(request.UserName);
-        //    if(user == null && request.UserName.Contains("@"))
-        //        user = await _userManager.FindByEmailAsync(request.UserName);
-
-        //    if(user == null)
-        //    {
-        //        _logger.LogInformation("creditioanl {userName}", request.UserName);
-        //        return new OpenIdConnectLoginResponse { Error = "No user has this creditioanl" };
-        //    }
-
-        //    await _signInManager.SignOutAsync();
-
-
-        //    Microsoft.AspNetCore.Identity.SignInResult loginResult = await _signInManager
-        //        .PasswordSignInAsync(user, request.Password, false, false);
-
-        //    if(loginResult.Succeeded)
-        //    {
-        //        return new OpenIdConnectLoginResponse { Succeeded = true, AppUser = user };
-        //    }
-
-        //    return new OpenIdConnectLoginResponse { Succeeded = false, Error = "Login is not Succeeded" };
-        //}
-
-        //#region Helper Functions
-        //private bool validateLoginRequest(LoginRequest request)
-        //{
-        //    if(request.UserName == null || request.Password == null)
-        //        return false;
-
-        //    if(request.Password.Length < 8)
-        //        return false;
-
-        //    return true;
-        //}
-
-        //private bool validateOpenIdLoginRequest(OpenIdConnectLoginRequest request)
-        //{
-        //    if(request.Code == null || request.UserName == null || request.Password == null)
-        //        return false;
-        //    return true;
-        //}
-
-        //private bool validateCreateUserRequest(CreateUserRequest request)
-        //{
-        //    if(request.UserName == null || request.Password == null || request.Email == null)
-        //        return false;
-        //    return true;
-        //}
-
-        //#endregion
     }
 }

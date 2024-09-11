@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +20,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
 builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-
+builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 
 builder.Services.AddSingleton<DevKeys>();
 var devKeys = new DevKeys();
@@ -38,7 +42,7 @@ builder.Services.AddAuthentication(x =>
 {
     x.Configuration = new OpenIdConnectConfiguration()
     {
-        SigningKeys = { new RsaSecurityKey(devKeys.RsaKey) }
+        SigningKeys = { new RsaSecurityKey(devKeys.RsaSignKey) }
     };
 
     x.TokenValidationParameters = new TokenValidationParameters
@@ -48,7 +52,7 @@ builder.Services.AddAuthentication(x =>
         ValidAudience = IdentityData.Audience,
         ValidIssuer = IdentityData.Issuer,
         ValidateIssuer = true,
-        IssuerSigningKey = new RsaSecurityKey(devKeys.RsaKey),
+        IssuerSigningKey = new RsaSecurityKey(devKeys.RsaSignKey),
 
         ValidateLifetime = true,
     };
@@ -57,7 +61,6 @@ builder.Services.AddAuthentication(x =>
     {
         OnMessageReceived = context =>
         {
-
             if(context.Request.Headers.
             TryGetValue("Authorization", out var Token))
             {
@@ -85,7 +88,7 @@ builder.Services.AddDbContext<HeadhunterDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddScoped<IUserManagerService, UserManagerService>();
+
 
 var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -128,10 +131,25 @@ app.MapPost("/skibidiAuth/token", TokenEndpoint.Handle);
 
 app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
 
+app.MapPost("/skibidiAuth/confirm-token", ConfirmDiscordEndpoint.Handle);
+
 //login
 app.MapGet("1391220247", ClientLoginEndpoint.Handle);
 //redeem
-app.MapPost("2198251026", () => "hi");
+app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
+
+app.MapGet("teapot", (HttpContext ctx) =>
+{
+    ctx.Response.StatusCode = StatusCodes.Status418ImATeapot;
+    ctx.Response.WriteAsync(
+        """
+        <html>
+            <body style='background: black;margin:auto;max-width: 50vw;'>
+                <img src='https://http.cat/418' />
+            </body>
+        </html>
+        """);
+});
 
 
 app.Run();

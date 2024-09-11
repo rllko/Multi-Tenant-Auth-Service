@@ -2,7 +2,6 @@
 using HeadHunter.Services.CodeService;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace HeadHunter.Services
 {
@@ -22,16 +21,17 @@ namespace HeadHunter.Services
         public async Task InvokeAsync(HttpContext context)
         {
             // extract guid token form from header
-            context.Request.Headers.TryGetValue("Authorization", out var authHeader);
-            authHeader = authHeader.Select(u => u.Split(" ") [1]).FirstOrDefault();
+            string access_token = context.Request.Headers["Authorization"]!;
 
-            if(string.IsNullOrEmpty(authHeader))
+            if(string.IsNullOrEmpty(access_token))
             {
                 await _next(context);
             }
 
+            var codeUsed = access_token.Split(" ")[1];
+
             // obtain code from database
-            var authorizationCode = _acessTokenStorageService.GetByCode(authHeader);
+            var authorizationCode = _acessTokenStorageService.GetByCode(codeUsed);
 
             if(authorizationCode == null)
             {
@@ -42,29 +42,30 @@ namespace HeadHunter.Services
 
             // create token handler
             var handler = new JwtSecurityTokenHandler();
-            var key = new RsaSecurityKey(_devKeys.RsaKey);
+            var key = new RsaSecurityKey(_devKeys.RsaSignKey);
 
-            // create authentication token from valid code
-            var token = new JwtSecurityToken(
-                issuer:IdentityData.Issuer,
-                audience:IdentityData.Audience,
-                claims:
-                [..
-                    authorizationCode.RequestedScopes.Select(u => new Claim("scope", u)),
-                    new Claim("sub",authorizationCode.Subject),
-                    new Claim("client_id",authorizationCode.ClientIdentifier),
-                    new Claim("jti",authHeader!),
-                    new Claim("jti_created_at",authorizationCode.CreationTime.ToString())
-                  ],
-                notBefore:DateTime.Now,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+            var token2 = new SecurityTokenDescriptor
+            {
+                Audience = IdentityData.Audience,
+                Issuer = IdentityData.Issuer,
+                Expires = DateTime.Now.AddMinutes(30),
+                NotBefore = DateTime.Now,
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
+                Claims = new Dictionary<string,object>()
+                {
+                    ["scope"] = authorizationCode.RequestedScopes.Select(u => u).ToList(),
+                    ["sub"] = authorizationCode.Subject,
+                    ["client_id"] =  authorizationCode.ClientIdentifier,
+                    ["jti"] = codeUsed,
+                    ["jti_created_at"] = authorizationCode.CreationTime.ToString()
+                }
+            };
 
             // sign token
-            var tokenstr = handler.WriteToken(token);
+            var tokenstr = handler.CreateJwtSecurityToken(token2); ;
 
             // insert token into request
-            context.Request.Headers ["Authorization"] = $"{tokenstr}";
+            context.Request.Headers ["Authorization"] = $"{handler.WriteToken(tokenstr)}";
 
             // Permission handling is taken care by each endpoint
             await _next(context);

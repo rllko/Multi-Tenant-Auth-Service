@@ -62,7 +62,9 @@ public partial class HeadhunterDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
-            entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users).HasConstraintName("users_discord_user_fkey");
+            entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("users_discord_user_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

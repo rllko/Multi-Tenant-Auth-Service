@@ -2,11 +2,8 @@
 -- User data
 
 CREATE TABLE discord_users (
-	code varchar(50) PRIMARY KEY,
-	discord_id bigint,
-	date_linked TIMESTAMP,
-	user_id bigint REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-	confirmed BOOLEAN DEFAULT FALSE
+	discord_id bigint PRIMARY KEY ,
+	date_linked TIMESTAMP
 );
 
 CREATE TABLE users (
@@ -14,8 +11,8 @@ CREATE TABLE users (
     hwid varchar(150),
     license varchar(150) UNIQUE NOT NULL,
     email varchar(150),
-	recovery_key varchar(35) UNIQUE,
-	ip_address varchar(40)
+	ip_address varchar(40),
+	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE
 );
 
 -- Auth stuff
@@ -53,7 +50,7 @@ VALUES ('openid'),('admin'),
 ('discord:read'),('discord:write'),
 ('clients:read'),('clients:write');
 
-INSERT INTO client_Scopes (client_id,scope_id) 
+INSERT INTO client_scopes (client_id,scope_id) 
 VALUES 
 ((SELECT client_id from clients where client_identifier = 'a72JD81Y76LH2D9Q'),
 (SELECT scope_id from scopes where scope_name = 'admin'));

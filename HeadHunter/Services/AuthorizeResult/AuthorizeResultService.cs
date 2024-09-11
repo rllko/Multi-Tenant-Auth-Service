@@ -185,7 +185,7 @@ namespace HeadHunter.Services.Interfaces
             string? id_token = null;
             if(clientCodeChecker.IsOpenId)
             {
-                var key = new RsaSecurityKey(devKeys.RsaKey);
+                var key = new RsaSecurityKey(devKeys.RsaSignKey);
                 var token = handler.CreateJwtSecurityToken(new SecurityTokenDescriptor()
                 {
                     Claims = new Dictionary<string, object>()

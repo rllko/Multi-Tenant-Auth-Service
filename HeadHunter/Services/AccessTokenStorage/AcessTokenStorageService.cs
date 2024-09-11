@@ -6,7 +6,7 @@ namespace HeadHunter.Services.CodeService;
 
 public class AcessTokenStorageService : IAcessTokenStorageService
 {
-    private readonly ConcurrentDictionary<string, AuthorizationCode> _accessTokenDictionary = new();
+    private readonly ConcurrentDictionary<string, AccessToken> _accessTokenDictionary = new();
     private readonly ICodeStorageService _codeStorageService;
 
     public AcessTokenStorageService(ICodeStorageService codeStorageService)
@@ -21,7 +21,22 @@ public class AcessTokenStorageService : IAcessTokenStorageService
     public string? Generate(string accessCode)
     {
         var client = _codeStorageService.GetClientByCode(accessCode);
+
         _codeStorageService.RemoveClientByCode(accessCode);
+
+        var accessToken = new AccessToken
+        {
+            ClientIdentifier = client.ClientIdentifier,
+            ClientSecret = client.ClientSecret,
+            RedirectUri = client.RedirectUri,
+            CreationTime = DateTime.UtcNow,
+            IsOpenId = client.IsOpenId,
+            RequestedScopes = client.RequestedScopes,
+            Subject = client.Subject,
+            Nonce = client.Nonce,
+            CodeChallenge = client.CodeChallenge,
+            CodeChallengeMethod = client.CodeChallengeMethod,
+        };
 
         if(client is null)
         {
@@ -31,14 +46,14 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         var code = Guid.NewGuid().ToString();
 
         // then store the code is the Concurrent Dictionary
-        _accessTokenDictionary [code] = client;
+        _accessTokenDictionary [code] = accessToken;
 
         return code;
     }
 
-    public AuthorizationCode? GetByCode(string code)
+    public AccessToken? GetByCode(string code)
     {
-        if(_accessTokenDictionary.TryGetValue(code, out AuthorizationCode? authorizationCode))
+        if(_accessTokenDictionary.TryGetValue(code, out AccessToken? authorizationCode))
         {
             if(authorizationCode.isExpired)
             {
@@ -49,10 +64,9 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         return null;
     }
 
-    public AuthorizationCode? RemoveClientByCode(string key)
+    public bool RemoveClientByCode(string key)
     {
-        _accessTokenDictionary.TryRemove(key, value: out AuthorizationCode? authorizationCode);
-        return null;
+        return _accessTokenDictionary.TryRemove(key, value: out _);
     }
 
     // TODO

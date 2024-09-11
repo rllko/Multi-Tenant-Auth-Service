@@ -1,10 +1,9 @@
-﻿using HeadHunter.Models;
+﻿using HeadHunter.Common;
+using HeadHunter.Models;
 using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using System.Collections.Concurrent;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace HeadHunter.Services.CodeService;
 
@@ -13,7 +12,7 @@ public class CodeStorageService : ICodeStorageService
     private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
     private readonly ConcurrentDictionary<string, User> _discordCodeIssued = new();
 
-    internal static readonly char [] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+
 
     //private readonly InMemoryClientDatabase _clientStore = new();
 
@@ -55,7 +54,7 @@ public class CodeStorageService : ICodeStorageService
             return null;
         }
 
-        var code = GetUniqueKey(20);
+        var code = EncodingFunctions.GetUniqueKey(20);
 
         // then store the code is the Concurrent Dictionary
         _discordCodeIssued [code] = user;
@@ -92,10 +91,9 @@ public class CodeStorageService : ICodeStorageService
 
 
 
-    public AuthorizationCode? RemoveClientByCode(string key)
+    public bool RemoveClientByCode(string key)
     {
-        _authorizeCodeIssued.TryRemove(key, value: out AuthorizationCode? authorizationCode);
-        return null;
+        return _authorizeCodeIssued.TryRemove(key, value: out _);
     }
 
 
@@ -119,27 +117,6 @@ public class CodeStorageService : ICodeStorageService
 
 
     #region helper functions
-    private static string GetUniqueKey(int size)
-    {
-
-        byte[] data = new byte[4*size];
-        using(var crypto = RandomNumberGenerator.Create())
-        {
-            crypto.GetBytes(data);
-        }
-        StringBuilder result = new StringBuilder(size);
-        for(int i = 0; i < size; i++)
-        {
-            var rnd = BitConverter.ToUInt32(data, i * 4);
-            var idx = rnd % chars.Length;
-
-            result.Append(chars [idx]);
-        }
-
-        return result.ToString();
-    }
-
-
 
     private void CleanupExpiredItems()
     {
