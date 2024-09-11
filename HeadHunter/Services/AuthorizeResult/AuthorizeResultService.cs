@@ -38,6 +38,8 @@ namespace HeadHunter.Services.Interfaces
             _devKeys = devKeys;
         }
 
+
+
         public async Task<AuthorizeResponse> AuthorizeRequest(HttpContext httpContext, AuthorizationRequest authorizationRequest)
         {
             AuthorizeResponse response = new();
@@ -120,7 +122,7 @@ namespace HeadHunter.Services.Interfaces
                 Subject = clientResult.Client.ClientIdentifier,
             };
 
-            string? code = _codeStoreService.GenerateCode(_dbContext,authorizationRequest.client_id, authoCode);
+            string? code = _codeStoreService.CreateAuthorizationCode(_dbContext,authorizationRequest.client_id, authoCode);
             if(code == null)
             {
                 response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
@@ -225,6 +227,8 @@ namespace HeadHunter.Services.Interfaces
             return tokenResponse;
         }
 
+
+
         private CheckClientResult VerifyClientById(string clientIdentifier, bool checkWithSecret = false, string clientSecret = null)
         {
             var result = new CheckClientResult();
@@ -264,4 +268,7 @@ namespace HeadHunter.Services.Interfaces
             return result;
         }
     }
+
+
+
 }

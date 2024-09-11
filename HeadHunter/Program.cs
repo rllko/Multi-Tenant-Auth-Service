@@ -128,7 +128,10 @@ app.MapPost("/skibidiAuth/token", TokenEndpoint.Handle);
 
 app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
 
-app.MapGet("authorize", ClientLoginEndpoint.Handle);
+//login
+app.MapGet("1391220247", ClientLoginEndpoint.Handle);
+//redeem
+app.MapPost("2198251026", () => "hi");
 
 
 app.Run();

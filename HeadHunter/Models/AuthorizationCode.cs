@@ -16,5 +16,6 @@
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }
 
+        public bool isExpired => DateTime.UtcNow > CreationTime.AddMinutes(1);
     }
 }

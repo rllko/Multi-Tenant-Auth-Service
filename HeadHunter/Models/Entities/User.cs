@@ -25,10 +25,6 @@ public partial class User
     [StringLength(150)]
     public string? Email { get; set; }
 
-    [Column("recovery_key")]
-    [StringLength(35)]
-    public string? RecoveryKey { get; set; }
-
     [Column("ip_address")]
     [StringLength(40)]
     public string? IpAddress { get; set; }
