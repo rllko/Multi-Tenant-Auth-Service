@@ -6,7 +6,9 @@ namespace HeadHunter.Services.CodeService
     public interface ICodeStorageService
     {
         string? CreateAuthorizationCode(HeadhunterDbContext _dbcontext, string clientId, AuthorizationCode authorizationCode);
+        string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license, string hwid);
         AuthorizationCode? GetClientByCode(string key);
+        DiscordCode? GetUserByCode(string code);
         //AuthorizationCode? UpdatedClientByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes);
         bool RemoveClientByCode(string key);
     }

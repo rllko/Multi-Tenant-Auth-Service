@@ -1,8 +1,7 @@
-﻿using HeadHunter.Models.Entities;
+﻿using HeadHunter.Common;
 using HeadHunter.Services;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace HeadHunter.Endpoints
@@ -13,52 +12,42 @@ namespace HeadHunter.Endpoints
         [HttpGet("{key:guid}")]
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService, [FromServices] DevKeys _devKeys)
         {
-            if(!httpContext.Request.Query.TryGetValue("key", out var Key))
+            if(!httpContext.Request.Query.TryGetValue("3917505287", out var License))
             {
                 return Results.NotFound();
             }
 
-            if(string.IsNullOrEmpty(Key))
+            if(string.IsNullOrEmpty(License))
             {
-                return Results.BadRequest("Key is null or empty.");
+                return Results.NotFound();
             }
 
-            var userKey = await userManagerService.GetUserByLicenseAsync(Key);
+            var userKey = await userManagerService.GetUserByLicenseAsync(License);
 
             if(userKey == null)
             {
-                return Results.BadRequest("Key is invalid.");
+                return Results.BadRequest("License is invalid.");
             }
 
-
+            // Create Handler for JWT
             var handler = new JwtSecurityTokenHandler();
 
+            // Create token to send to the user
+            var token = EncodingFunctions.GenerateSecurityTokenDescriptor(userKey,_devKeys);
 
-            var token = new SecurityTokenDescriptor
-            {
-                Audience = IdentityData.Audience,
-                Issuer = IdentityData.Issuer,
-                Expires = DateTime.Now.AddDays(30),
-                NotBefore = DateTime.Now,
-                Claims = new Dictionary<string,object>()
-                {
-                    [JwtRegisteredClaimNames.Jti] = userKey.License,
-                    [JwtRegisteredClaimNames.Sub] = userKey.Id,
-                    ["Hwid"]                      = userKey.Hwid,
-                    [JwtRegisteredClaimNames.Iat] = DateTime.Now,
-                },
-                EncryptingCredentials = new EncryptingCredentials(new RsaSecurityKey(_devKeys.RsaEncryptKey),
-                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.RsaPKCS1)
-            };
-
+            // check if the user has confirmed their discord account
             if(userKey.DiscordUser == null)
             {
                 httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                await httpContext.Response.WriteAsJsonAsync("Key is not confirmed.");
-                return Results.BadRequest();
+                await httpContext.Response.WriteAsJsonAsync("License is not confirmed.");
+                return Results.Conflict();
             }
 
-            return Results.Json(new { Error = "None", Result = handler.CreateEncodedJwt(token) });
+            // create the token string
+            var encrypted = handler.CreateEncodedJwt(token);
+
+            return Results.Json(new { Error = "None", Result = encrypted });
         }
+
     }
 }

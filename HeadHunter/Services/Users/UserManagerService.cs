@@ -1,4 +1,5 @@
-﻿using HeadHunter.Models.Context;
+﻿using HeadHunter.Models;
+using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.CodeService;
 using Microsoft.AspNetCore.Identity.Data;
@@ -69,6 +70,11 @@ namespace HeadHunter.Services.Users
 
             await dbContext.SaveChangesAsync();
             return user;
+        }
+
+        public async Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode)
+        {
+            return await ConfirmUserRegistrationAsync(discordCode.User.License, discordCode.User.DiscordUser, discordCode.User.Hwid!, discordCode.User.Email);
         }
 
         public async Task<User?> GetUserByDiscordAsync(long discordId)

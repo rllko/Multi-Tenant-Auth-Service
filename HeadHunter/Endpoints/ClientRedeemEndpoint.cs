@@ -1,11 +1,11 @@
 ﻿using HeadHunter.Common;
+using HeadHunter.Models.Context;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services;
+using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace HeadHunter.Endpoints
 {
@@ -14,20 +14,22 @@ namespace HeadHunter.Endpoints
         [HttpPost]
         public async static Task<IResult> Handle(HttpContext httpContext,
             [FromServices] IUserManagerService userManagerService,
+            HeadhunterDbContext dbContext,
+            ICodeStorageService codeStorage,
             DevKeys devKeys)
         {
             var Request = httpContext.Request;
 
-            Request.Form.TryGetValue("3391056346", out var hwid);
-            Request.Form.TryGetValue("3917505287", out var key);
+            Request.Form.TryGetValue("3391056346", out var Hwid);
+            Request.Form.TryGetValue("3917505287", out var License);
 
-            if(string.IsNullOrEmpty(hwid) || string.IsNullOrEmpty(key) || key.Count < 36)
+            if(string.IsNullOrEmpty(Hwid) || string.IsNullOrEmpty(License) || License.Count < 36)
             {
                 await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
                 return Results.NotFound();
             }
 
-            var user = await userManagerService.GetUserByLicenseAsync(key);
+            var user = await userManagerService.GetUserByLicenseAsync(License!);
 
             if(user == null)
             {
@@ -43,21 +45,10 @@ namespace HeadHunter.Endpoints
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
 
-            var token = handler.CreateJwtSecurityToken(
-                issuer: "HeadHunter",
-                audience: "HeadHunter",
-                subject: new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim("hwid", hwid!),
-                    new Claim("key", key!)
-                }),
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: new SigningCredentials(new RsaSecurityKey(devKeys.RsaSignKey), SecurityAlgorithms.RsaSha256)
-            );
+            var discordCode = codeStorage.CreateDiscordCode(dbContext,License!,Hwid!);
 
-            var result = EncodingFunctions.EncodeAesJwt(handler.WriteToken(token),devKeys);
 
-            return Results.Json(new { Error = "none", Result = result });
+            return Results.Json(new { Error = "none", Result = discordCode });
         }
 
 

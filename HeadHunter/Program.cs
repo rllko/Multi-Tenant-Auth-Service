@@ -133,10 +133,12 @@ app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
 
 app.MapPost("/skibidiAuth/confirm-token", ConfirmDiscordEndpoint.Handle);
 
-//login
+// login
 app.MapGet("1391220247", ClientLoginEndpoint.Handle);
-//redeem
+// redeem
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
+// refresh
+app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 
 app.MapGet("teapot", (HttpContext ctx) =>
 {
@@ -150,6 +152,5 @@ app.MapGet("teapot", (HttpContext ctx) =>
         </html>
         """);
 });
-
 
 app.Run();

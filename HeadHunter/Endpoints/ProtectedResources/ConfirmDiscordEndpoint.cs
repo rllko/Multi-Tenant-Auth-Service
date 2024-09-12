@@ -1,5 +1,6 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.OauthResponse;
+using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,33 +10,40 @@ public class ConfirmDiscordEndpoint
 {
     //[Authorize(Policy="Special")]
     [HttpPost]
-    public static async Task<IResult> Handle(HttpContext httpContext, IUserManagerService userManagerService)
+    public static async Task<IResult> Handle(HttpContext httpContext,
+        IUserManagerService userManagerService,
+        ICodeStorageService codeStorage)
     {
         var Request = httpContext.Request;
-        Request.Form.TryGetValue("hwid", out var hwid);
-        Request.Form.TryGetValue("license", out var license);
-        Request.Form.TryGetValue("discord_id", out var discord);
+        Request.Form.TryGetValue("code", out var Code);
+        Request.Form.TryGetValue("discord_id", out var DiscordId);
 
-        if(string.IsNullOrEmpty(hwid) || string.IsNullOrEmpty(license) || string.IsNullOrEmpty(discord))
+        if(string.IsNullOrEmpty(Code) || string.IsNullOrEmpty(DiscordId))
         {
             await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
-            return Results.NotFound();
+            return Results.BadRequest("Something went wrong!");
         }
 
-        var user = await userManagerService.GetUserByLicenseAsync(license!);
+        var userFromCode = codeStorage.GetUserByCode(Code.ToString());
 
-        if(user == null)
+        if(userFromCode == null)
         {
             return Results.BadRequest("Key is invalid.");
         }
 
-        if(user.DiscordUserNavigation != null)
+        if(long.TryParse(DiscordId.ToString(), out long DiscordUser) is false)
         {
-            return Results.BadRequest("Key is already redeemed.");
+            return Results.BadRequest("Discord ID is invalid.");
         }
 
-        user = await userManagerService.ConfirmUserRegistrationAsync(license!, long.Parse(discord), hwid!);
+        if(userFromCode.User.Hwid == null)
+        {
+            return Results.BadRequest("Hwid cannot be null.");
+        }
 
-        return Results.Json(new { Error = "", Result = user });
+        userFromCode.User.DiscordUser = DiscordUser;
+        var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
+
+        return Results.Json(new { Error = "", Result = updatedUser });
     }
 }

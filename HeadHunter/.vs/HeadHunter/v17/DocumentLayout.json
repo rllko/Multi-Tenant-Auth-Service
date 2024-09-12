@@ -3,40 +3,24 @@
   "WorkspaceRootPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\endpoints\\clientloginendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:endpoints\\clientloginendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\devkeys.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\devkeys.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\authorizationmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\authorizationmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\endpoints\\clientredeemendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:endpoints\\clientredeemendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\common\\encodingfunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:common\\encodingfunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\codestorage\\icodestorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\codestorage\\icodestorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\codestorage\\codestorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\codestorage\\codestorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\users\\usermanagerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\users\\usermanagerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\authorizeresult\\authorizeresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\authorizeresult\\authorizeresultservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\models\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:models\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\services\\users\\iusermanagerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:services\\users\\iusermanagerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\headhunter\\endpoints\\protectedresources\\confirmdiscordendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{51B32E44-544D-4D4C-B981-D063682BC2E7}|HeadHunter.csproj|solutionrelative:endpoints\\protectedresources\\confirmdiscordendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,119 +38,67 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "EncodingFunctions.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Common\\EncodingFunctions.cs",
-              "RelativeDocumentMoniker": "Common\\EncodingFunctions.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Common\\EncodingFunctions.cs",
-              "RelativeToolTip": "Common\\EncodingFunctions.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAqwAgAAAApAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:26:06.436Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CodeStorageService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\CodeStorage\\CodeStorageService.cs",
-              "RelativeDocumentMoniker": "Services\\CodeStorage\\CodeStorageService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\CodeStorage\\CodeStorageService.cs",
-              "RelativeToolTip": "Services\\CodeStorage\\CodeStorageService.cs",
-              "ViewState": "AQIAABsAAAAAAAAAAAAWwDgAAAAcAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T21:19:21.376Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AuthorizationMiddleware.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\AuthorizationMiddleware.cs",
-              "RelativeDocumentMoniker": "Services\\AuthorizationMiddleware.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\AuthorizationMiddleware.cs",
-              "RelativeToolTip": "Services\\AuthorizationMiddleware.cs",
-              "ViewState": "AQIAACEAAAAAAAAAAAAuwCwAAAAyAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:24:01.09Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AuthorizeResultService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\AuthorizeResult\\AuthorizeResultService.cs",
-              "RelativeDocumentMoniker": "Services\\AuthorizeResult\\AuthorizeResultService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\AuthorizeResult\\AuthorizeResultService.cs",
-              "RelativeToolTip": "Services\\AuthorizeResult\\AuthorizeResultService.cs",
-              "ViewState": "AQIAAKMAAAAAAAAAAAAowLsAAAA/AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:23:47.903Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAADYAAABA5q26DikswIgAAAAWAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:23:43.932Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ClientRedeemEndpoint.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientRedeemEndpoint.cs",
-              "RelativeDocumentMoniker": "Endpoints\\ClientRedeemEndpoint.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientRedeemEndpoint.cs",
-              "RelativeToolTip": "Endpoints\\ClientRedeemEndpoint.cs",
-              "ViewState": "AQIAABcAAAAAAAAAAAAuwDkAAAA3AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:23:33.073Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DevKeys.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\DevKeys.cs",
-              "RelativeDocumentMoniker": "Services\\DevKeys.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\DevKeys.cs",
-              "RelativeToolTip": "Services\\DevKeys.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAABCAAAA",
+              "Title": "ICodeStorageService.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\CodeStorage\\ICodeStorageService.cs",
+              "RelativeDocumentMoniker": "Services\\CodeStorage\\ICodeStorageService.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\CodeStorage\\ICodeStorageService.cs",
+              "RelativeToolTip": "Services\\CodeStorage\\ICodeStorageService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAYAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T22:13:24.055Z",
+              "WhenOpened": "2024-09-12T15:03:42.982Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ClientLoginEndpoint.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientLoginEndpoint.cs",
-              "RelativeDocumentMoniker": "Endpoints\\ClientLoginEndpoint.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientLoginEndpoint.cs",
-              "RelativeToolTip": "Endpoints\\ClientLoginEndpoint.cs",
-              "ViewState": "AQIAAB4AAACA+YGrPPUmwDIAAABIAAAA",
+              "Title": "ClientRedeemEndpoint.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientRedeemEndpoint.cs",
+              "RelativeDocumentMoniker": "Endpoints\\ClientRedeemEndpoint.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ClientRedeemEndpoint.cs",
+              "RelativeToolTip": "Endpoints\\ClientRedeemEndpoint.cs",
+              "ViewState": "AQIAABAAAAAAAAAAAAAmwC8AAABUAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T21:19:21.391Z",
+              "WhenOpened": "2024-09-12T15:02:46.057Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "IUserManagerService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\Users\\IUserManagerService.cs",
-              "RelativeDocumentMoniker": "Services\\Users\\IUserManagerService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\Users\\IUserManagerService.cs",
-              "RelativeToolTip": "Services\\Users\\IUserManagerService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAqwAkAAAAUAAAA",
+              "DocumentIndex": 3,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Models\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Models\\Entities\\User.cs",
+              "RelativeToolTip": "Models\\Entities\\User.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAqwAgAAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-11T21:09:57.222Z",
+              "WhenOpened": "2024-09-12T15:00:47.205Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ConfirmDiscordEndpoint.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ProtectedResources\\ConfirmDiscordEndpoint.cs",
+              "RelativeDocumentMoniker": "Endpoints\\ProtectedResources\\ConfirmDiscordEndpoint.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Endpoints\\ProtectedResources\\ConfirmDiscordEndpoint.cs",
+              "RelativeToolTip": "Endpoints\\ProtectedResources\\ConfirmDiscordEndpoint.cs",
+              "ViewState": "AQIAAAgAAAAAAAAAAAA5wCgAAAA+AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-12T14:41:31.581Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserManagerService.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\Users\\UserManagerService.cs",
+              "RelativeDocumentMoniker": "Services\\Users\\UserManagerService.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\Services\\Users\\UserManagerService.cs",
+              "RelativeToolTip": "Services\\Users\\UserManagerService.cs",
+              "ViewState": "AQIAADoAAAAAAAAAAAAMwFEAAABoAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-12T14:37:53.581Z",
               "EditorCaption": ""
             }
           ]

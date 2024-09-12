@@ -1,4 +1,7 @@
-﻿using HeadHunter.Services;
+﻿using HeadHunter.Models.Entities;
+using HeadHunter.Services;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -6,26 +9,6 @@ namespace HeadHunter.Common
 {
     public static class EncodingFunctions
     {
-        public static string EncodeAesJwt(string token, DevKeys devKeys)
-        {
-            byte[] iv = RandomNumberGenerator.GetBytes(16); // For AES
-
-            ICryptoTransform encryptor = devKeys.AesKey.CreateEncryptor(devKeys.AesKey.Key, devKeys.AesKey.IV);
-
-            using(MemoryStream ms = new MemoryStream())
-            {
-                using(CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                {
-                    using(StreamWriter sw = new StreamWriter(cs))
-                    {
-                        sw.Write(token);
-                    }
-                }
-                return string.Join(",", iv) + "|.!" + Convert.ToBase64String(ms.ToArray());
-            }
-
-        }
-
 
         internal static readonly char [] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
         public static string GetUniqueKey(int size)
@@ -47,5 +30,33 @@ namespace HeadHunter.Common
 
             return result.ToString();
         }
+
+        public static SecurityTokenDescriptor GenerateSecurityTokenDescriptor(User user, DevKeys keys)
+        {
+            if(user == null)
+            {
+                return null;
+            }
+
+            // Create token to send to the user
+            return new SecurityTokenDescriptor
+            {
+                Audience = IdentityData.Audience,
+                Issuer = IdentityData.Issuer,
+                Expires = DateTime.Now.AddDays(30),
+                NotBefore = DateTime.Now,
+                Claims = new Dictionary<string, object>()
+                {
+                    [JwtRegisteredClaimNames.Jti] = user.License,
+                    [JwtRegisteredClaimNames.Sub] = user.Id,
+                    ["Hwid"] = user.Hwid,
+                    [JwtRegisteredClaimNames.Iat] = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()
+                },
+                SigningCredentials = new SigningCredentials(new RsaSecurityKey(keys.RsaSignKey), SecurityAlgorithms.RsaSha256),
+                EncryptingCredentials = new EncryptingCredentials(new RsaSecurityKey(keys.RsaEncryptKey),
+                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)
+            };
+        }
     }
+
 }

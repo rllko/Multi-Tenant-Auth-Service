@@ -1,7 +1,6 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Models;
 using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
 using System.Collections.Concurrent;
 using System.Security.Claims;
 
@@ -10,21 +9,14 @@ namespace HeadHunter.Services.CodeService;
 public class CodeStorageService : ICodeStorageService
 {
     private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
-    private readonly ConcurrentDictionary<string, User> _discordCodeIssued = new();
-
-
+    private readonly ConcurrentDictionary<string, DiscordCode> _discordCodeIssued = new();
 
     //private readonly InMemoryClientDatabase _clientStore = new();
-
-    // Here I genrate the code for authorization, and I will store it 
-    // in the Concurrent Dictionary, PKCE
 
     public CodeStorageService()
     {
         StartCleanupTask(TimeSpan.FromMinutes(1));
     }
-
-
 
     public string? CreateAuthorizationCode(HeadhunterDbContext _dbContext, string clientIdentifier, AuthorizationCode authorizationCode)
     {
@@ -43,37 +35,51 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-
-
-    public string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license)
+    public string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license, string hwid)
     {
-        var user = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
+        var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
 
-        if(user is null)
+        if(ExistingUser is null)
         {
             return null;
         }
 
+        var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.User.License == license);
+
+        if(ExistingCode.Key != null && !ExistingCode.Value.isExpired)
+        {
+            return ExistingCode.Key;
+        }
+
+        var tempClient = new DiscordCode
+        {
+            User = ExistingUser
+        };
+
+        tempClient.User.Hwid = hwid;
+
         var code = EncodingFunctions.GetUniqueKey(20);
 
         // then store the code is the Concurrent Dictionary
-        _discordCodeIssued [code] = user;
+        _discordCodeIssued [code] = tempClient;
 
         return code;
     }
 
-
-
-    public User? GetUserByCode(string code)
+    public DiscordCode? GetUserByCode(string code)
     {
-        if(_discordCodeIssued.TryGetValue(code, out User? userCode))
+        if(_discordCodeIssued.TryRemove(code, out DiscordCode? userCode))
         {
+            if(userCode.isExpired)
+            {
+                return null;
+            }
+
             return userCode;
         }
+
         return null;
     }
-
-
 
     public AuthorizationCode? GetClientByCode(string key)
     {
@@ -130,6 +136,14 @@ public class CodeStorageService : ICodeStorageService
             if(_authorizeCodeIssued.TryGetValue(key, out var expiringValue) && expiringValue.isExpired)
             {
                 _authorizeCodeIssued.TryRemove(key, out _); // Remove expired items
+            }
+        }
+
+        foreach(var code in _discordCodeIssued.Keys)
+        {
+            if(_authorizeCodeIssued.TryGetValue(code, out var expiringValue) && expiringValue.isExpired)
+            {
+                _authorizeCodeIssued.TryRemove(code, out _); // Remove expired items
             }
         }
     }
