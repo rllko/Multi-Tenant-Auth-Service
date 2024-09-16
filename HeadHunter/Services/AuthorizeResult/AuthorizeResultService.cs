@@ -1,7 +1,6 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Models;
 using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
@@ -80,14 +79,6 @@ namespace HeadHunter.Services.Interfaces
                 return response;
             }
 
-            // check the return url is match the one that in the client store
-            bool redirectUriIsMatched = clientResult.Client.RedirectUri!.Equals(authorizationRequest.redirect_uri, StringComparison.OrdinalIgnoreCase);
-            if(!redirectUriIsMatched)
-            {
-                response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
-                response.ErrorDescription = "redirect uri is not matched the one in the client store";
-                return response;
-            }
 
             // check the scope in the client store with the
             // one that is comming from the request MUST be matched at leaset one
@@ -109,7 +100,6 @@ namespace HeadHunter.Services.Interfaces
             var authoCode = new AuthorizationCode
             {
                 ClientIdentifier = authorizationRequest.client_id,
-                RedirectUri = authorizationRequest.redirect_uri,
                 RequestedScopes = [.. clientScopes],
                 IsOpenId = clientScopes.Contains("openid"),
                 CodeChallenge = authorizationRequest.code_challenge,
@@ -155,7 +145,6 @@ namespace HeadHunter.Services.Interfaces
                 ClientSecret = query["client_secret"]!,
                 Code = query["code"]!,
                 GrantType = query["grant_type"]!,
-                RedirectUri = query["redirect_uri"]
             };
 
             var checkClientResult = VerifyClientById(request.ClientId, true, request.ClientSecret);
@@ -174,9 +163,6 @@ namespace HeadHunter.Services.Interfaces
             if(request.ClientId != clientCodeChecker.ClientIdentifier)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
-            // also I have to check the rediret uri 
-            if(request.RedirectUri != clientCodeChecker.RedirectUri)
-                return new TokenResponse { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() };
 
             // Now here I will Issue the Id_token
             var handler = new JwtSecurityTokenHandler();

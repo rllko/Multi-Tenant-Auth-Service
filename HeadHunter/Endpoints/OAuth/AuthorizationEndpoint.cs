@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.OAuth
 {
-    public static class AuthorizationEndpoint
+    internal static class AuthorizationEndpoint
     {
         public async static Task<IResult> Handle(
             HttpContext httpContext,
@@ -24,7 +24,6 @@ namespace HeadHunter.Endpoints.OAuth
 
             request.Query.TryGetValue("response_type", out var responseType);
             request.Query.TryGetValue("client_id", out var clientId);
-            request.Query.TryGetValue("redirect_uri", out var redirectUri);
             request.Query.TryGetValue("code_challenge", out var codeChallenge);
             request.Query.TryGetValue("code_challenge_method", out var codeChallengeMethod);
             request.Query.TryGetValue("scope", out var scope);
@@ -39,7 +38,6 @@ namespace HeadHunter.Endpoints.OAuth
                 code_challenge_method = codeChallengeMethod,
                 scope = scope,
                 state = state,
-                redirect_uri = redirectUri
             };
 
             var result = await authorizeResultService.AuthorizeRequest( httpContext, authorizationRequest);

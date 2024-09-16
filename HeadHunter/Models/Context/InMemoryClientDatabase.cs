@@ -14,7 +14,6 @@ namespace HeadHunter.Models.Context
                 //sc = ["openid", "generateKey","AssociateDiscord","profiles"],
                 GrantType = GrantTypes.Code.ToString(),
                 ClientUri = "https://localhost:7016",
-                RedirectUri = "https://localhost:7016/signin-oidc"
             }
         ];
     }

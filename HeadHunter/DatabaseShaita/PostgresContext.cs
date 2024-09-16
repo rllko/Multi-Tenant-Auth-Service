@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using HeadHunter.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace HeadHunter.DatabaseShaita;
+
+public partial class PostgresContext : DbContext
+{
+    public PostgresContext()
+    {
+    }
+
+    public PostgresContext(DbContextOptions<PostgresContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Client> Clients { get; set; }
+
+    public virtual DbSet<DiscordUser> DiscordUsers { get; set; }
+
+    public virtual DbSet<Scope> Scopes { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=headhunter.postgres.database.azure.com;Port=5432;Pooling=true;Database=postgres;User Id=rikko;Password=HEADHUNTER123.;");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder
+            .HasPostgresExtension("pg_catalog", "azure")
+            .HasPostgresExtension("pg_catalog", "pgaadauth");
+
+        modelBuilder.Entity<Client>(entity =>
+        {
+            entity.HasKey(e => e.ClientId).HasName("clients_pkey");
+
+            entity.HasMany(d => d.Scopes).WithMany(p => p.Clients)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ClientScope",
+                    r => r.HasOne<Scope>().WithMany()
+                        .HasForeignKey("ScopeId")
+                        .HasConstraintName("client_scopes_scope_id_fkey"),
+                    l => l.HasOne<Client>().WithMany()
+                        .HasForeignKey("ClientId")
+                        .HasConstraintName("client_scopes_client_id_fkey"),
+                    j =>
+                    {
+                        j.HasKey("ClientId", "ScopeId").HasName("client_scopes_pkey");
+                        j.ToTable("client_scopes");
+                        j.IndexerProperty<int>("ClientId").HasColumnName("client_id");
+                        j.IndexerProperty<int>("ScopeId").HasColumnName("scope_id");
+                    });
+        });
+
+        modelBuilder.Entity<DiscordUser>(entity =>
+        {
+            entity.HasKey(e => e.DiscordId).HasName("discord_users_pkey");
+
+            entity.Property(e => e.DiscordId).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<Scope>(entity =>
+        {
+            entity.HasKey(e => e.ScopeId).HasName("scopes_pkey");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("users_pkey");
+
+            entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("users_discord_user_fkey");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}

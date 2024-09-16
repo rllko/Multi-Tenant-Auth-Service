@@ -12,7 +12,8 @@ CREATE TABLE users (
     license varchar(150) UNIQUE NOT NULL,
     email varchar(150),
 	ip_address varchar(40),
-	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE
+	key_reset_count integer default 0,
+	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE,
 );
 
 -- Auth stuff
@@ -27,8 +28,7 @@ CREATE TABLE clients (
                 client_identifier varchar(150),
                 client_secret varchar(150),
                 grant_type varchar(20),
-                client_uri varchar(150),
-                Redirect_uri varchar(150)
+                client_uri varchar(150)
 );
 
 CREATE TABLE client_scopes (
@@ -41,8 +41,8 @@ CREATE TABLE client_scopes (
 
  INSERT INTO users (license) VALUES ('da20cc3c-b57a-42ac-9218-2da8066730bb');
 
-INSERT INTO Clients (Client_id,client_identifier,client_secret,grant_type,client_uri,redirect_uri) 
-VALUES ('a72JD81Y76LH2D9Q','vK!@82msN7#$bTgF47Aq5pYx!Zw6E3','code','https://localhost:5069',NULL);
+INSERT INTO Clients (client_identifier,client_secret,grant_type,client_uri) 
+VALUES ('a72JD81Y76LH2D9Q','vK!@82msN7#$bTgF47Aq5pYx!Zw6E3','code','https://headhunter1-huakhahpfhgkcycm.eastus2-01.azurewebsites.net/');
 
 INSERT INTO scopes (scope_name) 
 VALUES ('openid'),('admin'),

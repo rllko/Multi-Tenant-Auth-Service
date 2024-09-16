@@ -1,5 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Models.Entities;
 
@@ -12,8 +15,6 @@ public partial class DiscordUser
 
     [Column("date_linked", TypeName = "timestamp without time zone")]
     public DateTime? DateLinked { get; set; }
-
-    public bool Confirmed => DateLinked.HasValue || DiscordId != 0;
 
     [InverseProperty("DiscordUserNavigation")]
     public virtual ICollection<User> Users { get; set; } = new List<User>();

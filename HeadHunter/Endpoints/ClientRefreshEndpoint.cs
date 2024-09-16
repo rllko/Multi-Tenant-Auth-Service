@@ -1,14 +1,15 @@
 ﻿
 using HeadHunter.Common;
 using HeadHunter.Models;
-using HeadHunter.Models.Entities;
 using HeadHunter.Services;
 using HeadHunter.Services.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 internal class ClientRefreshEndpoint
 {
+    [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys, IUserManagerService userManagerService)
     {
         if(!httpContext.Request.Query.TryGetValue("3917505287", out var encryptedJwt))

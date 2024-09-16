@@ -2,7 +2,6 @@
 using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.CodeService;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Services.Users
@@ -37,6 +36,24 @@ namespace HeadHunter.Services.Users
         public async Task<User?> GetUserByLicenseAsync(string license)
         {
             var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
+            return user;
+        }
+
+        public async Task<List<User>?> GetUserLicenseListAsync(long discordId)
+        {
+            var list = dbContext.Users.Include(x => x.DiscordUserNavigation).Where(user => user.DiscordUser == discordId).ToList();
+
+            if(list.Count == 0)
+            {
+                return null;
+            }
+
+            return list;
+        }
+
+        public async Task<User?> GetUserByHwidAsync(string Hwid)
+        {
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid == Hwid);
             return user;
         }
 
@@ -92,9 +109,48 @@ namespace HeadHunter.Services.Users
             return null;
         }
 
-        public Task<User> AuthenticateUserAsync(LoginRequest request)
+        public async Task<bool> ClaimUserLicenseAsync(string License, string hwid)
         {
-            throw new NotImplementedException();
+            var user =  await dbContext.Users.FirstOrDefaultAsync( x => x.License == License);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            user.Hwid = hwid;
+            await dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateUserHwidAsync(long discordId, string hwid)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.DiscordUser == discordId);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            user.Hwid = hwid;
+            await dbContext.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<bool> ResetUserHwidAsync(long discordId)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.DiscordUser == discordId);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            user.Hwid = null;
+            await dbContext.SaveChangesAsync();
+
+            return true;
         }
 
         // Need to create the bulk creation of users

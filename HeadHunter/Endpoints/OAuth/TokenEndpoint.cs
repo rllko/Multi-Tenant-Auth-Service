@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.OAuth
 {
-    public static class TokenEndpoint
+    internal static class TokenEndpoint
     {
         [HttpPost]
         public static async Task<IResult> Handle(

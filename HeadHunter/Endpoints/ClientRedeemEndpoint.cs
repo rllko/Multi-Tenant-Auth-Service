@@ -4,11 +4,13 @@ using HeadHunter.OauthResponse;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace HeadHunter.Endpoints
 {
+    [Authorize(Policy = "Special")]
     public class ClientRedeemEndpoint
     {
         [HttpPost]

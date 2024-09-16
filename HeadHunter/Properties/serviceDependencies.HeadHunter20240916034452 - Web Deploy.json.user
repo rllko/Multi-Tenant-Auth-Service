@@ -1,0 +1,45 @@
+{
+  "dependencies": {
+    "apis1": {
+      "restored": true,
+      "restoreTime": "2024-09-16T02:47:30.1313734Z"
+    }
+  },
+  "parameters": {
+    "HeadHunter20240916034452.subscriptionId": {
+      "Name": "HeadHunter20240916034452.subscriptionId",
+      "Type": "subscription",
+      "Value": "51ca7a82-7d1e-4cc3-a138-f446480e18a2"
+    },
+    "apis1.resourceGroupLocation": {
+      "Name": "apis1.resourceGroupLocation",
+      "Type": "location",
+      "Value": "germanywestcentral"
+    },
+    "apis1.resourceGroupName": {
+      "Name": "apis1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "HeadHunta"
+    },
+    "apis1.subscriptionId": {
+      "Name": "apis1.subscriptionId",
+      "Type": "subscription",
+      "Value": "51ca7a82-7d1e-4cc3-a138-f446480e18a2"
+    },
+    "HeadHunter20240916034452.resourceGroupName": {
+      "Name": "HeadHunter20240916034452.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "DefaultResourceGroup-DEWC"
+    },
+    "HeadHunter20240916034452.resourceName": {
+      "Name": "HeadHunter20240916034452.resourceName",
+      "Type": null,
+      "Value": "HeadHunter20240916034452"
+    },
+    "HeadHunter20240916034452.resourceGroupLocation": {
+      "Name": "HeadHunter20240916034452.resourceGroupLocation",
+      "Type": null,
+      "Value": "germanywestcentral"
+    }
+  }
+}

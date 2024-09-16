@@ -1,8 +1,8 @@
+using HeadHunter.Common;
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources;
 using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
@@ -89,7 +89,6 @@ builder.Services.AddDbContext<HeadhunterDbContext>(options =>
 });
 
 
-
 var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
@@ -114,6 +113,14 @@ if(app.Environment.IsDevelopment())
 
 app.UseCors(MyAllowSpecificOrigins);
 
+// Remove Server Header
+app.Use(async (ctx, _next) =>
+{
+    ctx.Response.Headers.Remove("Server");
+    await _next(ctx);
+});
+
+// Authorization Code to Brearer Middleware
 app.UseWhen(
     context => context.Request.Headers ["Authorization"].ToString().StartsWith("Bearer"),
     builder => builder.UseMiddleware<AuthorizationMiddleware>()
@@ -121,34 +128,59 @@ app.UseWhen(
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-//https://dev.to/mohammedahmed/build-your-own-oauth-20-server-and-openid-connect-provider-in-aspnet-core-60-1g1m
 app.UseHttpsRedirection();
 
+// OAuth Authorization Endpoint
 app.MapGet("/skibidiAuth/authorize", AuthorizationEndpoint.Handle);
 
+// OAuth Token Endpoint
 app.MapPost("/skibidiAuth/token", TokenEndpoint.Handle);
 
-app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle);
+// Create a new License
+app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle).RequireAuthorization();
 
-app.MapPost("/skibidiAuth/confirm-token", ConfirmDiscordEndpoint.Handle);
+// Create multiple Licenses
+app.MapGet("/skibidiAuth/create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
 
-// login
-app.MapGet("1391220247", ClientLoginEndpoint.Handle);
-// redeem
+// Reset User License
+app.MapGet("/skibidiAuth/reset-hwid", ResetHwidEndpoint.Handle).RequireAuthorization();
+
+// Get User Liceses
+app.MapGet("/skibidiAuth/get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
+
+// Check Discord Code and get user info
+app.MapPost("/skibidiAuth/confirm-token", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
+
+// Login Sign In
+app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
+
+// Add HWID to reset License
+app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
+
+// Use License to obtain discord code
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
-// refresh
+
+// Refresh user token and get offsets
 app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 
-app.MapGet("teapot", (HttpContext ctx) =>
+app.MapGet("/", (HttpContext ctx) =>
 {
     ctx.Response.StatusCode = StatusCodes.Status418ImATeapot;
     ctx.Response.WriteAsync(
         """
         <html>
-            <body style='background: black;margin:auto;max-width: 50vw;'>
-                <img src='https://http.cat/418' />
-            </body>
+
+         <style>
+        img {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        }
+        </style>
+        <body style=" background:black">
+            <img style="margin:auto" draggable="true" src='https://http.cat/418' />
+        </body>
         </html>
         """);
 });

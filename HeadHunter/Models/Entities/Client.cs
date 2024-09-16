@@ -26,10 +26,6 @@ public partial class Client
     [StringLength(150)]
     public string? ClientUri { get; set; }
 
-    [Column("redirect_uri")]
-    [StringLength(150)]
-    public string? RedirectUri { get; set; }
-
     [ForeignKey("ClientId")]
     [InverseProperty("Clients")]
     public virtual ICollection<Scope> Scopes { get; set; } = new List<Scope>();

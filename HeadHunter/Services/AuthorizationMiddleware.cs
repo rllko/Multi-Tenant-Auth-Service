@@ -1,4 +1,4 @@
-﻿using HeadHunter.Models.Entities;
+﻿using HeadHunter.Common;
 using HeadHunter.Services.CodeService;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

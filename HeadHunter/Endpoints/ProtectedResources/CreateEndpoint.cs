@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.ProtectedResources
 {
-    public static class CreateEndpoint
+    internal static class CreateEndpoint
     {
         [Authorize(Policy = "Special")]
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
@@ -20,6 +20,11 @@ namespace HeadHunter.Endpoints.ProtectedResources
             }
 
             return Results.Ok(key);
+        }
+
+        internal static async Task HandleBulk(HttpContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

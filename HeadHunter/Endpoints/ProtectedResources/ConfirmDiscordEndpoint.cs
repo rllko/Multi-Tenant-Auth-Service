@@ -2,13 +2,14 @@
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeadHunter.Endpoints.ProtectedResources;
-
+[Authorize(Policy = "Special")]
 public class ConfirmDiscordEndpoint
 {
-    //[Authorize(Policy="Special")]
+
     [HttpPost]
     public static async Task<IResult> Handle(HttpContext httpContext,
         IUserManagerService userManagerService,

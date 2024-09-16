@@ -24,6 +24,10 @@ public partial class HeadhunterDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder
+            .HasPostgresExtension("pg_catalog", "azure")
+            .HasPostgresExtension("pg_catalog", "pgaadauth");
+
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.ClientId).HasName("clients_pkey");

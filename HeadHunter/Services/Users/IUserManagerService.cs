@@ -1,6 +1,5 @@
 ﻿using HeadHunter.Models;
 using HeadHunter.Models.Entities;
-using Microsoft.AspNetCore.Identity.Data;
 
 namespace HeadHunter.Services.Users
 {
@@ -10,7 +9,11 @@ namespace HeadHunter.Services.Users
         Task<User?> GetUserByEmailAsync(string userEmail);
         Task<User?> GetUserByLicenseAsync(string license);
         Task<User?> GetUserByDiscordAsync(long discordId);
-        Task<User> AuthenticateUserAsync(LoginRequest request);
+        Task<User?> GetUserByHwidAsync(string Hwid);
+        Task<List<User>?> GetUserLicenseListAsync(long discordId);
+        Task<bool> ClaimUserLicenseAsync(string License, string hwid);
+        Task<bool> UpdateUserHwidAsync(long discordId, string hwid);
+        Task<bool> ResetUserHwidAsync(long discordId);
         Task<User> CreateUserAsync(long? discordId = null);
         Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string hwid, string? email = null);
         Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode);

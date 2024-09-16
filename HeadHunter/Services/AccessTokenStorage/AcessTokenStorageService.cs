@@ -28,12 +28,10 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         {
             ClientIdentifier = client.ClientIdentifier,
             ClientSecret = client.ClientSecret,
-            RedirectUri = client.RedirectUri,
             CreationTime = DateTime.UtcNow,
             IsOpenId = client.IsOpenId,
             RequestedScopes = client.RequestedScopes,
             Subject = client.Subject,
-            Nonce = client.Nonce,
             CodeChallenge = client.CodeChallenge,
             CodeChallengeMethod = client.CodeChallengeMethod,
         };
