@@ -43,6 +43,13 @@ public class AcessTokenStorageService : IAcessTokenStorageService
             return null;
         }
 
+        var ExistingCode = _accessTokenDictionary.FirstOrDefault(x => x.Value.ClientIdentifier == accessToken.ClientIdentifier);
+
+        if(ExistingCode.Value != null)
+        {
+            return ExistingCode.Key;
+        }
+
         var code = Guid.NewGuid().ToString();
 
         // then store the code is the Concurrent Dictionary

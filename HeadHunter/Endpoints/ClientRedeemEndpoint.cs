@@ -23,7 +23,7 @@ namespace HeadHunter.Endpoints
             Request.Form.TryGetValue("3391056346", out var Hwid);
             Request.Form.TryGetValue("3917505287", out var License);
 
-            if(string.IsNullOrEmpty(Hwid) || string.IsNullOrEmpty(License) || License.Count < 36)
+            if(string.IsNullOrEmpty(Hwid) || string.IsNullOrEmpty(License) || License.ToString().Length < 36)
             {
                 await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
                 return Results.NotFound();

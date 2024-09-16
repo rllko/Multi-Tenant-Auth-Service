@@ -115,6 +115,7 @@ namespace HeadHunter.Services.Interfaces
                 CodeChallenge = authorizationRequest.code_challenge,
                 CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
+
                 Subject = clientResult.Client.ClientIdentifier,
             };
 
@@ -125,11 +126,9 @@ namespace HeadHunter.Services.Interfaces
                 return response;
             }
 
-            response.RedirectUri = clientResult.Client.RedirectUri
-                + "?code=" + code
-                + "&state=" + httpContext.Request.Query ["state"]
-                + "&iss=" + response.Issuer;
+
             response.Code = code;
+            response.ResponseType = authorizationRequest.response_type;
             response.State = authorizationRequest.state;
             response.RequestedScopes = [.. clientScopes];
 
@@ -168,16 +167,16 @@ namespace HeadHunter.Services.Interfaces
             // check code from the Concurrent Dictionary
             var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code);
             if(clientCodeChecker == null)
-                return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
             // check if the current client who is one made this authentication request
 
             if(request.ClientId != clientCodeChecker.ClientIdentifier)
-                return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
             // also I have to check the rediret uri 
             if(request.RedirectUri != clientCodeChecker.RedirectUri)
-                return new TokenResponse { Error = ErrorTypeEnum.InvalidGrant.GetEnumDescription() };
+                return new TokenResponse { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() };
 
             // Now here I will Issue the Id_token
             var handler = new JwtSecurityTokenHandler();

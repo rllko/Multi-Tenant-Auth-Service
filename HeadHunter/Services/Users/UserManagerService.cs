@@ -59,8 +59,10 @@ namespace HeadHunter.Services.Users
                 return null;
             }
 
+            user.DiscordUserNavigation?.Users.Add(user);
             user.Hwid = hwid;
             var discordUser = await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discord, DateLinked = DateTime.Now });
+
             user.DiscordUser = discordUser.Entity.DiscordId;
 
             if(email != null)
@@ -74,7 +76,9 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode)
         {
-            return await ConfirmUserRegistrationAsync(discordCode.User.License, discordCode.User.DiscordUser, discordCode.User.Hwid!, discordCode.User.Email);
+            long user = (long)discordCode.User.DiscordUser!;
+
+            return await ConfirmUserRegistrationAsync(discordCode.User.License, user, discordCode.User.Hwid!, discordCode.User.Email);
         }
 
         public async Task<User?> GetUserByDiscordAsync(long discordId)
@@ -93,12 +97,20 @@ namespace HeadHunter.Services.Users
             throw new NotImplementedException();
         }
 
-        public async Task<User> CreateUserAsync()
+        // Need to create the bulk creation of users
+
+        public async Task<User> CreateUserAsync(long? discordId = null)
         {
             var user = new User
             {
                 License = Guid.NewGuid().ToString(),
+                DiscordUser = discordId ?? null,
             };
+
+            if(discordId != null && dbContext.DiscordUsers.FirstOrDefault(x => x.DiscordId == discordId) == null)
+            {
+                await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = (long) discordId, DateLinked = DateTime.Now });
+            }
 
             var createUserResult = await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();

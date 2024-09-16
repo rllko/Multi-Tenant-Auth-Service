@@ -9,7 +9,10 @@ namespace HeadHunter.Endpoints.ProtectedResources
         [Authorize(Policy = "Special")]
         public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
-            var key = await userManagerService.CreateUserAsync();
+            httpContext.Request.Query.TryGetValue("discordId", out var discordIdString);
+            var isNotNull = long.TryParse(discordIdString, out var discordIdLong);
+
+            var key = await userManagerService.CreateUserAsync(isNotNull  ? discordIdLong :  null);
 
             if(key == null)
             {

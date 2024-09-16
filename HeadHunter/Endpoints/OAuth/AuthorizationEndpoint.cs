@@ -1,4 +1,6 @@
-﻿using HeadHunter.OauthRequest;
+﻿using HeadHunter.Common;
+using HeadHunter.Models;
+using HeadHunter.OauthRequest;
 using HeadHunter.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,7 +49,14 @@ namespace HeadHunter.Endpoints.OAuth
                 return Results.BadRequest(result.ErrorDescription);
             }
 
-            return Results.Redirect(result.RedirectUri);
+            return Results.Json(
+                new
+                {
+                    Code = result.Code,
+                    ExpiresIn = TimeSpan.FromMinutes(30).TotalSeconds,
+                    Scope = result.RequestedScopes,
+                    TokenType = TokenTypeEnum.Bearer.GetEnumDescription()
+                });
         }
     }
 }

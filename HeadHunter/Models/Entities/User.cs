@@ -29,7 +29,7 @@ public partial class User
     public string? IpAddress { get; set; }
 
     [Column("discord_user")]
-    public long DiscordUser { get; set; }
+    public long? DiscordUser { get; set; }
 
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]

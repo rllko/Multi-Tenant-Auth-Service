@@ -11,7 +11,7 @@ namespace HeadHunter.Services.Users
         Task<User?> GetUserByLicenseAsync(string license);
         Task<User?> GetUserByDiscordAsync(long discordId);
         Task<User> AuthenticateUserAsync(LoginRequest request);
-        Task<User> CreateUserAsync();
+        Task<User> CreateUserAsync(long? discordId = null);
         Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string hwid, string? email = null);
         Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode);
 

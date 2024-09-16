@@ -11,11 +11,9 @@ public class CodeStorageService : ICodeStorageService
     private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
     private readonly ConcurrentDictionary<string, DiscordCode> _discordCodeIssued = new();
 
-    //private readonly InMemoryClientDatabase _clientStore = new();
-
     public CodeStorageService()
     {
-        StartCleanupTask(TimeSpan.FromMinutes(1));
+        StartCleanupTask(TimeSpan.FromMinutes(5));
     }
 
     public string? CreateAuthorizationCode(HeadhunterDbContext _dbContext, string clientIdentifier, AuthorizationCode authorizationCode)
@@ -25,6 +23,13 @@ public class CodeStorageService : ICodeStorageService
         if(client is null)
         {
             return null;
+        }
+
+        var ExistingCode = _authorizeCodeIssued.FirstOrDefault(x => x.Value.ClientIdentifier == clientIdentifier);
+
+        if(ExistingCode.Value != null)
+        {
+            return ExistingCode.Key;
         }
 
         var code = Guid.NewGuid().ToString();
