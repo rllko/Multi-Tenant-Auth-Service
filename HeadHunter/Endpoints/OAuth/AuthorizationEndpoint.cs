@@ -40,6 +40,7 @@ namespace HeadHunter.Endpoints.OAuth
                 state = state,
             };
 
+
             var result = await authorizeResultService.AuthorizeRequest( httpContext, authorizationRequest);
 
             if(result.HasError)
@@ -50,7 +51,7 @@ namespace HeadHunter.Endpoints.OAuth
             return Results.Json(
                 new
                 {
-                    Code = result.Code,
+                    result.Code,
                     ExpiresIn = TimeSpan.FromMinutes(30).TotalSeconds,
                     Scope = result.RequestedScopes,
                     TokenType = TokenTypeEnum.Bearer.GetEnumDescription()

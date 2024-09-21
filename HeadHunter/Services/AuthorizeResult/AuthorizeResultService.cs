@@ -192,7 +192,7 @@ namespace HeadHunter.Services.Interfaces
                 id_token = handler.WriteToken(token);
             }
 
-            var access_token = _acessTokenStorageService.Generate(request.Code);
+            var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.Code));
 
             // here remove the code from the Concurrent Dictionary
             _codeStoreService.RemoveClientByCode(request.Code);

@@ -113,12 +113,6 @@ if(app.Environment.IsDevelopment())
 
 app.UseCors(MyAllowSpecificOrigins);
 
-// Remove Server Header
-app.Use(async (ctx, _next) =>
-{
-    ctx.Response.Headers.Remove("Server");
-    await _next(ctx);
-});
 
 // Authorization Code to Brearer Middleware
 app.UseWhen(

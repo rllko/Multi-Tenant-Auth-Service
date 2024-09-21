@@ -20,6 +20,14 @@ namespace HeadHunter.Services
 
         public async Task InvokeAsync(HttpContext context)
         {
+
+            context.Response.OnStarting(() =>
+            {
+                context.Response.Headers.Remove("Server");
+                return Task.CompletedTask;
+            });
+
+
             // extract guid token form from header
             string access_token = context.Request.Headers["Authorization"]!;
 
@@ -28,10 +36,12 @@ namespace HeadHunter.Services
                 await _next(context);
             }
 
+
+
             var codeUsed = access_token.Split(" ")[1];
 
             // obtain code from database
-            var authorizationCode = _acessTokenStorageService.GetByCode(codeUsed);
+            var authorizationCode = _acessTokenStorageService.GetByCode(Guid.Parse(codeUsed));
 
             if(authorizationCode == null)
             {
@@ -62,7 +72,7 @@ namespace HeadHunter.Services
             };
 
             // sign token
-            var tokenstr = handler.CreateJwtSecurityToken(token2); ;
+            var tokenstr = handler.CreateJwtSecurityToken(token2);
 
             // insert token into request
             context.Request.Headers ["Authorization"] = $"{handler.WriteToken(tokenstr)}";

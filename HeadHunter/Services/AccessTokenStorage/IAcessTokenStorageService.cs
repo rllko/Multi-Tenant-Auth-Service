@@ -4,9 +4,8 @@ namespace HeadHunter.Services.CodeService
 {
     public interface IAcessTokenStorageService
     {
-        string? Generate(string code);
-        AccessToken? GetByCode(string code);
+        string? Generate(Guid accessCode);
+        AccessToken? GetByCode(Guid accessCode);
         // AuthorizationCode? UpdatedByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes);
-        bool RemoveClientByCode(string key);
     }
 }

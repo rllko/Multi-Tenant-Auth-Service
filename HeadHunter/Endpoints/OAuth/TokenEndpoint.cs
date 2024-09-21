@@ -29,7 +29,7 @@ namespace HeadHunter.Endpoints.OAuth
                 IdentityToken = result.id_token,
                 TokenType = result.token_type,
                 Scope = result.requested_scopes,
-                ExpiresIn = TimeSpan.FromMinutes(30).TotalSeconds
+                ExpiresIn = DateTime.UtcNow.AddMinutes(30)
             });
         }
     }
