@@ -45,6 +45,7 @@ namespace HeadHunter.Endpoints.OAuth
 
             if(result.HasError)
             {
+                Console.WriteLine(result.ErrorDescription);
                 return Results.BadRequest(result.ErrorDescription);
             }
 

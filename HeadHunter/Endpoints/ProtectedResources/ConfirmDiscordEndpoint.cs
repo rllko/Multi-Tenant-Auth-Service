@@ -22,29 +22,29 @@ public class ConfirmDiscordEndpoint
         if(string.IsNullOrEmpty(Code) || string.IsNullOrEmpty(DiscordId))
         {
             await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
-            return Results.BadRequest("Something went wrong!");
+            return Results.Json(new { Error = "Invalid Params!" });
         }
 
         var userFromCode = codeStorage.GetUserByCode(Code.ToString());
 
         if(userFromCode == null)
         {
-            return Results.BadRequest("Key is invalid.");
+            return Results.BadRequest(new { Error = "Key is invalid." });
         }
 
         if(long.TryParse(DiscordId.ToString(), out long DiscordUser) is false)
         {
-            return Results.BadRequest("Discord ID is invalid.");
+            return Results.BadRequest(new { Error = "Discord ID is invalid." });
         }
 
         if(userFromCode.User.Hwid == null)
         {
-            return Results.BadRequest("Hwid cannot be null.");
+            return Results.BadRequest(new { Error = "Hwid cannot be null." });
         }
 
         userFromCode.User.DiscordUser = DiscordUser;
         var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
 
-        return Results.Json(new { Error = "", Result = updatedUser });
+        return Results.Json(new { Error = "", result = updatedUser });
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HeadHunter.Common;
+using HeadHunter.Context;
 using HeadHunter.Models;
-using HeadHunter.Models.Context;
+using HeadHunter.Models.Entities;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services.CodeService;
@@ -64,13 +65,13 @@ namespace HeadHunter.Services.Interfaces
                 return response;
             }
 
-            if(!authorizationRequest.redirect_uri.IsRedirectUriStartWithHttps() &&
-               !httpContext.Request.IsHttps)
-            {
-                response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
-                response.ErrorDescription = "redirect url is not secure, MUST be TLS";
-                return response;
-            }
+            //if(!authorizationRequest.redirect_uri.IsRedirectUriStartWithHttps() &&
+            //   !httpContext.Request.IsHttps)
+            //{
+            //    response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
+            //    response.ErrorDescription = "redirect url is not secure, MUST be TLS";
+            //    return response;
+            //}
 
             if(string.IsNullOrWhiteSpace(authorizationRequest.code_challenge))
             {
@@ -195,7 +196,7 @@ namespace HeadHunter.Services.Interfaces
             var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.Code));
 
             // here remove the code from the Concurrent Dictionary
-            _codeStoreService.RemoveClientByCode(request.Code);
+            _codeStoreService.RemoveClientByCode(Guid.Parse(request.Code));
 
             var tokenResponse = new TokenResponse
             {
@@ -220,15 +221,28 @@ namespace HeadHunter.Services.Interfaces
                 return result;
             }
 
-            // check if client exists
-            var storedClient = _dbContext.Clients.Include(x => x.Scopes)
-                    .FirstOrDefault(x => x.ClientIdentifier.Equals(clientIdentifier));
+            Client storedClient;
+
+            try
+            {
+
+                // check if client exists
+                storedClient = _dbContext.Clients.Include(x => x.Scopes)
+                    .First(x => x.ClientIdentifier!.Equals(clientIdentifier));
+
+            }
+            catch(Exception e)
+            {
+                result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
+                return result;
+            }
 
             if(storedClient == null)
             {
                 result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
                 return result;
             }
+
 
             if(checkWithSecret && !string.IsNullOrEmpty(clientSecret))
             {

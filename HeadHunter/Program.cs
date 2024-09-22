@@ -1,8 +1,8 @@
 using HeadHunter.Common;
+using HeadHunter.Context;
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources;
-using HeadHunter.Models.Context;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
@@ -122,7 +122,11 @@ app.UseWhen(
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//if(!app.Environment.IsDevelopment())
+//{
 app.UseHttpsRedirection();
+//}
 
 // OAuth Authorization Endpoint
 app.MapGet("/skibidiAuth/authorize", AuthorizationEndpoint.Handle);
@@ -143,7 +147,7 @@ app.MapGet("/skibidiAuth/reset-hwid", ResetHwidEndpoint.Handle).RequireAuthoriza
 app.MapGet("/skibidiAuth/get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
 
 // Check Discord Code and get user info
-app.MapPost("/skibidiAuth/confirm-token", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
+app.MapPost("/skibidiAuth/confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
 // Login Sign In
 app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
@@ -158,25 +162,20 @@ app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
 app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 
 app.MapGet("/", (HttpContext ctx) =>
-{
-    ctx.Response.StatusCode = StatusCodes.Status418ImATeapot;
-    ctx.Response.WriteAsync(
+   Results.Content(
         """
-        <html>
 
-         <style>
-        img {
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
-          width: 50%;
-        }
+        <style>
+            img {
+              display: block;
+              margin-left: auto;
+              margin-right: auto;
+              width: 50%;
+            }
         </style>
-        <body style=" background:black">
-            <img style="margin:auto" draggable="true" src='https://http.cat/418' />
-        </body>
-        </html>
-        """);
-});
+
+        <img style="margin:auto" draggable="false" src='https://http.cat/418' />
+        """,
+        statusCode: StatusCodes.Status418ImATeapot));
 
 app.Run();

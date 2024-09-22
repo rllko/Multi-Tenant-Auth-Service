@@ -30,6 +30,9 @@ public partial class User
     [StringLength(40)]
     public string? IpAddress { get; set; }
 
+    [Column("key_reset_count")]
+    public int? KeyResetCount { get; set; }
+
     [Column("discord_user")]
     public long? DiscordUser { get; set; }
 

@@ -12,8 +12,9 @@ namespace HeadHunter.Endpoints
         [HttpGet("{key:guid}")]
         public async static Task<IResult> HandleGet(HttpContext httpContext, IUserManagerService userManagerService, [FromServices] DevKeys _devKeys)
         {
-            // !httpContext.Request.Query.TryGetValue("3391056346", out var Hwid))
-            if(!httpContext.Request.Query.TryGetValue("3917505287", out var License))
+
+            if(httpContext.Request.Query.TryGetValue("3917505287", out var License) == false ||
+                httpContext.Request.Query.TryGetValue("3391056346", out var Hwid) == false)
             {
                 return Results.NotFound();
             }
@@ -27,7 +28,14 @@ namespace HeadHunter.Endpoints
 
             if(userKey == null)
             {
-                return Results.BadRequest("License is invalid.");
+                return Results.BadRequest("License is invalid");
+            }
+
+            if(userKey.Hwid != null && userKey.Hwid != Hwid)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                await httpContext.Response.WriteAsJsonAsync("License is invalid");
+                return Results.Conflict();
             }
 
             // check if the user has confirmed their discord account
@@ -35,6 +43,13 @@ namespace HeadHunter.Endpoints
             {
                 httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
                 await httpContext.Response.WriteAsJsonAsync("License is not confirmed.");
+                return Results.Conflict();
+            }
+
+            if(userKey.Hwid == null)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status200OK;
+                await httpContext.Response.WriteAsJsonAsync("birdy, send a post request to this endpoint.");
                 return Results.Conflict();
             }
 
@@ -69,7 +84,7 @@ namespace HeadHunter.Endpoints
                 return Results.NotFound();
             }
 
-            await userManagerService.ClaimUserLicenseAsync(License.ToString(), Hwid.ToString());
+            await userManagerService.AssignLicenseHwidAsync(License.ToString(), Hwid.ToString());
             return Results.Json(new { Message = "Success!" });
         }
     }

@@ -4,8 +4,8 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 -->
 <Project>
   <PropertyGroup>
-    <_PublishTargetUrl>C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\bin\Release\net8.0\publish\</_PublishTargetUrl>
-    <History>True|2024-09-16T20:24:41.6670835Z||;</History>
+    <_PublishTargetUrl>C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\bin\Release\net9.0\publish\</_PublishTargetUrl>
+    <History>True|2024-09-22T22:24:36.0107198Z||;True|2024-09-22T23:15:54.5144787+01:00||;True|2024-09-22T23:07:55.1848571+01:00||;True|2024-09-22T23:01:29.1511531+01:00||;True|2024-09-22T22:57:07.0632676+01:00||;False|2024-09-22T22:56:21.7326075+01:00||;True|2024-09-22T22:48:57.6974197+01:00||;True|2024-09-22T21:50:24.8833820+01:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

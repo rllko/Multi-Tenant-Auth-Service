@@ -13,7 +13,7 @@ CREATE TABLE users (
     email varchar(150),
 	ip_address varchar(40),
 	key_reset_count integer default 0,
-	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE,
+	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE
 );
 
 -- Auth stuff

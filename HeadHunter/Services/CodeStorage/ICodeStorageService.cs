@@ -1,5 +1,5 @@
-﻿using HeadHunter.Models;
-using HeadHunter.Models.Context;
+﻿using HeadHunter.Context;
+using HeadHunter.Models;
 
 namespace HeadHunter.Services.CodeService
 {
@@ -9,6 +9,6 @@ namespace HeadHunter.Services.CodeService
         string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license, string hwid);
         AuthorizationCode? GetClientByCode(string key);
         DiscordCode? GetUserByCode(string code);
-        bool RemoveClientByCode(string key);
+        bool RemoveClientByCode(Guid key);
     }
 }

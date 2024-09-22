@@ -1,7 +1,6 @@
 ﻿using HeadHunter.Common;
+using HeadHunter.Context;
 using HeadHunter.Models;
-using HeadHunter.Models.Context;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
 using System.Security.Claims;
 
@@ -9,8 +8,8 @@ namespace HeadHunter.Services.CodeService;
 
 public class CodeStorageService : ICodeStorageService
 {
-    private readonly MemoryCache  _authorizeCodeIssued;
-    //private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
+    //private readonly MemoryCache  _authorizeCodeIssued;
+    private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
     private readonly ConcurrentDictionary<string, DiscordCode> _discordCodeIssued = new();
 
     public CodeStorageService()
@@ -120,7 +119,10 @@ public class CodeStorageService : ICodeStorageService
         });
     }
 
-
+    public bool RemoveClientByCode(Guid key)
+    {
+        return _authorizeCodeIssued.TryRemove(key.ToString(), out _);
+    }
 
     #region helper functions
 
@@ -147,6 +149,8 @@ public class CodeStorageService : ICodeStorageService
             }
         }
     }
+
+
 
     // TODO
     // Before updated the Concurrent Dictionary I have to Process User Sign In,
@@ -249,5 +253,7 @@ public class CodeStorageService : ICodeStorageService
         //}
         return null;
     }
+
+
     #endregion
 }

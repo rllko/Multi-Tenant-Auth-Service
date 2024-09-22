@@ -12,7 +12,7 @@ internal class ClientRefreshEndpoint
     [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys, IUserManagerService userManagerService)
     {
-        if(!httpContext.Request.Query.TryGetValue("3917505287", out var encryptedJwt))
+        if(!httpContext.Request.Form.TryGetValue("3917505287", out var encryptedJwt))
         {
             return Results.NotFound();
         }

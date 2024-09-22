@@ -1,5 +1,5 @@
-﻿using HeadHunter.Models;
-using HeadHunter.Models.Context;
+﻿using HeadHunter.Context;
+using HeadHunter.Models;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.CodeService;
 using Microsoft.EntityFrameworkCore;
@@ -109,7 +109,7 @@ namespace HeadHunter.Services.Users
             return null;
         }
 
-        public async Task<bool> ClaimUserLicenseAsync(string License, string hwid)
+        public async Task<bool> AssignLicenseHwidAsync(string License, string hwid)
         {
             var user =  await dbContext.Users.FirstOrDefaultAsync( x => x.License == License);
 
@@ -153,6 +153,22 @@ namespace HeadHunter.Services.Users
             return true;
         }
 
+        public async Task<List<User>> CreateUserInBulk(int amount)
+        {
+            var users = new List<User>();
+
+            if(amount <= 0)
+            {
+                return users;
+            }
+
+            for(int i = 0; i < amount; i++)
+            {
+                users.Add(await CreateUserAsync());
+            }
+
+            return users;
+        }
         // Need to create the bulk creation of users
 
         public async Task<User> CreateUserAsync(long? discordId = null)

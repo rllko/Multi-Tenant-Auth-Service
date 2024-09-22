@@ -1,5 +1,5 @@
 ﻿using HeadHunter.Common;
-using HeadHunter.Models.Context;
+using HeadHunter.Context;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;

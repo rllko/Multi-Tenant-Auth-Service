@@ -22,9 +22,21 @@ namespace HeadHunter.Endpoints.ProtectedResources
             return Results.Ok(key);
         }
 
-        internal static async Task HandleBulk(HttpContext context)
+        internal static async Task<IResult> HandleBulk(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
-            throw new NotImplementedException();
+            httpContext.Request.Query.TryGetValue("amount", out var amount);
+
+            if(int.TryParse(amount, out var amountInt) == false)
+            {
+                return Results.BadRequest(new { Error = "Amount is not a valid number" });
+            }
+
+            var userList = await userManagerService.CreateUserInBulk(amountInt);
+
+            return Results.Ok(new
+            {
+                result = userList.Select(x => x.License).ToList()
+            });
         }
     }
 }

@@ -98,7 +98,7 @@
   {
     "ContainingType": "HeadHunter.Endpoints.ProtectedResources.ConfirmDiscordEndpoint",
     "Method": "Handle",
-    "RelativePath": "skibidiAuth/confirm-token",
+    "RelativePath": "skibidiAuth/confirm-discord-license",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,

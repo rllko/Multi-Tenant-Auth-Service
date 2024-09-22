@@ -1,7 +1,7 @@
 ﻿using HeadHunter.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Context;
+namespace HeadHunter.Context;
 
 public partial class HeadhunterDbContext : DbContext
 {
@@ -24,10 +24,6 @@ public partial class HeadhunterDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .HasPostgresExtension("pg_catalog", "azure")
-            .HasPostgresExtension("pg_catalog", "pgaadauth");
-
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.ClientId).HasName("clients_pkey");
@@ -65,6 +61,8 @@ public partial class HeadhunterDbContext : DbContext
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
+
+            entity.Property(e => e.KeyResetCount).HasDefaultValue(0);
 
             entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users)
                 .OnDelete(DeleteBehavior.Cascade)
