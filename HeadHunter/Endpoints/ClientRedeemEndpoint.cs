@@ -1,5 +1,5 @@
 ﻿using HeadHunter.Common;
-using HeadHunter.Context;
+using HeadHunter.Models.Context;
 using HeadHunter.OauthResponse;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
@@ -46,8 +46,14 @@ namespace HeadHunter.Endpoints
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
+            var hwidList = Hwid.ToString().Split('+').ToList();
 
-            var discordCode = codeStorage.CreateDiscordCode(dbContext,License!,Hwid!);
+            if(hwidList.Count is > 5 or <= 0)
+            {
+                return Results.BadRequest("Invalid HWID");
+            }
+
+            var discordCode = codeStorage.CreateDiscordCode(dbContext,License!,hwidList);
 
 
             return Results.Json(new { Error = "none", Result = discordCode });

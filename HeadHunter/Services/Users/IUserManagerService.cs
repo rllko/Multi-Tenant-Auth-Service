@@ -11,12 +11,12 @@ namespace HeadHunter.Services.Users
         Task<User?> GetUserByDiscordAsync(long discordId);
         Task<User?> GetUserByHwidAsync(string Hwid);
         Task<List<User>?> GetUserLicenseListAsync(long discordId);
-        Task<bool> AssignLicenseHwidAsync(string License, string hwid);
-        Task<bool> UpdateUserHwidAsync(long discordId, string hwid);
+        Task<bool> AssignLicenseHwidAsync(string License, List<string> hwid);
+        Task<bool> UpdateUserHwidAsync(long discordId, List<string> hwid);
         Task<bool> ResetUserHwidAsync(long discordId);
         Task<User> CreateUserAsync(long? discordId = null);
         Task<List<User>> CreateUserInBulk(int amount);
-        Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string hwid, string? email = null);
+        Task<User?> ConfirmUserRegistrationAsync(string license, long discord, List<string> hwid, string? email = null);
         Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode);
 
     }

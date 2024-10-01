@@ -44,19 +44,18 @@ namespace HeadHunter.Common
                 Audience = IdentityData.Audience,
                 Issuer = IdentityData.Issuer,
                 Expires = DateTime.Now.AddDays(30),
-                NotBefore = DateTime.Now,
                 Claims = new Dictionary<string, object>()
                 {
                     [JwtRegisteredClaimNames.Jti] = user.License,
                     [JwtRegisteredClaimNames.Sub] = user.Id,
                     ["Hwid"] = user.Hwid,
-                    [JwtRegisteredClaimNames.Iat] = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()
+                    [JwtRegisteredClaimNames.Iat] = new DateTimeOffset(DateTime.Now).ToString()
                 },
                 SigningCredentials = new SigningCredentials(new RsaSecurityKey(keys.RsaSignKey), SecurityAlgorithms.RsaSha256),
-                EncryptingCredentials = new EncryptingCredentials(new RsaSecurityKey(keys.RsaEncryptKey),
-                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)
+
             };
         }
+
     }
 
 }

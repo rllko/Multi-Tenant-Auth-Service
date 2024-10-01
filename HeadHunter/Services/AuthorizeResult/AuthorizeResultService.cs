@@ -1,6 +1,6 @@
 ﻿using HeadHunter.Common;
-using HeadHunter.Context;
 using HeadHunter.Models;
+using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.OauthRequest;
 using HeadHunter.OauthResponse;

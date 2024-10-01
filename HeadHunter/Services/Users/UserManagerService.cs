@@ -1,5 +1,5 @@
-﻿using HeadHunter.Context;
-using HeadHunter.Models;
+﻿using HeadHunter.Models;
+using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.CodeService;
 using Microsoft.EntityFrameworkCore;
@@ -53,13 +53,13 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByHwidAsync(string Hwid)
         {
-            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid == Hwid);
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid.Contains(Hwid));
             return user;
         }
 
-        public async Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string hwid, string? email = null)
+        public async Task<User?> ConfirmUserRegistrationAsync(string license, long discord, List<string> hwid, string? email = null)
         {
-            if(string.IsNullOrEmpty(license) || string.IsNullOrEmpty(hwid))
+            if(string.IsNullOrEmpty(license) || !hwid.Any() || hwid.Count != 5)
             {
                 return null;
             }
@@ -69,26 +69,23 @@ namespace HeadHunter.Services.Users
                 return null;
             }
 
-            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
+            var newUser = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
 
-            if(user == null)
+            if(newUser == null)
             {
                 return null;
             }
 
-            user.DiscordUserNavigation?.Users.Add(user);
-            user.Hwid = hwid;
-            var discordUser = await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discord, DateLinked = DateTime.Now });
-
-            user.DiscordUser = discordUser.Entity.DiscordId;
-
-            if(email != null)
+            if(await dbContext.DiscordUsers.FirstOrDefaultAsync(user => user.DiscordId == discord) == null)
             {
-                user.Email = email;
+                await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discord, DateLinked = DateTime.Now });
             }
 
+            newUser.DiscordUser = discord;
+            newUser.Hwid = hwid;
+
             await dbContext.SaveChangesAsync();
-            return user;
+            return newUser;
         }
 
         public async Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode)
@@ -109,7 +106,7 @@ namespace HeadHunter.Services.Users
             return null;
         }
 
-        public async Task<bool> AssignLicenseHwidAsync(string License, string hwid)
+        public async Task<bool> AssignLicenseHwidAsync(string License, List<string> hwid)
         {
             var user =  await dbContext.Users.FirstOrDefaultAsync( x => x.License == License);
 
@@ -124,7 +121,7 @@ namespace HeadHunter.Services.Users
             return true;
         }
 
-        public async Task<bool> UpdateUserHwidAsync(long discordId, string hwid)
+        public async Task<bool> UpdateUserHwidAsync(long discordId, List<string> hwid)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(x => x.DiscordUser == discordId);
 

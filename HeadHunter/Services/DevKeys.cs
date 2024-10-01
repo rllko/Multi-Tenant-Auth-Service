@@ -14,39 +14,33 @@ namespace HeadHunter.Services
             else
             {
                 var privatekey = RsaSignKey.ExportRSAPrivateKey();
+                File.WriteAllText("PublicSignKey.pem", RsaSignKey.ExportRSAPublicKeyPem());
                 File.WriteAllBytes("SignKey", privatekey);
-
             }
 
             RsaEncryptKey = RSA.Create();
-            if(File.Exists("EncodeKey"))
+            if(File.Exists("EncryptKey"))
             {
-                RsaEncryptKey.ImportRSAPrivateKey(File.ReadAllBytes("EncodeKey"), out _);
+                RsaEncryptKey.ImportRSAPrivateKey(File.ReadAllBytes("EncryptKey"), out _);
             }
             else
             {
                 var privatekey = RsaEncryptKey.ExportRSAPrivateKey();
-                File.WriteAllBytes("EncodeKey", privatekey);
+                File.WriteAllBytes("EncryptKey", privatekey);
 
-            }
 
-            AesKey = Aes.Create();
-            if(File.Exists("aeskey"))
-            {
-                AesKey.Key = File.ReadAllBytes("aeskey");
-                Console.WriteLine(Convert.ToBase64String(AesKey.Key));
-            }
-            else
-            {
-                AesKey.KeySize = 256;
-                AesKey.GenerateKey();
-                File.WriteAllBytes("aeskey", AesKey.Key);
+                // Public key export (with a correction for more accuracy from RobSiklos's comment to have the key in PKCS#1 RSAPublicKey format)
+                File.WriteAllText("PublicEncryptKey.pem", RsaEncryptKey.ExportRSAPublicKeyPem());
+                File.WriteAllText("PublicEncryptPKCEKey.pem", RsaEncryptKey.ExportPkcs8PrivateKeyPem());
 
+                File.WriteAllBytes("EncryptKey", RsaEncryptKey.ExportRSAPrivateKey());
             }
+            RsaEncryptPublicKey = RsaEncryptKey.ExportRSAPublicKey();
         }
 
         public RSA RsaSignKey { get; }
         public RSA RsaEncryptKey { get; }
+        public byte [] RsaEncryptPublicKey { init; get; }
         public Aes AesKey { get; }
 
     }

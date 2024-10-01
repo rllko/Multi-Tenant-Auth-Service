@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HeadHunter")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1f2bc4075a320a306c7c6df6acb3363555f9a52")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+601e8aff19fe88cef1f67746a95c183a89746ffd")]
 [assembly: System.Reflection.AssemblyProductAttribute("HeadHunter")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HeadHunter")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

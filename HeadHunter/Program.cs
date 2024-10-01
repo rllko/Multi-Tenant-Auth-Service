@@ -1,8 +1,8 @@
 using HeadHunter.Common;
-using HeadHunter.Context;
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources;
+using HeadHunter.Models.Context;
 using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
@@ -86,7 +86,7 @@ var connectionString = builder.Configuration["BaseDBConnection"];
 builder.Services.AddDbContext<HeadhunterDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
-});
+}, ServiceLifetime.Transient);
 
 
 var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";

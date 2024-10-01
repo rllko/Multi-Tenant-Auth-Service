@@ -8,7 +8,7 @@ CREATE TABLE discord_users (
 
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    hwid varchar(150),
+    hwid varchar(150)[],
     license varchar(150) UNIQUE NOT NULL,
     email varchar(150),
 	ip_address varchar(40),
@@ -36,6 +36,11 @@ CREATE TABLE client_scopes (
     scope_id INT REFERENCES scopes(scope_id) ON DELETE CASCADE,
     PRIMARY KEY (client_id, scope_id)
 );
+
+-- managed by the bot
+create table offsets(
+	list varchar(100000)[]
+)
 
 -- Insert data
 

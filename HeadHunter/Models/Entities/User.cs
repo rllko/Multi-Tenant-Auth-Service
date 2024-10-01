@@ -15,8 +15,7 @@ public partial class User
     public long Id { get; set; }
 
     [Column("hwid")]
-    [StringLength(150)]
-    public string? Hwid { get; set; }
+    public List<string>? Hwid { get; set; }
 
     [Column("license")]
     [StringLength(150)]

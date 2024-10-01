@@ -1,6 +1,6 @@
 ﻿using HeadHunter.Common;
-using HeadHunter.Context;
 using HeadHunter.Models;
+using HeadHunter.Models.Context;
 using System.Collections.Concurrent;
 using System.Security.Claims;
 
@@ -41,7 +41,7 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license, string hwid)
+    public string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license, List<string> hwid)
     {
         var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
 
