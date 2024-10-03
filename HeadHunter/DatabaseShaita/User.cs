@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Entities;
+namespace HeadHunter.DatabaseShaita;
 
 [Table("users")]
 [Index("License", Name = "users_license_key", IsUnique = true)]

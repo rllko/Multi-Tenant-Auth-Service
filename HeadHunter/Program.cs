@@ -4,6 +4,7 @@ using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources;
 using HeadHunter.Models.Context;
 using HeadHunter.Services;
+using HeadHunter.Services.ClientComponents;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
 using HeadHunter.Services.Users;
@@ -29,6 +30,7 @@ builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<IUserManagerService, UserManagerService>();
+builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
 
 builder.Services.AddSingleton<DevKeys>();
 var devKeys = new DevKeys();
@@ -115,6 +117,7 @@ app.UseCors(MyAllowSpecificOrigins);
 
 
 // Authorization Code to Brearer Middleware
+
 app.UseWhen(
     context => context.Request.Headers ["Authorization"].ToString().StartsWith("Bearer"),
     builder => builder.UseMiddleware<AuthorizationMiddleware>()
@@ -146,6 +149,12 @@ app.MapGet("/skibidiAuth/reset-hwid", ResetHwidEndpoint.Handle).RequireAuthoriza
 // Get User Liceses
 app.MapGet("/skibidiAuth/get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
 
+// Get Offsets
+app.MapGet("/skibidiAuth/software-offsets", OffsetsEndpoint.HandleGet).RequireAuthorization();
+
+// Set Offsets
+app.MapPost("/skibidiAuth/software-offsets", OffsetsEndpoint.HandlePost).RequireAuthorization();
+
 // Check Discord Code and get user info
 app.MapPost("/skibidiAuth/confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
@@ -162,20 +171,28 @@ app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
 app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 
 app.MapGet("/", (HttpContext ctx) =>
-   Results.Content(
-        """
-
+    ctx.Response.WriteAsync("""
+    <html>
+        <head></head>
+        <body style="background:black">
         <style>
+        *{
+        color:white;
+        font-size:0.7em
+        }
             img {
-              display: block;
-              margin-left: auto;
-              margin-right: auto;
-              width: 50%;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                width: 50%;
             }
         </style>
-
+        HeadHunter v1.0
         <img style="margin:auto" draggable="false" src='https://http.cat/418' />
-        """,
-        statusCode: StatusCodes.Status418ImATeapot));
+        </body>
+    </html>
+    """));
+
+
 
 app.Run();

@@ -1,16 +1,14 @@
-﻿
-using HeadHunter.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Context;
+namespace HeadHunter.Models.Entities;
 
-public partial class HeadhunterDbContext : DbContext
+public partial class DefaultdbContext : DbContext
 {
-    public HeadhunterDbContext()
+    public DefaultdbContext()
     {
     }
 
-    public HeadhunterDbContext(DbContextOptions<HeadhunterDbContext> options)
+    public DefaultdbContext(DbContextOptions<DefaultdbContext> options)
         : base(options)
     {
     }
@@ -56,11 +54,6 @@ public partial class HeadhunterDbContext : DbContext
             entity.Property(e => e.DiscordId).ValueGeneratedNever();
         });
 
-        modelBuilder.Entity<Offset>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("pk_person");
-        });
-
         modelBuilder.Entity<Scope>(entity =>
         {
             entity.HasKey(e => e.ScopeId).HasName("scopes_pkey");
@@ -78,7 +71,6 @@ public partial class HeadhunterDbContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
-
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -1,16 +1,15 @@
-﻿
-using HeadHunter.Models.Entities;
+﻿using HeadHunter.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Context;
+namespace HeadHunter.DatabaseShaita;
 
-public partial class HeadhunterDbContext : DbContext
+public partial class DefaultdbContext : DbContext
 {
-    public HeadhunterDbContext()
+    public DefaultdbContext()
     {
     }
 
-    public HeadhunterDbContext(DbContextOptions<HeadhunterDbContext> options)
+    public DefaultdbContext(DbContextOptions<DefaultdbContext> options)
         : base(options)
     {
     }
@@ -24,6 +23,10 @@ public partial class HeadhunterDbContext : DbContext
     public virtual DbSet<Scope> Scopes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=dbaas-db-4471935-do-user-17720819-0.i.db.ondigitalocean.com;Port=25060;Pooling=true;Database=defaultdb;User Id=doadmin;Password=AVNS_RMADvKK7hHrFiD63cRC;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,7 +81,6 @@ public partial class HeadhunterDbContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
-
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

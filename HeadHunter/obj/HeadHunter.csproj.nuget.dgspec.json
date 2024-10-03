@@ -78,6 +78,10 @@
               "target": "Package",
               "version": "[9.0.0-rc.1.24452.1, )"
             },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.0-rc.1, )"
@@ -88,7 +92,7 @@
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[8.0.2, )"
+              "version": "[8.1.0, )"
             }
           },
           "imports": [

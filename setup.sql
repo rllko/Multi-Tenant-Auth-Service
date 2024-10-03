@@ -13,8 +13,10 @@ CREATE TABLE users (
     email varchar(150),
 	ip_address varchar(40),
 	key_reset_count integer default 0,
-	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE
-);
+	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE,
+	persistent_token varchar(40),
+	last_token TIMESTAMPTZ,
+	);
 
 -- Auth stuff
 
@@ -39,7 +41,8 @@ CREATE TABLE client_scopes (
 
 -- managed by the bot
 create table offsets(
-	list varchar(100000)[]
+	id serial primary key
+	list jsonb
 )
 
 -- Insert data

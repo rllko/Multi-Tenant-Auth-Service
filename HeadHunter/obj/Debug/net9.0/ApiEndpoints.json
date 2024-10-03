@@ -1,21 +1,5 @@
 [
   {
-    "ContainingType": "Program\u002B\u003C\u003Ec",
-    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_8",
-    "RelativePath": "",
-    "HttpMethod": "GET",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
     "ContainingType": "HeadHunter.Endpoints.ClientLoginEndpoint",
     "Method": "HandleGet",
     "RelativePath": "1391220247",
@@ -164,6 +148,38 @@
     "Method": "Handle",
     "RelativePath": "skibidiAuth/reset-hwid",
     "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "OffsetsEndpoint",
+    "Method": "HandleGet",
+    "RelativePath": "skibidiAuth/software-offsets",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "OffsetsEndpoint",
+    "Method": "HandlePost",
+    "RelativePath": "skibidiAuth/software-offsets",
+    "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
     "Parameters": [],
