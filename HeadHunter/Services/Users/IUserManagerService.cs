@@ -12,7 +12,8 @@ namespace HeadHunter.Services.Users
         Task<User?> GetUserByHwidAsync(string Hwid);
         Task<List<User>?> GetUserLicenseListAsync(long discordId);
         Task<bool> AssignLicenseHwidAsync(string License, List<string> hwid);
-        Task<bool> UpdateUserHwidAsync(long discordId, List<string> hwid);
+        Task<bool> UpdateLicensePersistenceTokenAsync(string license);
+        Task<bool> ResetLicensePersistenceToken(string license);
         Task<bool> ResetUserHwidAsync(long discordId);
         Task<User> CreateUserAsync(long? discordId = null);
         Task<List<User>> CreateUserInBulk(int amount);

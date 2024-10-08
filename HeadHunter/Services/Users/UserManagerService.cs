@@ -39,9 +39,15 @@ namespace HeadHunter.Services.Users
             return user;
         }
 
+        public async Task<User?> GetUserByPersistenceTokenAsync(string token)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.PersistentToken == token);
+            return user;
+        }
+
         public async Task<List<User>?> GetUserLicenseListAsync(long discordId)
         {
-            var list = dbContext.Users.Include(x => x.DiscordUserNavigation).Where(user => user.DiscordUser == discordId).ToList();
+            var list = await dbContext.Users.Include(x => x.DiscordUserNavigation).Where(user => user.DiscordUser == discordId).ToListAsync();
 
             if(list.Count == 0)
             {
@@ -53,18 +59,23 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByHwidAsync(string Hwid)
         {
-            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid.Contains(Hwid));
-            return user;
-        }
-
-        public async Task<User?> ConfirmUserRegistrationAsync(string license, long discord, List<string> hwid, string? email = null)
-        {
-            if(string.IsNullOrEmpty(license) || !hwid.Any() || hwid.Count != 5)
+            if(string.IsNullOrEmpty(Hwid))
             {
                 return null;
             }
 
-            if(discord <= 0)
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid!.Contains(Hwid));
+            return user;
+        }
+
+        public async Task<User?> ConfirmUserRegistrationAsync(string license, long discordId, List<string> hwid, string? email = null)
+        {
+            if(string.IsNullOrEmpty(license) || hwid.Count == 0 || hwid.Count != 5)
+            {
+                return null;
+            }
+
+            if(discordId <= 0)
             {
                 return null;
             }
@@ -76,12 +87,12 @@ namespace HeadHunter.Services.Users
                 return null;
             }
 
-            if(await dbContext.DiscordUsers.FirstOrDefaultAsync(user => user.DiscordId == discord) == null)
+            if(GetUserByDiscordAsync(discordId) == null)
             {
-                await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discord, DateLinked = DateTime.Now });
+                await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discordId, DateLinked = DateTime.Now });
             }
 
-            newUser.DiscordUser = discord;
+            newUser.DiscordUser = discordId;
             newUser.Hwid = hwid;
 
             await dbContext.SaveChangesAsync();
@@ -97,7 +108,7 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByDiscordAsync(long discordId)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.DiscordUser == discordId);
+            var user = await GetUserByDiscordAsync(discordId);
             if(user != null)
             {
                 return user;
@@ -106,44 +117,63 @@ namespace HeadHunter.Services.Users
             return null;
         }
 
-        public async Task<bool> AssignLicenseHwidAsync(string License, List<string> hwid)
+        public async Task<bool> AssignLicenseHwidAsync(string license, List<string> hwid)
         {
-            var user =  await dbContext.Users.FirstOrDefaultAsync( x => x.License == License);
+            var user =  await GetUserByLicenseAsync(license);
 
             if(user == null)
             {
                 return false;
             }
 
+            await UpdateLicensePersistenceTokenAsync(license);
             user.Hwid = hwid;
             await dbContext.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> UpdateUserHwidAsync(long discordId, List<string> hwid)
+        public async Task<bool> UpdateLicensePersistenceTokenAsync(string license)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.DiscordUser == discordId);
+            var user =  await GetUserByLicenseAsync(license);
 
             if(user == null)
             {
                 return false;
             }
 
-            user.Hwid = hwid;
+            user.PersistentToken = Guid.NewGuid().ToString();
+            user.LastToken = DateTime.Now.ToUniversalTime();
             await dbContext.SaveChangesAsync();
-
             return true;
         }
+
+        public async Task<bool> ResetLicensePersistenceToken(string license)
+        {
+            var user =  await GetUserByLicenseAsync(license);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            user.PersistentToken = null;
+            user.LastToken = null;
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> ResetUserHwidAsync(long discordId)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.DiscordUser == discordId);
+            var user = await GetUserByDiscordAsync(discordId);
 
             if(user == null)
             {
                 return false;
             }
 
+            user.PersistentToken = null;
+            user.LastToken = null;
             user.Hwid = null;
             await dbContext.SaveChangesAsync();
 
@@ -170,13 +200,14 @@ namespace HeadHunter.Services.Users
 
         public async Task<User> CreateUserAsync(long? discordId = null)
         {
+
             var user = new User
             {
                 License = Guid.NewGuid().ToString(),
                 DiscordUser = discordId ?? null,
             };
 
-            if(discordId != null && dbContext.DiscordUsers.FirstOrDefault(x => x.DiscordId == discordId) == null)
+            if(discordId != null && GetUserByDiscordAsync((long) discordId) == null)
             {
                 await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = (long) discordId, DateLinked = DateTime.Now });
             }

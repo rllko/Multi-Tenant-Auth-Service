@@ -1,5 +1,6 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Services;
+using HeadHunter.Services.ClientComponents;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,7 +13,10 @@ namespace HeadHunter.Endpoints
     {
 
         [HttpGet("{key:guid}")]
-        public async static Task<IResult> HandleGet(HttpContext httpContext, IUserManagerService userManagerService, [FromServices] DevKeys _devKeys)
+        public async static Task<IResult> HandleGet(HttpContext httpContext,
+            IUserManagerService userManagerService,
+            ISoftwareComponents softwareComponents,
+            [FromServices] DevKeys _devKeys)
         {
 
             if(httpContext.Request.Query.TryGetValue("3917505287", out var License) == false ||
@@ -30,7 +34,7 @@ namespace HeadHunter.Endpoints
 
             if(userKey == null)
             {
-                return Results.BadRequest("License is invalid");
+                return Results.BadRequest(new { Error = "License is invalid" });
             }
 
             // check if the user has a hwid and if it matches the one provided
@@ -39,14 +43,14 @@ namespace HeadHunter.Endpoints
             if(hwidList.Count is not 5)
             {
                 httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                await httpContext.Response.WriteAsJsonAsync("69");
+                await httpContext.Response.WriteAsJsonAsync(new { Error = "Invalid hwid list" });
                 return Results.Conflict();
             }
 
             if(userKey.Hwid == null)
             {
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
-                await httpContext.Response.WriteAsJsonAsync("birdy, send a post request to this endpoint.");
+                await httpContext.Response.WriteAsJsonAsync(new { Error = "birdy, send a post request to this endpoint." });
                 return Results.Conflict();
             }
 
@@ -59,18 +63,22 @@ namespace HeadHunter.Endpoints
                 }
             });
 
-            if(validHwid == false)
+            if(validHwid is false)
             {
-                return Results.BadRequest("Invalid HWID");
+                return Results.BadRequest(new { Error = "Invalid HWID" });
             }
-
 
             // check if the user has confirmed their discord account
             if(userKey.DiscordUser == null)
             {
                 httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                await httpContext.Response.WriteAsJsonAsync("License is not confirmed.");
+                await httpContext.Response.WriteAsJsonAsync(new { Error = "License is not confirmed." });
                 return Results.Conflict();
+            }
+
+            if(await userManagerService.UpdateLicensePersistenceTokenAsync(userKey.License) == false)
+            {
+                return Results.BadRequest(new { Error = "Failed While updating token" });
             }
 
             // Create Handler for JWT
@@ -78,6 +86,11 @@ namespace HeadHunter.Endpoints
 
             // Create token to send to the user
             var tokenDescriptor = EncodingFunctions.GenerateSecurityTokenDescriptor(userKey,_devKeys);
+
+            if(tokenDescriptor == null)
+            {
+                return Results.BadRequest(new { Error = "Failed to generate token" });
+            }
 
             // create the token string
             string token = handler.WriteToken(handler.CreateToken(tokenDescriptor));
@@ -99,7 +112,7 @@ namespace HeadHunter.Endpoints
             }
             catch(Exception e)
             {
-                return Results.BadRequest(e.Message);
+                return Results.BadRequest(new { Error = e.Message });
             }
         }
 
@@ -107,7 +120,7 @@ namespace HeadHunter.Endpoints
         public async static Task<IResult> HandlePost(HttpContext httpContext, IUserManagerService userManagerService)
         {
             if(httpContext.Request.Form.TryGetValue("3391056346", out var Hwid) == false ||
-               httpContext.Request.Form.TryGetValue("1317706102", out var License) == false)
+               httpContext.Request.Form.TryGetValue("3917505287", out var License) == false)
             {
                 return Results.NotFound();
             }
@@ -116,21 +129,31 @@ namespace HeadHunter.Endpoints
             {
                 return Results.NotFound();
             }
-
-            if(await userManagerService.GetUserByLicenseAsync(License!) == null)
+            var user = await userManagerService.GetUserByLicenseAsync(License!);
+            if(user == null)
             {
                 return Results.NotFound();
+            }
+
+            if(user.DiscordUser == null)
+            {
+                return Results.Json(new { Error = "No discord user assigned." });
+            }
+
+            if(user.Hwid != null)
+            {
+                return Results.Json(new { Error = "Key already assigned." });
             }
 
             var hwidList = Hwid.ToString().Split('+').ToList();
 
             if(hwidList.Count is > 5 or <= 0)
             {
-                return Results.BadRequest("Invalid HWID");
+                return Results.BadRequest(new { Error = "Invalid HWID" });
             }
 
             await userManagerService.AssignLicenseHwidAsync(License.ToString(), hwidList);
-            return Results.Json(new { Message = "Success!" });
+            return Results.Json(new { Error = "none", Message = "Success!" });
         }
     }
 }

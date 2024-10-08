@@ -22,10 +22,9 @@ namespace HeadHunter.Endpoints
         {
             var Request = httpContext.Request;
 
-            Request.Form.TryGetValue("3391056346", out var Hwid);
             Request.Form.TryGetValue("3917505287", out var License);
 
-            if(string.IsNullOrEmpty(Hwid) || string.IsNullOrEmpty(License) || License.ToString().Length < 36)
+            if(string.IsNullOrEmpty(License) || License.ToString().Length < 36)
             {
                 await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
                 return Results.NotFound();
@@ -46,15 +45,7 @@ namespace HeadHunter.Endpoints
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
-            var hwidList = Hwid.ToString().Split('+').ToList();
-
-            if(hwidList.Count is > 5 or <= 0)
-            {
-                return Results.BadRequest("Invalid HWID");
-            }
-
-            var discordCode = codeStorage.CreateDiscordCode(dbContext,License!,hwidList);
-
+            var discordCode = codeStorage.CreateDiscordCode(dbContext,License!);
 
             return Results.Json(new { Error = "none", Result = discordCode });
         }

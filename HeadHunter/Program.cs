@@ -1,7 +1,7 @@
 using HeadHunter.Common;
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
-using HeadHunter.Endpoints.ProtectedResources;
+using HeadHunter.Endpoints.ProtectedResources.DiscordOperations;
 using HeadHunter.Models.Context;
 using HeadHunter.Services;
 using HeadHunter.Services.ClientComponents;
@@ -128,7 +128,7 @@ app.UseAuthorization();
 
 //if(!app.Environment.IsDevelopment())
 //{
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 //}
 
 // OAuth Authorization Endpoint
@@ -149,14 +149,14 @@ app.MapGet("/skibidiAuth/reset-hwid", ResetHwidEndpoint.Handle).RequireAuthoriza
 // Get User Liceses
 app.MapGet("/skibidiAuth/get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
 
-// Get Offsets
-app.MapGet("/skibidiAuth/software-offsets", OffsetsEndpoint.HandleGet).RequireAuthorization();
-
 // Set Offsets
 app.MapPost("/skibidiAuth/software-offsets", OffsetsEndpoint.HandlePost).RequireAuthorization();
 
 // Check Discord Code and get user info
 app.MapPost("/skibidiAuth/confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
+
+// Get Offsets
+app.MapGet("2525546191", OffsetsEndpoint.HandleGet);
 
 // Login Sign In
 app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);

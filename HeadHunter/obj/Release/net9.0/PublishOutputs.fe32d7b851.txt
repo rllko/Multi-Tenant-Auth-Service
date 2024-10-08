@@ -6,6 +6,7 @@ C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTm
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\HeadHunter.pdb
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.Bcl.TimeProvider.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.EntityFrameworkCore.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.EntityFrameworkCore.Abstractions.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.EntityFrameworkCore.Relational.dll
@@ -17,6 +18,7 @@ C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTm
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.IdentityModel.Tokens.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Microsoft.OpenApi.dll
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Newtonsoft.Json.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Npgsql.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\PubTmp\Out\Polly.dll

@@ -31,8 +31,10 @@ namespace HeadHunter.Common
             return result.ToString();
         }
 
-        public static SecurityTokenDescriptor GenerateSecurityTokenDescriptor(User user, DevKeys keys)
+        public static SecurityTokenDescriptor? GenerateSecurityTokenDescriptor(User user, DevKeys keys)
         {
+            const int ExpireDays = 7;
+
             if(user == null)
             {
                 return null;
@@ -43,13 +45,14 @@ namespace HeadHunter.Common
             {
                 Audience = IdentityData.Audience,
                 Issuer = IdentityData.Issuer,
-                Expires = DateTime.Now.AddDays(30),
+                IssuedAt = DateTime.Now,
+                Expires = user.LastToken!.Value.AddDays(ExpireDays),
                 Claims = new Dictionary<string, object>()
                 {
                     [JwtRegisteredClaimNames.Jti] = user.License,
-                    [JwtRegisteredClaimNames.Sub] = user.Id,
+                    [JwtRegisteredClaimNames.AuthTime] = user.LastToken,
+                    ["PersistenceToken"] = user.PersistentToken,
                     ["Hwid"] = user.Hwid,
-                    [JwtRegisteredClaimNames.Iat] = new DateTimeOffset(DateTime.Now).ToString()
                 },
                 SigningCredentials = new SigningCredentials(new RsaSecurityKey(keys.RsaSignKey), SecurityAlgorithms.RsaSha256),
 

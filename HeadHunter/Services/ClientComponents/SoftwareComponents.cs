@@ -1,28 +1,35 @@
 ﻿
 using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
 
 namespace HeadHunter.Services.ClientComponents;
 
 public class SoftwareComponents : ISoftwareComponents
 {
     private readonly HeadhunterDbContext _dbContext;
+
     public SoftwareComponents(HeadhunterDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<string?> GetOffsets()
+    public async Task<Stream?> GetOffsets(string link)
     {
-        var list = await _dbContext.Offsets.FirstOrDefaultAsync();
-
-        if(list is null)
+        if(string.IsNullOrEmpty(link))
         {
             return null;
         }
 
-        return list?.List;
+        using var _httpClient = new HttpClient();
+        var data = await _httpClient.GetAsync(link);
+
+        if(data.EnsureSuccessStatusCode() == null)
+        {
+            return null;
+        }
+        data.Content.Headers.ContentType = new MediaTypeHeaderValue("APPLICATION/octet-stream");
+        var content = data.Content;
+        return await content.ReadAsStreamAsync();
     }
 
     public async Task<bool> SetOffsets(string offsets)
@@ -32,21 +39,6 @@ public class SoftwareComponents : ISoftwareComponents
             return false;
         }
 
-        foreach(var item in _dbContext.Offsets)
-        {
-            _dbContext.Offsets.Remove(item);
-        }
-
-        try
-        {
-            await _dbContext.Offsets.AddAsync(new Offset { List = offsets });
-            await _dbContext.SaveChangesAsync();
-
-            return true;
-        }
-        catch(Exception e)
-        {
-            return false;
-        }
+        return true;
     }
 }

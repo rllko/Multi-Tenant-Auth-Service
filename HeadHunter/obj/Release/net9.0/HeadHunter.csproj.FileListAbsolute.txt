@@ -134,3 +134,5 @@ C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\refin
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\HeadHunter.pdb
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\HeadHunter.genruntimeconfig.cache
 C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\obj\Release\net9.0\ref\HeadHunter.dll
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\bin\Release\net9.0\Microsoft.Bcl.TimeProvider.dll
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\HeadHunter\bin\Release\net9.0\Newtonsoft.Json.dll

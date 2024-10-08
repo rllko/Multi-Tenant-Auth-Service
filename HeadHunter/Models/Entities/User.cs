@@ -40,6 +40,8 @@ public partial class User
     [Column("last_token")]
     public DateTime? LastToken { get; set; }
 
+    public bool HasExpired() => DateTime.Now >= LastToken!.Value.AddDays(7);
+
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
     public virtual DiscordUser? DiscordUserNavigation { get; set; }

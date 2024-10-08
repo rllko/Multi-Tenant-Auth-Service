@@ -64,6 +64,22 @@
     ]
   },
   {
+    "ContainingType": "OffsetsEndpoint",
+    "Method": "HandleGet",
+    "RelativePath": "2525546191",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "HeadHunter.Endpoints.OAuth.AuthorizationEndpoint",
     "Method": "Handle",
     "RelativePath": "skibidiAuth/authorize",
@@ -80,7 +96,7 @@
     ]
   },
   {
-    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.ConfirmDiscordEndpoint",
+    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.DiscordOperations.ConfirmDiscordEndpoint",
     "Method": "Handle",
     "RelativePath": "skibidiAuth/confirm-discord-license",
     "HttpMethod": "POST",
@@ -96,7 +112,7 @@
     ]
   },
   {
-    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.CreateEndpoint",
+    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.DiscordOperations.CreateEndpoint",
     "Method": "Handle",
     "RelativePath": "skibidiAuth/create",
     "HttpMethod": "GET",
@@ -112,7 +128,7 @@
     ]
   },
   {
-    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.CreateEndpoint",
+    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.DiscordOperations.CreateEndpoint",
     "Method": "HandleBulk",
     "RelativePath": "skibidiAuth/create-bulk",
     "HttpMethod": "GET",
@@ -128,7 +144,7 @@
     ]
   },
   {
-    "ContainingType": "HeadHunter.Endpoints.LicenseEndpoint",
+    "ContainingType": "HeadHunter.Endpoints.ProtectedResources.DiscordOperations.LicenseEndpoint",
     "Method": "Handle",
     "RelativePath": "skibidiAuth/get-licenses",
     "HttpMethod": "GET",
@@ -147,22 +163,6 @@
     "ContainingType": "ResetHwidEndpoint",
     "Method": "Handle",
     "RelativePath": "skibidiAuth/reset-hwid",
-    "HttpMethod": "GET",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "OffsetsEndpoint",
-    "Method": "HandleGet",
-    "RelativePath": "skibidiAuth/software-offsets",
     "HttpMethod": "GET",
     "IsController": false,
     "Order": 0,

@@ -2,7 +2,7 @@
 {
     public interface ISoftwareComponents
     {
-        public Task<string?> GetOffsets();
+        public Task<Stream?> GetOffsets(string link);
         public Task<bool> SetOffsets(string offsets);
     }
 }
