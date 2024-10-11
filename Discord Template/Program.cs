@@ -1,9 +1,10 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordTemplate.AuthClient;
+using DiscordTemplate.Services.Data_Fetch;
 using DiscordTemplate.Services.Licenses;
+using DiscordTemplate.Services.Offsets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,27 +17,25 @@ public class Program
     public async Task MainAsync()
     {
         var config =  new ConfigurationBuilder()
-            .SetBasePath( Directory.GetParent(Directory.GetCurrentDirectory()!)!.Parent!.Parent!.FullName)
+            .SetBasePath( Directory.GetCurrentDirectory())
             .AddJsonFile("config.json", optional: false)
             .Build();
 
         using IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
-                services
-                .AddSingleton(config)
-                .AddHttpClient()
-                .AddSingleton<IOAuthClient,OAuthClient>()
+            {
+                services.AddSingleton(config);
+                services.AddHttpClient();
+                services.AddSingleton<IOAuthClient, OAuthClient>().AddSingleton<IFetchingService, FetchingService>().AddSingleton<IOffsetService, OffsetService>()
                 .AddSingleton<ILicenseAuthService, LicenseAuthService>()
-                .AddSingleton( x=> new DiscordSocketClient(new DiscordSocketConfig
+                .AddSingleton((IServiceProvider x) => new DiscordSocketClient(new DiscordSocketConfig
                 {
-                    GatewayIntents = GatewayIntents.AllUnprivileged,
-                    AlwaysDownloadUsers = true,
+                    GatewayIntents = GatewayIntents.All,
+                    AlwaysDownloadUsers = true
                 }))
-                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<InteractionHandler>()
-                .AddSingleton(x => new CommandService())
-                .AddSingleton<PrefixHandler>()
-            ).Build();
+                .AddSingleton((IServiceProvider x) => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                .AddSingleton<InteractionHandler>();
+            }).Build();
 
 
         await RunAsync(host);
@@ -52,7 +51,7 @@ public class Program
     /// 
     /// </summary>
     /// <returns></returns>
-    public async Task RunAsync(IHost host)
+    public static async Task RunAsync(IHost host)
     {
         // Create a Service Scope to obtain the DI instances
         using IServiceScope scope = host.Services.CreateScope();
@@ -74,10 +73,6 @@ public class Program
 
         // Initialize Interaction Handler
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-
-        // Get the Prefix Command Handler from services
-        var pCommands  = provider.GetRequiredService<PrefixHandler>();
-        await pCommands.InitializeAsync();
 
         // Add The log events so we can see what is happening
         _client.Log += async (LogMessage message) => Console.WriteLine($"{message.Source}: {message.Message}");

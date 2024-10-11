@@ -17,7 +17,7 @@ namespace HeadHunter.Services.Users
         Task<bool> ResetUserHwidAsync(long discordId);
         Task<User> CreateUserAsync(long? discordId = null);
         Task<List<User>> CreateUserInBulk(int amount);
-        Task<User?> ConfirmUserRegistrationAsync(string license, long discord, List<string> hwid, string? email = null);
+        Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string? email = null);
         Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode);
 
     }

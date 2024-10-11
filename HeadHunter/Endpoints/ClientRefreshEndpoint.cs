@@ -66,7 +66,7 @@ internal class ClientRefreshEndpoint
 
         var newUser = handler.CreateEncodedJwt(newToken);
 
-        return Results.Json(new { Error = "None", Result = newUser });
+        return Results.Json(new { Error = "none", Result = newUser });
     }
 
     private static CheckTokenResult VerifyKey(JwtSecurityTokenHandler handler, string encryptedJwt, DevKeys _devKeys)

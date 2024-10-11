@@ -25,6 +25,8 @@ namespace HeadHunter.Endpoints
                 return Results.NotFound();
             }
 
+            throw new Exception("This is a demo exception");
+
             if(string.IsNullOrEmpty(License))
             {
                 return Results.NotFound();
@@ -108,7 +110,7 @@ namespace HeadHunter.Endpoints
                     result.Add(System.Convert.ToBase64String(_devKeys.RsaEncryptKey.Encrypt(item, RSAEncryptionPadding.Pkcs1)));
                 }
 
-                return Results.Json(new { Error = "None", Result = result });
+                return Results.Json(new { Error = "none", Result = result });
             }
             catch(Exception e)
             {
@@ -147,7 +149,7 @@ namespace HeadHunter.Endpoints
 
             var hwidList = Hwid.ToString().Split('+').ToList();
 
-            if(hwidList.Count is > 5 or <= 0)
+            if(hwidList.Count is <= 5)
             {
                 return Results.BadRequest(new { Error = "Invalid HWID" });
             }

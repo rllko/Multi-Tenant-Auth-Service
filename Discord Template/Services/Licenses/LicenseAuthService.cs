@@ -6,6 +6,13 @@ namespace DiscordTemplate.Services.Licenses
 {
     internal class LicenseAuthService : ILicenseAuthService
     {
+        private class LicenseResponse
+        {
+            public string? Error { get; set; }
+
+            public List<string>? Result { get; set; }
+        }
+
         private readonly HttpClient _httpClient;
         private readonly ApiConfiguration? _api;
 
@@ -21,69 +28,93 @@ namespace DiscordTemplate.Services.Licenses
         }
         public async Task<string?> CreateKeyAsync(string accessToken, ulong? discordId = null)
         {
-            var endpoint = $"{_api.createLicenseEndpoint }{(discordId != null ? $"?discordId={discordId}" : "")}";
-
-            var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
+            string endpoint = _api.CreateLicenseEndpoint + (discordId.HasValue ? $"?discordId={discordId}" : "");
+            using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await _httpClient.SendAsync(request);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
             if(response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync();
-                var jsonContent =  JsonConvert.DeserializeObject(content);
-
-                return ((dynamic) jsonContent).license;
+                dynamic jsonContent = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+                return jsonContent.license;
             }
-
-            // Debug, please improve this later
             Console.WriteLine(response.StatusCode.ToString());
             return null;
         }
 
-        public async Task<List<string>> GetUserLicenses(string accessToken, ulong id)
+        public async Task<List<string>?> CreateBulkAsync(string accessToken, int amount)
         {
-            var endpoint = $"{_api.getLicensesEndpoint }?discordId={id}";
-
-            var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
+            string endpoint = $"{_api.CreateBulkLicenseEndpoint}?amount={amount}";
+            using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await _httpClient.SendAsync(request);
-
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
             if(response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync();
-                var jsonContent =  JsonConvert.DeserializeObject<LicenseResponse>(content);
-
-                return ((dynamic) jsonContent).result;
+                LicenseResponse jsonContent = JsonConvert.DeserializeObject<LicenseResponse>(await response.Content.ReadAsStringAsync());
+                return jsonContent.Result;
             }
-
-
-
-            // Debug, please improve this later
             Console.WriteLine(response.StatusCode.ToString());
             return null;
         }
 
-        class LicenseResponse
+        public async Task<List<string>?> GetUserLicenses(string accessToken, ulong id)
         {
-            public string error { get; set; }
-            public List<string> result { get; set; }
+            string endpoint = $"{_api.GetLicensesEndpoint}?discordId={id}";
+            var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
+            if(response.IsSuccessStatusCode)
+            {
+                var jsonContent = JsonConvert.DeserializeObject<LicenseResponse>(await response.Content.ReadAsStringAsync());
+
+                if(jsonContent == null)
+                {
+                    return null;
+                }
+
+                return jsonContent.Result;
+            }
+            Console.WriteLine(response.StatusCode.ToString());
+            return null;
+        }
+
+        public async Task<bool> ConfirmDiscordLicense(string accessToken, string key, ulong id)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, _api.GetConfirmEndpoint)
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {
+                    "code",
+                    key
+                },
+                {
+                    "discord_id",
+                    id.ToString()
+                }
+            }),
+                Headers = { { "Accept", "application/json" } }
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
+            if(response.IsSuccessStatusCode)
+            {
+                dynamic jsonContent = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+                return jsonContent.result != null;
+            }
+            Console.WriteLine(response.Content);
+            return false;
         }
 
         public async Task<bool> ResetHwidAsync(string accessToken, ulong discordId, string License)
         {
-            if(string.IsNullOrEmpty(License) || discordId == 0)
+            if(string.IsNullOrEmpty(License) || discordId == 0L)
             {
                 return false;
             }
-
-            var endpoint = $"{_api.resetHwidEndpoint }?discordId={discordId}&license={License}";
-
-            var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
+            string endpoint = $"{_api.ResetHwidEndpoint}?discordId={discordId}&license={License}";
+            var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await _httpClient.SendAsync(request);
-
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
     }

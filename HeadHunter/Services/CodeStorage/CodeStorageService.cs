@@ -71,7 +71,8 @@ public class CodeStorageService : ICodeStorageService
 
     public DiscordCode? GetUserByCode(string code)
     {
-        if(_discordCodeIssued.TryRemove(code, out DiscordCode? userCode))
+        Console.WriteLine(_discordCodeIssued.Select(x => $"{x.Key} -> {x.Value}"));
+        if(_discordCodeIssued.TryGetValue(code, out DiscordCode? userCode))
         {
             if(userCode.isExpired)
             {

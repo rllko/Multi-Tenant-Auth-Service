@@ -29,16 +29,14 @@ namespace HeadHunter.Services
 
 
             // extract guid token form from header
-            string access_token = context.Request.Headers["Authorization"]!;
+            context.Request.Headers.TryGetValue("Authorization", out var access_token);
 
             if(string.IsNullOrEmpty(access_token))
             {
                 await _next(context);
             }
 
-
-
-            var codeUsed = access_token.Split(" ")[1];
+            var codeUsed = access_token.ToString().Split(" ")[1];
 
             // obtain code from database
             var authorizationCode = _acessTokenStorageService.GetByCode(Guid.Parse(codeUsed));

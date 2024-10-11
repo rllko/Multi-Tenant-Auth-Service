@@ -1,45 +1,41 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\",
+  "WorkspaceRootPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\services\\offsets\\offsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\offsets\\offsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\apiconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:apiconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\oauth\\oauthclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\oauth\\oauthclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:oauth\\oauthclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\config.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:config.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\services\\licenses\\licenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\iprotectedendpointresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:iprotectedendpointresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\licenses\\licenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\licenses\\licenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\services\\licenses\\ilicenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\licenses\\ilicenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\usermodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\usermodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\discord template\\services\\offsets\\ioffsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\offsets\\ioffsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\discord template.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:discord template.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\licensemodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\licensemodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -49,7 +45,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -57,133 +53,113 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "OAuthClient.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\OAuth\\OAuthClient.cs",
-              "RelativeDocumentMoniker": "OAuth\\OAuthClient.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\OAuth\\OAuthClient.cs",
-              "RelativeToolTip": "OAuth\\OAuthClient.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAqwC0AAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-03T21:08:02.555Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "ILicenseAuthService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Licenses\\ILicenseAuthService.cs",
-              "RelativeDocumentMoniker": "Services\\Licenses\\ILicenseAuthService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Licenses\\ILicenseAuthService.cs",
-              "RelativeToolTip": "Services\\Licenses\\ILicenseAuthService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAUAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-03T21:02:05.851Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Microsoft.Common.CurrentVersion.targets",
-              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
-              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
-              "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
-              "ViewState": "AgIAAK8UAAAAAAAAAAAYwMgUAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
-              "WhenOpened": "2024-10-03T19:14:55.939Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "config.json",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\config.json",
-              "RelativeDocumentMoniker": "config.json",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\config.json",
-              "RelativeToolTip": "config.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-10-03T18:37:52.786Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "IOffsetService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Offsets\\IOffsetService.cs",
-              "RelativeDocumentMoniker": "Services\\Offsets\\IOffsetService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Offsets\\IOffsetService.cs",
-              "RelativeToolTip": "Services\\Offsets\\IOffsetService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAUAAABdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-03T16:49:01.943Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "LicenseAuthService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
-              "RelativeDocumentMoniker": "Services\\Licenses\\LicenseAuthService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
-              "RelativeToolTip": "Services\\Licenses\\LicenseAuthService.cs",
-              "ViewState": "AgIAAGoAAAAAAAAAAAAswHwAAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T23:41:58.258Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ApiConfiguration.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\ApiConfiguration.cs",
-              "RelativeDocumentMoniker": "ApiConfiguration.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\ApiConfiguration.cs",
-              "RelativeToolTip": "ApiConfiguration.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAiAAAAAAAAAA==",
+              "Title": "IProtectedEndpointResponse.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\IProtectedEndpointResponse.cs",
+              "RelativeDocumentMoniker": "IProtectedEndpointResponse.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\IProtectedEndpointResponse.cs",
+              "RelativeToolTip": "IProtectedEndpointResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T23:30:59.851Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "OffsetService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Offsets\\OffsetService.cs",
-              "RelativeDocumentMoniker": "Services\\Offsets\\OffsetService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Services\\Offsets\\OffsetService.cs",
-              "RelativeToolTip": "Services\\Offsets\\OffsetService.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAWwCcAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T23:30:12.412Z",
+              "WhenOpened": "2024-10-11T14:33:15.132Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AdminModule.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Modules\\AdminModule.cs",
-              "RelativeDocumentMoniker": "Modules\\AdminModule.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Modules\\AdminModule.cs*",
-              "RelativeToolTip": "Modules\\AdminModule.cs*",
-              "ViewState": "AgIAAIsAAABAG9ZUFrEuwLMAAACIAAAAAAAAAA==",
+              "Title": "OAuthClient.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\OAuth\\OAuthClient.cs",
+              "RelativeDocumentMoniker": "OAuth\\OAuthClient.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\OAuth\\OAuthClient.cs",
+              "RelativeToolTip": "OAuth\\OAuthClient.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAwwJQAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T23:26:42.724Z",
+              "WhenOpened": "2024-10-09T21:59:19.885Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\Discord Template\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAAoAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "AdminModule.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\AdminModule.cs",
+              "RelativeDocumentMoniker": "Modules\\AdminModule.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\AdminModule.cs",
+              "RelativeToolTip": "Modules\\AdminModule.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAowBcAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-21T23:21:41.287Z",
+              "WhenOpened": "2024-10-08T22:23:34.686Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserModule.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\UserModule.cs",
+              "RelativeDocumentMoniker": "Modules\\UserModule.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\UserModule.cs",
+              "RelativeToolTip": "Modules\\UserModule.cs",
+              "ViewState": "AgIAAGMAAACA6ebibwMmwHYAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-08T21:48:07.742Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Discord Template",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Discord Template.csproj",
+              "RelativeDocumentMoniker": "Discord Template.csproj",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Discord Template.csproj",
+              "RelativeToolTip": "Discord Template.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-10-08T20:52:43.824Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Microsoft.PackageDependencyResolution.targets",
+              "DocumentMoniker": "C:\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets",
+              "ToolTip": "C:\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets",
+              "ViewState": "AgIAAPIAAAAAAAAAAADgvwkBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2024-10-08T20:52:35.951Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "LicenseAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
+              "RelativeDocumentMoniker": "Services\\Licenses\\LicenseAuthService.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
+              "RelativeToolTip": "Services\\Licenses\\LicenseAuthService.cs",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAAAGEAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-08T20:24:47.115Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-08T20:26:29.296Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "LicenseModule.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\LicenseModule.cs",
+              "RelativeDocumentMoniker": "Modules\\LicenseModule.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\LicenseModule.cs",
+              "RelativeToolTip": "Modules\\LicenseModule.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAAwDAAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-08T20:24:27.036Z"
             }
           ]
         }

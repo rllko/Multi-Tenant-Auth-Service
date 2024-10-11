@@ -35,7 +35,7 @@ namespace HeadHunter.Common
         {
             const int ExpireDays = 7;
 
-            if(user == null)
+            if(user is null)
             {
                 return null;
             }

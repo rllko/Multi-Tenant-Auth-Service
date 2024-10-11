@@ -2,20 +2,36 @@
 
 public class ApiConfiguration
 {
-    public string clientId { get; set; }
-    public string clientSecret { get; set; }
-    public string baseUrl { get; set; }
+    public string? ClientId { get; init; }
 
-    public string response_type { get; set; }
-    public string state { get; set; }
-    public string scope { get; set; }
-    public string code_challenge_method { get; set; }
-    public string redirect_uri { get; set; }
+    public string? ClientSecret { get; init; }
 
-    public string authorizationEndpoint => baseUrl + "skibidiAuth/authorize";
-    public string tokenEndpoint => baseUrl + "skibidiAuth/token";
-    public string createLicenseEndpoint => baseUrl + "skibidiAuth/create";
-    public string resetHwidEndpoint => baseUrl + "skibidiAuth/reset-hwid";
-    public string getLicensesEndpoint => baseUrl + "skibidiAuth/get-licenses";
+    public required string BaseUrl { get; set; }
+
+    public string? Response_type { get; set; }
+
+    public string? State { get; set; }
+
+    public string? Scope { get; set; }
+
+    public string? Code_challenge_method { get; set; }
+
+    public string AuthorizationEndpoint => BaseUrl + "skibidiAuth/authorize";
+
+    public string TokenEndpoint => BaseUrl + "skibidiAuth/token";
+
+    public string CreateLicenseEndpoint => BaseUrl + "skibidiAuth/create";
+
+    public string CreateBulkLicenseEndpoint => BaseUrl + "skibidiAuth/create-bulk";
+
+    public string ResetHwidEndpoint => BaseUrl + "skibidiAuth/reset-hwid";
+
+    public string GetLicensesEndpoint => BaseUrl + "skibidiAuth/get-licenses";
+
+    public string GetConfirmEndpoint => BaseUrl + "skibidiAuth/confirm-discord-license";
+
+    public string OffsetsEndpoint => BaseUrl + "skibidiAuth/software-offsets";
+
+    public string PublicOffsetsEndpoint => BaseUrl + "2525546191";
 }
 

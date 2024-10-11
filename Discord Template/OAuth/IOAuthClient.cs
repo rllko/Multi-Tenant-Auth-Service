@@ -2,7 +2,7 @@
 {
     public interface IOAuthClient
     {
-        //Task<AuthorizationResponse?> GetCode();
+        //Task<AuthenticationResponse?> GetCode();
         Task<TokenResponse?> GetAccessToken();
     }
 }

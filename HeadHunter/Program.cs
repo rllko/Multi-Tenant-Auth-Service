@@ -9,11 +9,14 @@ using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +78,20 @@ builder.Services.AddAuthentication(x =>
     x.MapInboundClaims = false;
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("fixed", rateLimiterOptions =>
+    {
+        rateLimiterOptions.PermitLimit = 6;
+        rateLimiterOptions.Window = TimeSpan.FromSeconds(10);
+        rateLimiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        rateLimiterOptions.QueueLimit = 5;
+    });
+    // We'll talk about adding specific rate limiting policies later.
+});
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Special", policy =>
@@ -115,9 +132,29 @@ if(app.Environment.IsDevelopment())
 
 app.UseCors(MyAllowSpecificOrigins);
 
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+
+        var ContextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if(ContextFeature is not null)
+        {
+            Console.WriteLine($"Error: {ContextFeature.Error}");
+
+            await context.Response.WriteAsJsonAsync(
+                new
+                {
+                    Error = ContextFeature.Error.Message,
+                    StackTrace = ContextFeature.Error.StackTrace,
+                });
+        }
+    });
+});
 
 // Authorization Code to Brearer Middleware
-
 app.UseWhen(
     context => context.Request.Headers ["Authorization"].ToString().StartsWith("Bearer"),
     builder => builder.UseMiddleware<AuthorizationMiddleware>()
@@ -125,6 +162,7 @@ app.UseWhen(
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 //if(!app.Environment.IsDevelopment())
 //{
@@ -170,28 +208,28 @@ app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
 // Refresh user token and get offsets
 app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 
-app.MapGet("/", (HttpContext ctx) =>
-    ctx.Response.WriteAsync("""
-    <html>
-        <head></head>
-        <body style="background:black">
-        <style>
-        *{
-        color:white;
-        font-size:0.7em
-        }
-            img {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 50%;
-            }
-        </style>
-        HeadHunter v1.0
-        <img style="margin:auto" draggable="false" src='https://http.cat/418' />
-        </body>
-    </html>
-    """));
+//app.MapGet("/", (HttpContext ctx) =>
+//    ctx.Response.WriteAsync("""
+//    <html>
+//        <head></head>
+//        <body style="background:black">
+//        <style>
+//        *{
+//        color:white;
+//        font-size:0.7em
+//        }
+//            img {
+//                display: block;
+//                margin-left: auto;
+//                margin-right: auto;
+//                width: 50%;
+//            }
+//        </style>
+//        HeadHunter v1.0
+//        <img style="margin:auto" draggable="false" src='https://http.cat/418' />
+//        </body>
+//    </html>
+//    """));
 
 
 

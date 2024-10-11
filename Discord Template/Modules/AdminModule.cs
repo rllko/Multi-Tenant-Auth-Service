@@ -18,168 +18,127 @@ namespace DiscordTemplate.Modules
         private readonly ILicenseAuthService _licenseService = licenseService;
         private readonly IOffsetService _offsetService = offsetService;
 
-        [SlashCommand("generate-key", "generates a key")]
-        public async Task HandleCreate([Summary(description: "Leave null if none")] IUser? user = null)
+        [SlashCommand("generate-key", "generates a key", false, RunMode.Default)]
+        public async Task HandleCreate([Summary(null, "Leave null if none")] IUser? user = null)
         {
-            // Acknowledge the command so Discord doesn't time out while processing
             await DeferAsync(ephemeral: true);
-
-            // Get the access token
             var tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Failed to retrieve access token.");
                 return;
             }
-
-            // Delegate the API request to the service
-            var keyResponse = await _licenseService.CreateKeyAsync(tokenResponse.AccessToken,user?.Id);
+            var keyResponse = await _licenseService.CreateKeyAsync(tokenResponse.AccessToken, user?.Id);
             if(keyResponse == null)
             {
                 await FollowupAsync("Failed to create key.");
                 return;
             }
-
-            if(user is not SocketGuildUser socketUser)
+            if(!(user is SocketGuildUser socketUser))
             {
-                user = Context.User;
-                await user.CreateDMChannelAsync().Result.SendMessageAsync($"Key created successfully:```{keyResponse}```");
-                await FollowupAsync(ephemeral: true, text: "Success!");
+                user = base.Context.User;
+                await user.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse + "```");
+                await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
                 return;
             }
-
-            var ownerRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Owner");
-
+            var ownerRole = base.Context.Guild.Roles.FirstOrDefault((SocketRole x) => x.Name == "Owner");
             if(ownerRole == null && user != null)
             {
-                var newRole = await Context.Guild.CreateRoleAsync(
-                "Owner", GuildPermissions.None, Color.Green, false, true);
-                await socketUser.AddRoleAsync(newRole);
-                await FollowupAsync(ephemeral: true, text: "Success!");
+                await socketUser.AddRoleAsync(await base.Context.Guild.CreateRoleAsync("Owner", GuildPermissions.None, Color.Green, isHoisted: false, isMentionable: true));
+                await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
                 return;
-
             }
-            if(socketUser.Guild.Roles.FirstOrDefault(x => x.Id == 1287195740996763721) == null)
+            if(socketUser.Guild.Roles.FirstOrDefault((SocketRole x) => x.Id == 1287195740996763721L) == null)
             {
                 await socketUser.AddRoleAsync(ownerRole);
             }
-
-            await socketUser.CreateDMChannelAsync().Result.SendMessageAsync($"Key created successfully:```{keyResponse}```");
-            await FollowupAsync(ephemeral: true, text: "Success!");
+            await socketUser.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse + "```");
+            await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
         }
 
-
-        [SlashCommand("generate-bulk-keys", "generates a key")]
-        [RequireRole(1287486909198630912)]
-        public async Task HandleBulkCreate([Summary(description: "person to send the keys to")] IUser user, int amount)
+        [SlashCommand("generate-bulk-keys", "generates a key", false, RunMode.Default)]
+        [RequireRole(1287486909198630912uL)]
+        public async Task HandleBulkCreate([Summary(null, "person to send the keys to")] IUser user, int amount)
         {
-            // Acknowledge the command so Discord doesn't time out while processing
             await DeferAsync(ephemeral: true);
-
-            // Get the access token
-            var tokenResponse = await _authClient.GetAccessToken();
+            TokenResponse tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Failed to retrieve access token.");
                 return;
             }
-
-            // Delegate the API request to the service
-            var keyResponse = await _licenseService.CreateBulkAsync(tokenResponse.AccessToken,amount+1);
+            var keyResponse = await _licenseService.CreateBulkAsync(tokenResponse.AccessToken, amount + 1);
             if(keyResponse == null)
             {
                 await FollowupAsync("Failed to create key.");
                 return;
             }
-
-            if(user is not SocketGuildUser socketUser)
+            if(!(user is SocketGuildUser socketUser))
             {
                 await FollowupAsync("Failed to create key.");
                 return;
             }
-
-            await user.CreateDMChannelAsync().Result.SendMessageAsync(
-                $"Keys created successfully:```{String.Join("\n", keyResponse.Select(license => $"{license}"))}\nThanks for Joining us!```");
-
-            var ownerRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Reseller");
-
+            await user.CreateDMChannelAsync().Result.SendMessageAsync("Keys created successfully:```" + string.Join("\n", keyResponse.Select((string license) => license ?? "")) + "\nThanks for Joining us!```");
+            var ownerRole = base.Context.Guild.Roles.FirstOrDefault((SocketRole x) => x.Name == "Reseller");
             if(ownerRole == null && user != null)
             {
-                var newRole = await Context.Guild.CreateRoleAsync(
-                "Reseller", GuildPermissions.None, Color.DarkGreen, false, true);
-                await socketUser!.AddRoleAsync(newRole);
-                await FollowupAsync(ephemeral: true, text: "Success!");
+                await socketUser.AddRoleAsync(await base.Context.Guild.CreateRoleAsync("Reseller", GuildPermissions.None, Color.DarkGreen, isHoisted: false, isMentionable: true));
+                await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
                 return;
-
             }
-
-            if(socketUser.Roles.Contains(ownerRole) == false)
+            if(!socketUser.Roles.Contains(ownerRole))
             {
                 await socketUser.AddRoleAsync(ownerRole);
             }
-
-            await FollowupAsync(ephemeral: true, text: "Success!");
+            await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
         }
 
-        [SlashCommand("setup-offsets", "setup")]
-        [RequireRole(1287486909198630912)]
+        [SlashCommand("setup-offsets", "setup", false, RunMode.Default)]
+        [RequireRole(1287486909198630912uL)]
         public async Task HandleOffsets(IAttachment attachment, string? filename = null)
         {
-            // Acknowledge the command so Discord doesn't time out while processing
             await DeferAsync(ephemeral: true);
-
-            // Get the access token
             var tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Failed to retrieve access token.");
-                return;
             }
-
-            // Delegate the API request to the service
-            var keyResponse = await _offsetService.SetOffsets(tokenResponse.AccessToken,attachment.Url,filename ?? attachment.Filename);
-            if(keyResponse == false)
+            else if(!(await _offsetService.SetOffsets(tokenResponse.AccessToken, attachment.Url, filename ?? attachment.Filename)))
             {
                 await FollowupAsync("Failed to set offsets.");
-                return;
             }
-
-            await FollowupAsync(ephemeral: true, text: "Success!");
+            else
+            {
+                await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
+            }
         }
 
-        [SlashCommand("get-offsets", "see offsets")]
-        [RequireRole(1287486909198630912)]
+        [SlashCommand("get-offsets", "see offsets", false, RunMode.Default)]
+        [RequireRole(1287486909198630912uL)]
         public async Task ObtainOffsets(string filename)
         {
-            // Acknowledge the command so Discord doesn't time out while processing
             await DeferAsync(ephemeral: true);
-
-            var eb  = new EmbedBuilder().WithTitle("Files").WithDescription("All Files are readonly, only meant to be downloaded").AddField("Metadata:","Yo")
-                .WithUrl($"https://{filename}").WithColor(Color.Blue).WithFooter("Requested by: "+Context.User.Mention).WithTimestamp(DateTimeOffset.Now).Build();
-
-            // Get the access token
+            Embed eb = new EmbedBuilder().WithTitle("Files").WithDescription("All Files are readonly, only meant to be downloaded").AddField("Metadata:", "Yo")
+            .WithUrl("https://" + filename)
+            .WithColor(Color.Blue)
+            .WithFooter("Requested by: " + base.Context.User.Mention)
+            .WithTimestamp(DateTimeOffset.Now)
+            .Build();
             var tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Failed to retrieve access token.");
                 return;
             }
-
-            // Delegate the API request to the service
-            var keyResponse = await _offsetService.GetOffsets(tokenResponse.AccessToken,filename);
-
+            var keyResponse = await _offsetService.GetOffsets(tokenResponse.AccessToken, filename);
             if(keyResponse == null)
             {
                 await FollowupAsync("Failed to get offsets.");
                 return;
             }
-
-            FileAttachment e = new(keyResponse,$"{filename}");
-
-            await Context.Channel.SendFileAsync(e, $"File requested by {Context.User.Mention}");
-
-            await FollowupAsync(ephemeral: true, text: "Success!", embed: eb);
+            FileAttachment e = new FileAttachment(keyResponse, filename ?? "");
+            await base.Context.Channel.SendFileAsync(e, "File requested by " + base.Context.User.Mention);
+            await FollowupAsync("Success!", null, isTTS: false, ephemeral: true, null, null, null, eb);
         }
-
     }
 }

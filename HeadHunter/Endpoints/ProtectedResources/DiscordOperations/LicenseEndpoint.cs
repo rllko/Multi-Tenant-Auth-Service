@@ -21,7 +21,7 @@ namespace HeadHunter.Endpoints.ProtectedResources.DiscordOperations
                 return Results.BadRequest();
             }
 
-            return Results.Json(new { Error = "None", Result = userLicenses.Select(x => x.License).ToList() });
+            return Results.Json(new { Error = "none", Result = userLicenses.Select(x => x.License).ToList() });
         }
     }
 }
