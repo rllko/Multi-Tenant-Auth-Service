@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DiscordTemplate.OAuth;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Contrib.WaitAndRetry;
@@ -14,11 +15,14 @@ namespace DiscordTemplate.AuthClient
         private readonly ApiConfiguration? _api;
         private static TokenResponse? lastToken;
 
-        private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy = Policy<HttpResponseMessage>.Handle<HttpRequestException>().OrResult(delegate(HttpResponseMessage x)
-        {
-            HttpStatusCode statusCode = x.StatusCode;
-            return (statusCode >= HttpStatusCode.InternalServerError || statusCode == HttpStatusCode.RequestTimeout) ? true : false;
-        }).WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(2L), 5));
+        private readonly Polly.Retry.AsyncRetryPolicy<HttpResponseMessage> _retryPolicy =
+            Policy<HttpResponseMessage>
+            .Handle<HttpRequestException>()
+            .OrResult( x =>
+            {
+                HttpStatusCode statusCode = x.StatusCode;
+                return (statusCode is >= HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout);
+            }).WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(2L), 5));
 
 
         public OAuthClient(HttpClient httpClient, IConfigurationRoot configuration)
@@ -31,16 +35,14 @@ namespace DiscordTemplate.AuthClient
                 throw new Exception("API CONFIGURATION FILE NOT FOUND");
             }
         }
-
-
         private async Task<AuthenticationResponse?> GetCode()
         {
-            var code_verifier = generateCodeChallenge();
+            var code_verifier = GenerateCodeChallenge();
 
             // Create the URL -> please change this later
 
             var query =
-            $"?Response_type={_api.Response_type}" +
+            $"?Response_type={_api!.Response_type}" +
             $"&client_id={_api.ClientId}" +
             $"&code_challenge=" + code_verifier +
             $"&Code_challenge_method={_api.Code_challenge_method}" +
@@ -74,7 +76,7 @@ namespace DiscordTemplate.AuthClient
             // Rerturn the Access Token
             return authorizationResponse;
         }
-
+#warning YO, DONT FORGET ME
         public async Task<TokenResponse?> GetAccessToken()
         {
             if(lastToken?.ExpiresIn < DateTime.Now)
@@ -89,14 +91,14 @@ namespace DiscordTemplate.AuthClient
                 return null;
             }
 
-            var TokenResponse = await RetrieveAcessToken(authenticationResponse.code);
+            var TokenResponse = await RetrieveAcessToken(authenticationResponse.Code!);
             string value = await TokenResponse.Content.ReadAsStringAsync();
 
             return lastToken = JsonConvert.DeserializeObject<TokenResponse>(value);
         }
 
         #region Helper Methods
-        private string generateCodeChallenge()
+        private static string GenerateCodeChallenge()
         {
             var rng = RandomNumberGenerator.Create();
 
@@ -110,10 +112,7 @@ namespace DiscordTemplate.AuthClient
             .Replace('+', '-')
             .Replace('/', '_');
 
-            using var sha256 = SHA256.Create();
-
-            var challengeBytes = sha256.ComputeHash(
-                 Encoding.UTF8.GetBytes(code_verifier));
+            var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(code_verifier));
 
             return Convert.ToBase64String(challengeBytes)
                 .TrimEnd('=')
@@ -126,15 +125,15 @@ namespace DiscordTemplate.AuthClient
             return await _retryPolicy.ExecuteAsync(
                () =>
                {
-                   HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _api.TokenEndpoint)
+                   var request = new HttpRequestMessage(HttpMethod.Post, _api!.TokenEndpoint)
                    {
                        Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "grant_type", "authorization_code" },
-                    { "client_id", _api.ClientId! },
-                    { "client_secret", _api.ClientSecret! },
-                    { "code", authorizationCode }
-                }),
+                    {
+                        { "grant_type", "authorization_code" },
+                        { "client_id", _api.ClientId! },
+                        { "client_secret", _api.ClientSecret! },
+                        { "code", authorizationCode }
+                    }),
                        Headers = { { "Accept", "application/json" } }
                    };
                    return _httpClient.SendAsync(request);
@@ -148,30 +147,23 @@ namespace DiscordTemplate.AuthClient
 
     public sealed class AuthenticationResponse : IProtectedEndpoint
     {
-
-        public string code { get; set; }
-        public double expiresIn { get; set; }
-        public List<string> scope { get; set; }
-        public string tokenType { get; set; }
+        public string? Code { get; set; }
+        public double? ExpiresIn { get; set; }
+        public List<string>? Scope { get; set; }
+        public string? TokenType { get; set; }
     }
 
     public sealed class TokenResponse : IProtectedEndpoint
     {
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         public string? IdentityToken { get; set; }
 
-        public string TokenType { get; set; }
+        public string? TokenType { get; set; }
 
-        public DateTime ExpiresIn { get; set; }
+        public DateTime? ExpiresIn { get; set; }
 
-        public string Scope { get; set; }
-    }
-
-    public abstract class IProtectedEndpoint
-    {
-        public string? Error { init; get; }
-        public string? StackTrace { init; get; }
+        public string? Scope { get; set; }
     }
 
 

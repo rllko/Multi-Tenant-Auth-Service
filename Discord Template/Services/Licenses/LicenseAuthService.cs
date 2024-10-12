@@ -1,20 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
 
 namespace DiscordTemplate.Services.Licenses
 {
     internal class LicenseAuthService : ILicenseAuthService
     {
-        private class LicenseResponse
-        {
-            public string? Error { get; set; }
-
-            public List<string>? Result { get; set; }
-        }
-
         private readonly HttpClient _httpClient;
         private readonly ApiConfiguration? _api;
+
+
 
         public LicenseAuthService(HttpClient httpClient, IConfigurationRoot configurationRoot)
         {
@@ -26,60 +20,76 @@ namespace DiscordTemplate.Services.Licenses
                 throw new Exception("Api Configuration is missing in the configuration file.");
             }
         }
-        public async Task<string?> CreateKeyAsync(string accessToken, ulong? discordId = null)
+
+
+        public async Task<LicenseResponse<string>> CreateKeyAsync(string accessToken, ulong? discordId = null)
         {
-            string endpoint = _api.CreateLicenseEndpoint + (discordId.HasValue ? $"?discordId={discordId}" : "");
+            var result = new LicenseResponse<string>();
+
+            if(string.IsNullOrEmpty(accessToken))
+            {
+                result.ExceptionMessage = "Invalid Access Token, Try again!";
+            }
+
+            string endpoint = _api!.CreateLicenseEndpoint + (discordId.HasValue ? $"?discordId={discordId}" : "");
+
             using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            using HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if(response.IsSuccessStatusCode)
-            {
-                dynamic jsonContent = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-                return jsonContent.license;
-            }
-            Console.WriteLine(response.StatusCode.ToString());
-            return null;
+
+            using HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(request);
+
+            result = LicenseResponse<string>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return result;
         }
 
-        public async Task<List<string>?> CreateBulkAsync(string accessToken, int amount)
+
+        public async Task<LicenseResponse<List<string>>> CreateBulkAsync(string accessToken, int amount)
         {
-            string endpoint = $"{_api.CreateBulkLicenseEndpoint}?amount={amount}";
+            string endpoint = $"{_api!.CreateBulkLicenseEndpoint}?amount={amount}";
+
             using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            using HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if(response.IsSuccessStatusCode)
-            {
-                LicenseResponse jsonContent = JsonConvert.DeserializeObject<LicenseResponse>(await response.Content.ReadAsStringAsync());
-                return jsonContent.Result;
-            }
-            Console.WriteLine(response.StatusCode.ToString());
-            return null;
+
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
+
+            var response = LicenseResponse<List<string>>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return response;
         }
 
-        public async Task<List<string>?> GetUserLicenses(string accessToken, ulong id)
+
+        public async Task<LicenseResponse<List<string>>> GetUserLicenses(string accessToken, ulong discordId)
         {
-            string endpoint = $"{_api.GetLicensesEndpoint}?discordId={id}";
+            var licenses = new LicenseResponse<List<string>>();
+
+            if(discordId <= 0L || string.IsNullOrEmpty(accessToken))
+            {
+                licenses.Error = "Invalid discordId or Token";
+                return licenses;
+            }
+
+            string endpoint = $"{_api!.GetLicensesEndpoint}?discordId={discordId}";
+
             var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            using HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if(response.IsSuccessStatusCode)
-            {
-                var jsonContent = JsonConvert.DeserializeObject<LicenseResponse>(await response.Content.ReadAsStringAsync());
 
-                if(jsonContent == null)
-                {
-                    return null;
-                }
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
 
-                return jsonContent.Result;
-            }
-            Console.WriteLine(response.StatusCode.ToString());
-            return null;
+            licenses = LicenseResponse<List<string>>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return licenses;
         }
 
-        public async Task<bool> ConfirmDiscordLicense(string accessToken, string key, ulong id)
+
+        public async Task<LicenseResponse<bool>> ConfirmDiscordLicense(string accessToken, string key, ulong discordId)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, _api.GetConfirmEndpoint)
+            var license = new LicenseResponse<bool>();
+
+            if(string.IsNullOrEmpty(key) || discordId == 0L || string.IsNullOrEmpty(accessToken))
+            {
+                license.Error = "Invalid discordId or Token";
+                return license;
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, _api!.GetConfirmEndpoint)
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
@@ -89,33 +99,41 @@ namespace DiscordTemplate.Services.Licenses
                 },
                 {
                     "discord_id",
-                    id.ToString()
+                    discordId.ToString()
                 }
             }),
                 Headers = { { "Accept", "application/json" } }
             };
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            using HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if(response.IsSuccessStatusCode)
-            {
-                dynamic jsonContent = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-                return jsonContent.result != null;
-            }
-            Console.WriteLine(response.Content);
-            return false;
+
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
+
+            license = LicenseResponse<bool>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return license;
+
         }
 
-        public async Task<bool> ResetHwidAsync(string accessToken, ulong discordId, string License)
+
+        public async Task<LicenseResponse<bool>> ResetHwidAsync(string accessToken, ulong discordId, string License)
         {
-            if(string.IsNullOrEmpty(License) || discordId == 0L)
+            var license = new LicenseResponse<bool>();
+
+            if(string.IsNullOrEmpty(License) || discordId == 0L || string.IsNullOrEmpty(accessToken))
             {
-                return false;
+                license.Error = "Invalid License or DiscordID";
+                return license;
             }
-            string endpoint = $"{_api.ResetHwidEndpoint}?discordId={discordId}&license={License}";
+
+            string endpoint = $"{_api!.ResetHwidEndpoint}?discordId={discordId}&license={License}";
+
             var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            using HttpResponseMessage response = await _httpClient.SendAsync(request);
-            return response.IsSuccessStatusCode;
+
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
+
+            license = LicenseResponse<bool>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return license;
         }
     }
 

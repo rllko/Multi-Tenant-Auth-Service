@@ -19,28 +19,37 @@ namespace DiscordTemplate.Services.Offsets
             }
         }
 
-        public async Task<Stream?> GetOffsets(string accessToken, string filename)
+        public async Task<OffsetsResponse<Stream>> GetOffsets(string accessToken, string filename)
         {
+            var offsets = new OffsetsResponse<Stream>();
+
+            if(string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(filename))
+            {
+                offsets.ExceptionMessage = "Invalid filename";
+                return offsets;
+            }
+
             var endpoint = $"{_api!.PublicOffsetsEndpoint }?file={filename}";
 
             var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            var response = await _httpClient.SendAsync(request);
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
 
-            if(response.IsSuccessStatusCode)
-            {
-                var content = response.Content;
-                return await content.ReadAsStreamAsync();
-            }
-
-            // Debug, please improve this later
-            Console.WriteLine(response.StatusCode.ToString());
-            return null;
+            offsets = OffsetsResponse<Stream>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return offsets;
         }
 
-        public async Task<bool> SetOffsets(string accessToken, string offsetsUrl, string filename)
+        public async Task<OffsetsResponse<bool>> SetOffsets(string accessToken, string offsetsUrl, string filename)
         {
+            var offsets = new OffsetsResponse<bool>();
+
+            if(string.IsNullOrEmpty(offsetsUrl) || string.IsNullOrEmpty(filename) || string.IsNullOrEmpty(accessToken))
+            {
+                offsets.Error = "Invalid url or filename!";
+                return offsets;
+            }
+
             var request = new HttpRequestMessage(HttpMethod.Post, _api!.OffsetsEndpoint)
             {
                 Content =
@@ -57,17 +66,10 @@ namespace DiscordTemplate.Services.Offsets
                     },
             };
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            var response = await _httpClient.SendAsync(request);
+            using var httpResponseMessage = await _httpClient.SendAsync(request);
 
-            if(response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            // Debug, please improve this later
-            Console.WriteLine(response.StatusCode.ToString());
-            return false;
-
+            offsets = OffsetsResponse<bool>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            return offsets;
         }
 
         class LicenseResponse

@@ -62,3 +62,9 @@ C:\Users\ricar\Documents\c#\Discord Template\obj\Debug\net9.0\refint\Discord Tem
 C:\Users\ricar\Documents\c#\Discord Template\obj\Debug\net9.0\Discord Template.pdb
 C:\Users\ricar\Documents\c#\Discord Template\obj\Debug\net9.0\Discord Template.genruntimeconfig.cache
 C:\Users\ricar\Documents\c#\Discord Template\obj\Debug\net9.0\ref\Discord Template.dll
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.csproj.AssemblyReference.cache
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.AssemblyInfoInputs.cache
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.AssemblyInfo.cs
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.csproj.CoreCompileInputs.cache
+C:\Users\ricar\Documents\c#\HeadHunter-OAuth\Discord Template\obj\Debug\net9.0\Discord Template.sourcelink.json

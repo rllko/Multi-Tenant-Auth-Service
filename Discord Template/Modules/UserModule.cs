@@ -6,18 +6,12 @@ using DiscordTemplate.Services.Licenses;
 
 namespace DiscordTemplate.Modules
 {
-    [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild, InteractionContextType.BotDm)]
+    [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.UserInstall)]
-    public class UserModule : InteractionModuleBase<SocketInteractionContext>
+    public class UserModule(IOAuthClient authClient, ILicenseAuthService licenseService) : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly IOAuthClient _authClient;
-        private readonly ILicenseAuthService _licenseService;
-
-        public UserModule(IOAuthClient authClient, ILicenseAuthService licenseService)
-        {
-            _authClient = authClient;
-            _licenseService = licenseService;
-        }
+        private readonly IOAuthClient _authClient = authClient;
+        private readonly ILicenseAuthService _licenseService = licenseService;
 
         [SlashCommand("airfryer", "He doesnt own one, imagine!", false, RunMode.Default)]
         public async Task DoesntOwnAirFryer(IUser user)
@@ -35,8 +29,13 @@ namespace DiscordTemplate.Modules
                 await FollowupAsync("Something wrong happened.");
                 return;
             }
-            SocketUser currentUser = base.Context.User;
+
+            SocketUser currentUser = Context.User;
+
             var licenses = await _licenseService.GetUserLicenses(tokenResponse.AccessToken, currentUser.Id);
+
+
+#warning yep, this too
             if(licenses == null)
             {
                 await FollowupAsync("You dont own any license");
@@ -49,27 +48,37 @@ namespace DiscordTemplate.Modules
         public async Task ResetHwidHandler()
         {
             await DeferAsync(ephemeral: true);
+
             var tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Something wrong happened.");
                 return;
             }
-            ulong currentUserId = base.Context.User.Id;
-            var licenses = await _licenseService.GetUserLicenses(tokenResponse.AccessToken, currentUserId);
+
+            ulong currentUserId = Context.User.Id;
+            var licenseResponse = await _licenseService.GetUserLicenses(tokenResponse.AccessToken, currentUserId);
+
+            var licenses = licenseResponse.Result;
+
             if(licenses == null)
             {
                 await FollowupAsync("You dont own any license");
                 return;
             }
-            if(!licenses.Any())
+            if(licenses.Count == 0)
             {
                 await FollowupAsync("Something went wrong");
                 return;
             }
+
+            var resetHwidOperation = await _licenseService.ResetHwidAsync(tokenResponse.AccessToken, currentUserId, licenses.First());
+
             if(licenses.Count == 1)
             {
-                await FollowupAsync((await _licenseService.ResetHwidAsync(tokenResponse.AccessToken, currentUserId, licenses.First())) ? "HWID reset was a Success!" : "This License Doesnt need a reset.");
+                await FollowupAsync(
+                    resetHwidOperation.Succeed && resetHwidOperation.Error == null
+                    ? "HWID reset was a Success!" : resetHwidOperation.Error);
                 return;
             }
             SelectMenuBuilder selectMenu = new SelectMenuBuilder().WithPlaceholder("Select a License to reset").WithCustomId("license_selection:" + tokenResponse.AccessToken);
@@ -85,6 +94,7 @@ namespace DiscordTemplate.Modules
         public async Task HandleRace(string accessToken, string [] selected)
         {
             await DeferAsync();
+
             var user = Context.Interaction.User;
 
             if(user == null)
@@ -93,46 +103,10 @@ namespace DiscordTemplate.Modules
                 return;
             }
 
-            await FollowupAsync((await _licenseService.ResetHwidAsync(accessToken, user.Id, selected [0])) ? "HWID reset successfully." : "This License Doesnt need a reset.", null, isTTS: false, ephemeral: true);
-        }
+            var resetOperation = await _licenseService
+                .ResetHwidAsync(accessToken, user.Id, selected[0]);
 
-        [SlashCommand("redeem-code", "redeem code given by the launcher")]
-        public async Task HandleRedeemDiscordCode(string code)
-        {
-            await DeferAsync(ephemeral: true);
-            if(Context.User is not SocketGuildUser user)
-            {
-                await FollowupAsync("Something went wrong.");
-                return;
-            }
-            var tokenResponse = await _authClient.GetAccessToken();
-            if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
-            {
-                await FollowupAsync("Failed to retrieve access token.");
-                return;
-            }
-            if(code.Length != 20)
-            {
-                await FollowupAsync("Please input a valid license.");
-                return;
-            }
-            if(!(await _licenseService.ConfirmDiscordLicense(tokenResponse.AccessToken, code.ToString(), user.Id)))
-            {
-                await FollowupAsync("Invalid Code.");
-                return;
-            }
-            var ownerRole = base.Context.Guild.Roles.FirstOrDefault((SocketRole x) => x.Name == "Owner");
-            if(ownerRole == null)
-            {
-                await user.AddRoleAsync(await base.Context.Guild.CreateRoleAsync("Owner", GuildPermissions.None, Color.Green, isHoisted: false, isMentionable: true));
-                await FollowupAsync("License Redeemed Successfully!");
-                return;
-            }
-            //if(!user.Roles.Contains(ownerRole))
-            //{
-            //    await user.AddRoleAsync(ownerRole);
-            //}
-            await FollowupAsync("License Redeemed Successfully!");
+            await FollowupAsync(resetOperation.Result ? "HWID reset successfully." : resetOperation.Error, null, ephemeral: true);
         }
     }
 }

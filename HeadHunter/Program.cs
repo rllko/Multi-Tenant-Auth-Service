@@ -147,7 +147,7 @@ app.UseExceptionHandler(appError =>
             await context.Response.WriteAsJsonAsync(
                 new
                 {
-                    Error = ContextFeature.Error.Message,
+                    ExceptionMessage = ContextFeature.Error.Message,
                     StackTrace = ContextFeature.Error.StackTrace,
                 });
         }
