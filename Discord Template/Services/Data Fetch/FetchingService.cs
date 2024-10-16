@@ -45,14 +45,14 @@ public class FetchingService(HttpClient httpClient, DiscordSocketClient SocketCl
         await SendMessageToChannelAsync(
         $"""
         {user.Username} caused an exception!
-        At:{DateTime.Now}
+        At:``{DateTime.Now}``
         Message:
         ```
-        {exceptionLog.ExceptionMessage}
+        >{exceptionLog.ExceptionMessage}
         ```
         StackTrace: 
         ```
-        {exceptionLog.StackTrace}
+        >{exceptionLog.StackTrace}
         ```
         """);
     }

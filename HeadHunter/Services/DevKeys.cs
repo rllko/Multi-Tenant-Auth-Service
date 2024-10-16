@@ -41,7 +41,6 @@ namespace HeadHunter.Services
         public RSA RsaSignKey { get; }
         public RSA RsaEncryptKey { get; }
         public byte [] RsaEncryptPublicKey { init; get; }
-        public Aes AesKey { get; }
 
     }
 }

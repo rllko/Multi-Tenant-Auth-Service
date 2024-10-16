@@ -8,33 +8,33 @@ namespace HeadHunter.OauthResponse
         /// <summary>
         /// Oauth 2
         /// </summary>
-        public string access_token { get; set; }
+        public string? AccessToken { get; set; } = null;
 
         ///// <summary>
         ///// OpenId Connect
         ///// </summary>
-        public string id_token { get; set; }
+        public string? IdToken { get; set; } = null;
 
         /// <summary>
         /// By default is Bearer
         /// </summary>
 
-        public string token_type { get; set; } = TokenTypeEnum.Bearer.GetEnumDescription();
+        public string TokenType { get; set; } = TokenTypeEnum.Bearer.GetEnumDescription();
 
         /// <summary>
         /// Authorization Code. This is always returned when using the Hybrid Flow.
         /// </summary>
-        public string code { get; set; }
+        public string? Code { get; set; }
 
 
-        public string requested_scopes { get; set; }
+        public string? RequestedScopes { get; set; }
 
         /// <summary>
         /// For Error Details if any
         /// </summary>
         public string Error { get; set; } = string.Empty;
-        public string ErrorUri { get; set; }
-        public string ErrorDescription { get; set; }
+        public string? ErrorUri { get; set; }
+        public string? ErrorDescription { get; set; }
         public bool HasError => !string.IsNullOrEmpty(Error);
     }
 }

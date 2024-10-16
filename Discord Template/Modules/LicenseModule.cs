@@ -7,12 +7,17 @@ using DiscordTemplate.Services.Licenses;
 
 namespace DiscordTemplate.Modules;
 
-[RequireRole("Member")]
+
+
+[CommandContextType(InteractionContextType.PrivateChannel)]
+[RequireOwner]
 public class LicenseModule(IOAuthClient authClient, ILicenseAuthService licenseService, IFetchingService fetchingService) : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IOAuthClient _authClient = authClient;
     private readonly ILicenseAuthService _licenseService = licenseService;
     private readonly IFetchingService _fetchingService = fetchingService;
+
+
 
     [SlashCommand("redeem-code", "redeem code given by the launcher")]
     public async Task HandleRedeemDiscordCode(string code)

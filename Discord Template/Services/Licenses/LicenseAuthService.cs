@@ -37,8 +37,8 @@ namespace DiscordTemplate.Services.Licenses
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             using HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(request);
-
-            result = LicenseResponse<string>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            var responseJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            result = LicenseResponse<string>.Parse(responseJson);
             return result;
         }
 
@@ -57,7 +57,7 @@ namespace DiscordTemplate.Services.Licenses
         }
 
 
-        public async Task<LicenseResponse<List<string>>> GetUserLicenses(string accessToken, ulong discordId)
+        public async Task<LicenseResponse<List<string>?>> GetUserLicenses(string accessToken, ulong discordId)
         {
             var licenses = new LicenseResponse<List<string>>();
 
@@ -74,7 +74,7 @@ namespace DiscordTemplate.Services.Licenses
 
             using var httpResponseMessage = await _httpClient.SendAsync(request);
 
-            licenses = LicenseResponse<List<string>>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            licenses = LicenseResponse<List<string>?>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
             return licenses;
         }
 

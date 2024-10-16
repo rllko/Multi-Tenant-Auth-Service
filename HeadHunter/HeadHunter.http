@@ -1,6 +1,6 @@
-@HeadHunter_HostAddress = http://localhost:5133
+# @HeadHunter_HostAddress = http://localhost:80
 
-GET {{HeadHunter_HostAddress}}/weatherforecast/
-Accept: application/json
+# GET {{HeadHunter_HostAddress}}/
+# Accept: application/json
 
-###
+# ###

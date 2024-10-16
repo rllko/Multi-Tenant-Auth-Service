@@ -89,7 +89,7 @@ public class CodeStorageService : ICodeStorageService
     {
         if(_authorizeCodeIssued.TryGetValue(key, out AuthorizationCode? authorizationCode))
         {
-            if(authorizationCode.isExpired)
+            if(authorizationCode.IsExpired)
             {
                 return null;
             }
@@ -133,7 +133,7 @@ public class CodeStorageService : ICodeStorageService
 
         foreach(var key in _authorizeCodeIssued.Keys)
         {
-            if(_authorizeCodeIssued.TryGetValue(key, out var expiringValue) && expiringValue.isExpired)
+            if(_authorizeCodeIssued.TryGetValue(key, out var expiringValue) && expiringValue.IsExpired)
             {
                 _authorizeCodeIssued.TryRemove(key, out _); // Remove expired items
             }
@@ -141,7 +141,7 @@ public class CodeStorageService : ICodeStorageService
 
         foreach(var code in _discordCodeIssued.Keys)
         {
-            if(_authorizeCodeIssued.TryGetValue(code, out var expiringValue) && expiringValue.isExpired)
+            if(_authorizeCodeIssued.TryGetValue(code, out var expiringValue) && expiringValue.IsExpired)
             {
                 _authorizeCodeIssued.TryRemove(code, out _); // Remove expired items
             }

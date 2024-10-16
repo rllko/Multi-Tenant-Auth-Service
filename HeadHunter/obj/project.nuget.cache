@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "l8IijLY/uUo=",
+  "dgSpecHash": "cTVW5nKBF74=",
   "success": true,
   "projectFilePath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\HeadHunter\\HeadHunter.csproj",
   "expectedPackageFiles": [
@@ -56,10 +56,10 @@
     "C:\\Users\\ricar\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.0-rc.1\\npgsql.entityframeworkcore.postgresql.9.0.0-rc.1.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\polly\\7.2.4\\polly.7.2.4.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\polly.extensions.http\\3.0.0\\polly.extensions.http.3.0.0.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore\\6.7.3\\swashbuckle.aspnetcore.6.7.3.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.7.3\\swashbuckle.aspnetcore.swagger.6.7.3.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.7.3\\swashbuckle.aspnetcore.swaggergen.6.7.3.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.7.3\\swashbuckle.aspnetcore.swaggerui.6.7.3.nupkg.sha512",
+    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore\\6.8.1\\swashbuckle.aspnetcore.6.8.1.nupkg.sha512",
+    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.8.1\\swashbuckle.aspnetcore.swagger.6.8.1.nupkg.sha512",
+    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.8.1\\swashbuckle.aspnetcore.swaggergen.6.8.1.nupkg.sha512",
+    "C:\\Users\\ricar\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.8.1\\swashbuckle.aspnetcore.swaggerui.6.8.1.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\system.composition\\7.0.0\\system.composition.7.0.0.nupkg.sha512",
@@ -79,10 +79,19 @@
     "C:\\Users\\ricar\\.nuget\\packages\\system.text.encodings.web\\7.0.0\\system.text.encodings.web.7.0.0.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\system.text.json\\7.0.3\\system.text.json.7.0.3.nupkg.sha512",
     "C:\\Users\\ricar\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
-    "C:\\Users\\ricar\\.nuget\\packages\\microsoft.net.sdk.compilers.toolset\\9.0.100-rc.1.24452.12\\microsoft.net.sdk.compilers.toolset.9.0.100-rc.1.24452.12.nupkg.sha512"
+    "C:\\Users\\ricar\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Microsoft.Extensions.Caching.Memory' 9.0.0-rc.1.24431.7 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj",
+      "libraryId": "Microsoft.Extensions.Caching.Memory",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    },
     {
       "code": "NU1904",
       "level": "Warning",

@@ -1,4 +1,5 @@
 ﻿using HeadHunter.Common;
+using HeadHunter.Endpoints;
 using HeadHunter.Services.CodeService;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -27,9 +28,8 @@ namespace HeadHunter.Services
                 return Task.CompletedTask;
             });
 
-
             // extract guid token form from header
-            context.Request.Headers.TryGetValue("Authorization", out var access_token);
+            var access_token = context.Request.Headers.Authorization;
 
             if(string.IsNullOrEmpty(access_token))
             {
@@ -44,7 +44,7 @@ namespace HeadHunter.Services
             if(authorizationCode == null)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsJsonAsync("Invalid Token");
+                await context.Response.WriteAsJsonAsync(new DiscordResponse<string>() { Error = "Invalid Token" });
                 return;
             }
 
@@ -61,9 +61,9 @@ namespace HeadHunter.Services
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
                 Claims = new Dictionary<string,object>()
                 {
-                    ["scope"] = authorizationCode.RequestedScopes.Select(u => u).ToList(),
+                    ["Scope"] = authorizationCode.RequestedScopes.Select(u => u).ToList(),
                     ["sub"] = authorizationCode.Subject,
-                    ["client_id"] =  authorizationCode.ClientIdentifier,
+                    ["ClientId"] =  authorizationCode.ClientIdentifier,
                     ["jti"] = codeUsed,
                     ["jti_created_at"] = authorizationCode.CreationTime.ToString()
                 }

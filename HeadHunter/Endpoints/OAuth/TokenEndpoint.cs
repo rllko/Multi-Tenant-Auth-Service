@@ -25,10 +25,10 @@ namespace HeadHunter.Endpoints.OAuth
 
             return Results.Ok(new
             {
-                AccessToken = result.access_token,
-                IdentityToken = result.id_token,
-                TokenType = result.token_type,
-                Scope = result.requested_scopes,
+                AccessToken = result.AccessToken,
+                IdentityToken = result.IdToken,
+                TokenType = result.TokenType,
+                Scope = result.RequestedScopes,
                 ExpiresIn = DateTime.UtcNow.AddMinutes(30)
             });
         }

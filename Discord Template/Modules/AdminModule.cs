@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordTemplate.AuthClient;
+using DiscordTemplate.Services.Data_Fetch;
 using DiscordTemplate.Services.Licenses;
 using DiscordTemplate.Services.Offsets;
 
@@ -9,14 +10,15 @@ namespace DiscordTemplate.Modules
 {
     [Group("admin", "admin commands")]
     [RequireRole(1287486909198630912)]
-    [CommandContextType(InteractionContextType.Guild)]
+    [RequireContextPermission(ChannelPermission.ManageChannels)]
     public class AdminModule(IOAuthClient authClient,
         ILicenseAuthService licenseService,
-        IOffsetService offsetService) : InteractionModuleBase<SocketInteractionContext>
+        IOffsetService offsetService, IFetchingService fetchingService) : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly IOAuthClient _authClient = authClient;
         private readonly ILicenseAuthService _licenseService = licenseService;
         private readonly IOffsetService _offsetService = offsetService;
+        private readonly IFetchingService _fetchingService = fetchingService;
 
         [SlashCommand("generate-key", "generates a key", false, RunMode.Default)]
         public async Task HandleCreate([Summary(null, "Leave null if none")] IUser? user = null)
@@ -32,15 +34,22 @@ namespace DiscordTemplate.Modules
 
             var keyResponse = await _licenseService.CreateKeyAsync(tokenResponse.AccessToken, user?.Id);
 
-            if(keyResponse == null)
+            if(keyResponse.Succeed is false)
             {
-                await FollowupAsync("Failed to create key.");
+                await fetchingService.SendMessageExceptionToChannelAsync(keyResponse, Context.User);
+                await FollowupAsync("Something wrong happened, Please try again later.");
+            }
+
+            if(keyResponse.Result == null)
+            {
+                await FollowupAsync(keyResponse.Error);
                 return;
             }
+
             if(user is not SocketGuildUser socketUser)
             {
                 user = base.Context.User;
-                await user.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse + "```");
+                await user.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse.Result + "```");
                 await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
                 return;
             }
@@ -55,7 +64,7 @@ namespace DiscordTemplate.Modules
             {
                 await socketUser.AddRoleAsync(ownerRole);
             }
-            await socketUser.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse + "```");
+            await socketUser.CreateDMChannelAsync().Result.SendMessageAsync("Key created successfully:```" + keyResponse.Result + "```");
             await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
         }
 
@@ -73,8 +82,9 @@ namespace DiscordTemplate.Modules
             }
 
             var keyResponse = await _licenseService.CreateBulkAsync(tokenResponse.AccessToken, amount + 1);
-            if(keyResponse == null)
+            if(keyResponse.Result == null)
             {
+
                 await FollowupAsync("Failed to create key.");
                 return;
             }
@@ -83,10 +93,10 @@ namespace DiscordTemplate.Modules
                 await FollowupAsync("Failed to create key.");
                 return;
             }
-#warning yo
+
             await user.CreateDMChannelAsync().Result
                 .SendMessageAsync("Keys created successfully:```" + string.Join("\n"
-                , keyResponse.Select((string license) => license ?? "")) + "\nThanks for Joining us!```");
+                , keyResponse.Result.Select((string license) => license ?? "")) + "\nThanks for Joining us!```");
             var ownerRole = base.Context.Guild.Roles.FirstOrDefault((SocketRole x) => x.Name == "Reseller");
             if(ownerRole == null && user != null)
             {
@@ -107,19 +117,41 @@ namespace DiscordTemplate.Modules
         {
             await DeferAsync(ephemeral: true);
             var tokenResponse = await _authClient.GetAccessToken();
-            if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
+
+            if(tokenResponse == null)
+            {
+                await FollowupAsync("Something really unexpected happened");
+            }
+
+            if(tokenResponse!.Succeed == false)
+            {
+                await _fetchingService.SendMessageExceptionToChannelAsync(tokenResponse, Context.User);
+                return;
+            }
+
+            if(string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 await FollowupAsync("Failed to retrieve access token.");
+                return;
             }
-#warning this
-            else if(await _offsetService.SetOffsets(tokenResponse.AccessToken, attachment.Url, filename ?? attachment.Filename) is false)
+
+            var setOffsetsOperation = await _offsetService
+                .SetOffsets(tokenResponse!.AccessToken!, attachment.Url
+                , filename ?? attachment.Filename);
+
+            if(setOffsetsOperation.Succeed == false)
             {
-                await FollowupAsync("Failed to set offsets.");
+                await _fetchingService.SendMessageExceptionToChannelAsync(setOffsetsOperation, Context.User);
+                await FollowupAsync("Something wrong happened. Please try again later.");
             }
-            else
+
+            if(setOffsetsOperation.Result == false)
             {
-                await FollowupAsync("Success!", null, isTTS: false, ephemeral: true);
+                await FollowupAsync(setOffsetsOperation.Error);
+                return;
             }
+
+            await FollowupAsync("Success!", ephemeral: true);
         }
 
         [SlashCommand("get-offsets", "see offsets", false, RunMode.Default)]
@@ -128,13 +160,6 @@ namespace DiscordTemplate.Modules
         {
             await DeferAsync(ephemeral: true);
 
-            Embed eb = new EmbedBuilder().WithTitle("Files").WithDescription("All Files are readonly, only meant to be downloaded").AddField("Metadata:", "Yo")
-            .WithUrl("https://" + filename)
-            .WithColor(Color.Blue)
-            .WithFooter("Requested by: " + base.Context.User.Mention)
-            .WithTimestamp(DateTimeOffset.Now)
-            .Build();
-
             var tokenResponse = await _authClient.GetAccessToken();
             if(tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
@@ -142,19 +167,24 @@ namespace DiscordTemplate.Modules
                 return;
             }
 
-#warning this too :dead:
             var keyResponse = await _offsetService.GetOffsets(tokenResponse.AccessToken, filename);
+
             if(keyResponse == null)
             {
-                await FollowupAsync("Failed to get offsets.");
-                return;
+                await FollowupAsync("File Doesnt Exist.");
             }
 
-            var e = new FileAttachment(keyResponse.Result, filename ?? "");
+            var e = new FileAttachment(keyResponse, filename ?? "");
 
-            await base.Context.Channel.SendFileAsync(e, "File requested by " + base.Context.User.Mention);
-
-            await FollowupAsync("Success!", null, isTTS: false, ephemeral: true, null, null, null, eb);
+            try
+            {
+                await base.Context.Channel.SendFileAsync(e, "File requested by " + base.Context.User.Mention);
+                await FollowupAsync("Success!", ephemeral: true);
+            }
+            catch(Exception)
+            {
+                await FollowupAsync("bruh?");
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ namespace HeadHunter.Services.CodeService;
 public class AcessTokenStorageService : IAcessTokenStorageService
 {
     private readonly ICodeStorageService _codeStorageService;
-    private MemoryCache _tokenCache;
+    private readonly MemoryCache _tokenCache;
 
     public AcessTokenStorageService(ICodeStorageService codeStorageService)
     {

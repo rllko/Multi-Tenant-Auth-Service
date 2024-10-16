@@ -51,8 +51,8 @@ namespace HeadHunter.Common
                 {
                     [JwtRegisteredClaimNames.Jti] = user.License,
                     [JwtRegisteredClaimNames.AuthTime] = user.LastToken,
-                    ["PersistenceToken"] = user.PersistentToken,
-                    ["Hwid"] = user.Hwid,
+                    ["PersistenceToken"] = user.PersistentToken!,
+                    ["Hwid"] = user.Hwid!,
                 },
                 SigningCredentials = new SigningCredentials(new RsaSecurityKey(keys.RsaSignKey), SecurityAlgorithms.RsaSha256),
 

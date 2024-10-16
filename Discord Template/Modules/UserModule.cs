@@ -2,16 +2,18 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordTemplate.AuthClient;
+using DiscordTemplate.Services.Data_Fetch;
 using DiscordTemplate.Services.Licenses;
 
 namespace DiscordTemplate.Modules
 {
     [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.UserInstall)]
-    public class UserModule(IOAuthClient authClient, ILicenseAuthService licenseService) : InteractionModuleBase<SocketInteractionContext>
+    public class UserModule(IOAuthClient authClient, ILicenseAuthService licenseService, IFetchingService fetchingService) : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly IOAuthClient _authClient = authClient;
         private readonly ILicenseAuthService _licenseService = licenseService;
+        private readonly IFetchingService _fetchingService = fetchingService;
 
         [SlashCommand("airfryer", "He doesnt own one, imagine!", false, RunMode.Default)]
         public async Task DoesntOwnAirFryer(IUser user)
@@ -34,14 +36,19 @@ namespace DiscordTemplate.Modules
 
             var licenses = await _licenseService.GetUserLicenses(tokenResponse.AccessToken, currentUser.Id);
 
-
-#warning yep, this too
-            if(licenses == null)
+            if(licenses.Succeed == false)
             {
-                await FollowupAsync("You dont own any license");
+                await _fetchingService.SendMessageExceptionToChannelAsync(licenses, Context.User);
+                await FollowupAsync("Something wrong happened. Please try again later.");
+            }
+
+            if(licenses.Result!.Count == 0)
+            {
+                await FollowupAsync(text: licenses.Error);
                 return;
             }
-            await FollowupAsync($"```\r\n************************************\r\n* Licenses Owned by {currentUser.GlobalName}\r\n************************************\r\n\r\n{string.Join("\n", licenses.Select((string license) => license + "\nAcquired at: Date Here"))}\r\n\r\nKeep track of your licenses!\r\nThank you for trusting in our mission!\r\n\r\n************************************\r\n```");
+
+            await FollowupAsync($"```\r\n************************************\r\n* Licenses Owned by {currentUser.GlobalName}\r\n************************************\r\n\r\n{string.Join("\n", licenses.Result.Select((string license) => license + "\nAcquired at: Date Here"))}\r\n\r\nKeep track of your licenses!\r\nThank you for trusting in our mission!\r\n\r\n************************************\r\n```");
         }
 
         [SlashCommand("reset-hwid", "reset's license hwid", false, RunMode.Default)]
@@ -106,7 +113,7 @@ namespace DiscordTemplate.Modules
             var resetOperation = await _licenseService
                 .ResetHwidAsync(accessToken, user.Id, selected[0]);
 
-            await FollowupAsync(resetOperation.Result ? "HWID reset successfully." : resetOperation.Error, null, ephemeral: true);
+            await FollowupAsync(text: resetOperation.Result ? "HWID reset successfully." : resetOperation.Error, ephemeral: true);
         }
     }
 }

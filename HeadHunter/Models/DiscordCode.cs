@@ -4,7 +4,7 @@ namespace HeadHunter.Models
 {
     public class DiscordCode
     {
-        public User User { get; init; }
+        public required User User { get; init; }
         public DateTime CreationTime { get; init; } = DateTime.UtcNow;
 
         public bool isExpired => DateTime.UtcNow > CreationTime.AddMinutes(30);

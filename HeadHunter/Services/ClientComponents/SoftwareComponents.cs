@@ -4,14 +4,9 @@ using System.Net.Http.Headers;
 
 namespace HeadHunter.Services.ClientComponents;
 
-public class SoftwareComponents : ISoftwareComponents
+public class SoftwareComponents(HeadhunterDbContext dbContext) : ISoftwareComponents
 {
-    private readonly HeadhunterDbContext _dbContext;
-
-    public SoftwareComponents(HeadhunterDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly HeadhunterDbContext _dbContext = dbContext;
 
     public async Task<Stream?> GetOffsets(string link)
     {
@@ -20,10 +15,10 @@ public class SoftwareComponents : ISoftwareComponents
             return null;
         }
 
-        using var _httpClient = new HttpClient();
-        var data = await _httpClient.GetAsync(link);
+        using var httpClient = new HttpClient();
+        var data = await httpClient.GetAsync(link);
 
-        if(data.EnsureSuccessStatusCode() == null)
+        if(data.IsSuccessStatusCode == false)
         {
             return null;
         }
@@ -32,8 +27,9 @@ public class SoftwareComponents : ISoftwareComponents
         return await content.ReadAsStreamAsync();
     }
 
-    public async Task<bool> SetOffsets(string offsets)
+    public  bool SetOffsets(string offsets)
     {
+        #warning  remember me to set offsets for the software components
         if(string.IsNullOrEmpty(offsets))
         {
             return false;

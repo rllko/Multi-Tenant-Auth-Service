@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Services.DataFetchingService;
 using Discord.WebSocket;
 using DiscordTemplate.AuthClient;
 using DiscordTemplate.Services.Data_Fetch;
@@ -81,9 +82,9 @@ public class Program
         _client.Ready += async () =>
         {
             // Then register the commands to your guild
-            await sCommands.RegisterCommandsGloballyAsync();
+            await sCommands.RegisterCommandsToGuildAsync(1270275400513093643);
         };
-
+        await _client.SetCustomStatusAsync("Waiting for birdy to finish");
         await _client.LoginAsync(Discord.TokenType.Bot, config ["token"]);
         await _client.StartAsync();
         await Task.Delay(-1);

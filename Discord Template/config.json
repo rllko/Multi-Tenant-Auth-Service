@@ -5,7 +5,7 @@
   "ApiConfiguration": {
     "clientId": "a72JD81Y76LH2D9Q",
     "clientSecret": "vK!@82msN7#$bTgF47Aq5pYx!Zw6E3",
-    "baseUrl": "https://api.rikko.space/",
+    "baseUrl": "https://localhost:5001/",
     //"authorizationEndpoint": "",
     //"tokenEndpoint": "",
     "response_type": "code",

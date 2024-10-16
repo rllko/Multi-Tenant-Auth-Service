@@ -3,52 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\licensemodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\licensemodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\data fetch\\ifetchingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\data fetch\\ifetchingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\licenses\\licenseresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\licenses\\licenseresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\data fetch\\fetchingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\data fetch\\fetchingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\oauth\\oauthclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:oauth\\oauthclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\offsets\\offsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\offsets\\offsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\offsets\\offsetsresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\offsets\\offsetsresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\usermodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\usermodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:modules\\adminmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\licenses\\ilicenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\licenses\\ilicenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\licenses\\licenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\licenses\\licenseauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|c:\\users\\ricar\\documents\\c#\\headhunter-oauth\\discord template\\services\\offsets\\ioffsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FA0469D-23AE-4360-AA1A-22D58158D659}|Discord Template.csproj|solutionrelative:services\\offsets\\ioffsetservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,167 +18,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "IFetchingService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Data Fetch\\IFetchingService.cs",
-              "RelativeDocumentMoniker": "Services\\Data Fetch\\IFetchingService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Data Fetch\\IFetchingService.cs",
-              "RelativeToolTip": "Services\\Data Fetch\\IFetchingService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAgAAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-12T00:03:03.176Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "LicenseResponse.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseResponse.cs",
-              "RelativeDocumentMoniker": "Services\\Licenses\\LicenseResponse.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseResponse.cs",
-              "RelativeToolTip": "Services\\Licenses\\LicenseResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:53:25.11Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "FetchingService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Data Fetch\\FetchingService.cs",
-              "RelativeDocumentMoniker": "Services\\Data Fetch\\FetchingService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Data Fetch\\FetchingService.cs",
-              "RelativeToolTip": "Services\\Data Fetch\\FetchingService.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAADwvzIAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:40:06.934Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "OAuthClient.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\OAuth\\OAuthClient.cs",
-              "RelativeDocumentMoniker": "OAuth\\OAuthClient.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\OAuth\\OAuthClient.cs",
-              "RelativeToolTip": "OAuth\\OAuthClient.cs",
-              "ViewState": "AgIAAIcAAAAAAAAAAAAkwJsAAAAYAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:34:10.491Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
               "Title": "LicenseModule.cs",
               "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\LicenseModule.cs",
               "RelativeDocumentMoniker": "Modules\\LicenseModule.cs",
               "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\LicenseModule.cs",
               "RelativeToolTip": "Modules\\LicenseModule.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:30:26.9Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-14T22:26:34.044Z",
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "UserModule.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\UserModule.cs",
-              "RelativeDocumentMoniker": "Modules\\UserModule.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\UserModule.cs*",
-              "RelativeToolTip": "Modules\\UserModule.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABVAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAQwCUAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:27:31.022Z",
+              "WhenOpened": "2024-10-15T19:25:03.326Z",
               "EditorCaption": ""
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "AdminModule.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\AdminModule.cs",
-              "RelativeDocumentMoniker": "Modules\\AdminModule.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Modules\\AdminModule.cs",
-              "RelativeToolTip": "Modules\\AdminModule.cs",
-              "ViewState": "AgIAAFMAAAAAAAAAAIAwwGwAAAAUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:27:25.243Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "ILicenseAuthService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\ILicenseAuthService.cs",
-              "RelativeDocumentMoniker": "Services\\Licenses\\ILicenseAuthService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\ILicenseAuthService.cs",
-              "RelativeToolTip": "Services\\Licenses\\ILicenseAuthService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:27:09.729Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "IOffsetService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\IOffsetService.cs",
-              "RelativeDocumentMoniker": "Services\\Offsets\\IOffsetService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\IOffsetService.cs",
-              "RelativeToolTip": "Services\\Offsets\\IOffsetService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAQAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:07:09.167Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "OffsetService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\OffsetService.cs",
-              "RelativeDocumentMoniker": "Services\\Offsets\\OffsetService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\OffsetService.cs",
-              "RelativeToolTip": "Services\\Offsets\\OffsetService.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAAqwDEAAAAuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T23:07:11.696Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "OffsetsResponse.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\OffsetsResponse.cs",
-              "RelativeDocumentMoniker": "Services\\Offsets\\OffsetsResponse.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Offsets\\OffsetsResponse.cs",
-              "RelativeToolTip": "Services\\Offsets\\OffsetsResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAA4AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T18:11:30.19Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "LicenseAuthService.cs",
-              "DocumentMoniker": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
-              "RelativeDocumentMoniker": "Services\\Licenses\\LicenseAuthService.cs",
-              "ToolTip": "C:\\Users\\ricar\\Documents\\c#\\HeadHunter-OAuth\\Discord Template\\Services\\Licenses\\LicenseAuthService.cs",
-              "RelativeToolTip": "Services\\Licenses\\LicenseAuthService.cs",
-              "ViewState": "AgIAACMAAACACg3EssEwwFgAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-08T20:24:47.115Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             }
           ]
         }

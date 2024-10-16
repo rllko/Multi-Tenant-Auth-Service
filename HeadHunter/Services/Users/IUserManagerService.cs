@@ -9,9 +9,10 @@ namespace HeadHunter.Services.Users
         Task<User?> GetUserByEmailAsync(string userEmail);
         Task<User?> GetUserByLicenseAsync(string license);
         Task<User?> GetUserByDiscordAsync(long discordId);
-        Task<User?> GetUserByHwidAsync(string Hwid);
+        Task<User?> GetUserByHwidAsync(long Hwid);
+        Task<User?> GetUserByPersistanceTokenAsync(string token);
         Task<List<User>?> GetUserLicenseListAsync(long discordId);
-        Task<bool> AssignLicenseHwidAsync(string License, List<string> hwid);
+        Task<bool> AssignLicenseHwidAsync(string License, Hwid hwid);
         Task<bool> UpdateLicensePersistenceTokenAsync(string license);
         Task<bool> ResetLicensePersistenceToken(string license);
         Task<bool> ResetUserHwidAsync(long discordId);

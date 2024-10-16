@@ -7,6 +7,6 @@ namespace HeadHunter.Models
         public JwtSecurityToken token { get; init; }
         public bool IsSuccess { get; set; } = false;
 
-        public string ErrorDescription { get; init; }
+        public string? ErrorDescription { get; init; }
     }
 }

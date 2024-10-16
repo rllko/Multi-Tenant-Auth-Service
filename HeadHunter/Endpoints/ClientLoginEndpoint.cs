@@ -1,6 +1,7 @@
 ﻿using HeadHunter.Common;
+using HeadHunter.Models.Entities;
 using HeadHunter.Services;
-using HeadHunter.Services.ClientComponents;
+using HeadHunter.Services.ActivityLogger;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,75 +13,80 @@ namespace HeadHunter.Endpoints
     public static class ClientLoginEndpoint
     {
 
+
         [HttpGet("{key:guid}")]
-        public async static Task<IResult> HandleGet(HttpContext httpContext,
+        public async static Task<IResult> HandleGet(HttpContext context,
             IUserManagerService userManagerService,
-            ISoftwareComponents softwareComponents,
-            [FromServices] DevKeys _devKeys)
+            [FromServices] DevKeys _devKeys, IActivityLogger logger)
         {
 
-            if(httpContext.Request.Query.TryGetValue("3917505287", out var License) == false ||
-                httpContext.Request.Query.TryGetValue("3391056346", out var Hwid) == false)
+            if(context.Request.Query.TryGetValue("3917505287", out var License) == false ||
+                context.Request.Query.TryGetValue("3391056346", out var Hwid) == false)
             {
                 return Results.NotFound();
             }
-
-            throw new Exception("This is a demo exception");
 
             if(string.IsNullOrEmpty(License))
             {
                 return Results.NotFound();
             }
 
-            var userKey = await userManagerService.GetUserByLicenseAsync(License);
+            var response = new DiscordResponse<List<string>>();
+
+            var userKey = await userManagerService.GetUserByLicenseAsync(License!);
 
             if(userKey == null)
             {
-                return Results.BadRequest(new { Error = "License is invalid" });
+                response.Error = "License is invalid";
+                return Results.BadRequest(response);
             }
 
             // check if the user has a hwid and if it matches the one provided
-            var hwidList = Hwid.ToString().Split(' ').ToList();
+            var filteredInput = Hwid.ToString().Split(' ').ToList();
 
-            if(hwidList.Count is not 5)
+            if(filteredInput.Count is not 5)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                await httpContext.Response.WriteAsJsonAsync(new { Error = "Invalid hwid list" });
-                return Results.Conflict();
+                context.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                response.Error = "Invalid hwid list";
+
+                return Results.Json(response);
             }
 
             if(userKey.Hwid == null)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status200OK;
-                await httpContext.Response.WriteAsJsonAsync(new { Error = "birdy, send a post request to this endpoint." });
-                return Results.Conflict();
+                response.Error = "birdy, send a post request to this endpoint.";
+                return Results.Json(response);
             }
 
-            var validHwid = false;
-            hwidList.ForEach(x =>
+            var inputHwid = new Hwid()
             {
-                if(userKey.Hwid.Contains(x) is true)
-                {
-                    validHwid = true;
-                }
-            });
+                Cpu  = filteredInput[0],
+                Bios = filteredInput[1],
+                Ram  = filteredInput[2],
+                Disk = filteredInput[3],
+                Display = filteredInput[4]
+            };
 
-            if(validHwid is false)
+            if(userKey.Hw!.EqualsCheck(inputHwid) is false)
             {
-                return Results.BadRequest(new { Error = "Invalid HWID" });
+                response.Error = "Invalid HWID";
+                return Results.Json(response);
             }
 
             // check if the user has confirmed their discord account
             if(userKey.DiscordUser == null)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                await httpContext.Response.WriteAsJsonAsync(new { Error = "License is not confirmed." });
-                return Results.Conflict();
+                context.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                response.Error = "License is not confirmed.";
+
+                await context.Response.WriteAsJsonAsync(response);
+                return Results.Json(response);
             }
 
             if(await userManagerService.UpdateLicensePersistenceTokenAsync(userKey.License) == false)
             {
-                return Results.BadRequest(new { Error = "Failed While updating token" });
+                response.Error = "Failed While updating token";
+                return Results.BadRequest(response);
             }
 
             // Create Handler for JWT
@@ -91,8 +97,11 @@ namespace HeadHunter.Endpoints
 
             if(tokenDescriptor == null)
             {
-                return Results.BadRequest(new { Error = "Failed to generate token" });
+                response.Error = "Failed to generate token";
+                return Results.BadRequest(response);
             }
+
+            await logger.LogActivityAsync(userKey.Id, ActivityType.Login, context.Request.Headers ["cf-connecting-ip"]!);
 
             // create the token string
             string token = handler.WriteToken(handler.CreateToken(tokenDescriptor));
@@ -110,18 +119,20 @@ namespace HeadHunter.Endpoints
                     result.Add(System.Convert.ToBase64String(_devKeys.RsaEncryptKey.Encrypt(item, RSAEncryptionPadding.Pkcs1)));
                 }
 
-                return Results.Json(new { Error = "none", Result = result });
+                response.Result = result;
+                return Results.Json(response);
             }
             catch(Exception e)
             {
-                return Results.BadRequest(new { Error = e.Message });
+                response.Error = e.Message;
+                return Results.BadRequest(response);
             }
         }
 
         [HttpPost]
         public async static Task<IResult> HandlePost(HttpContext httpContext, IUserManagerService userManagerService)
         {
-            if(httpContext.Request.Form.TryGetValue("3391056346", out var Hwid) == false ||
+            if(httpContext.Request.Form.TryGetValue("3391056346", out var hwid) == false ||
                httpContext.Request.Form.TryGetValue("3917505287", out var License) == false)
             {
                 return Results.NotFound();
@@ -131,31 +142,57 @@ namespace HeadHunter.Endpoints
             {
                 return Results.NotFound();
             }
+
+            var response = new DiscordResponse<string>();
+
             var user = await userManagerService.GetUserByLicenseAsync(License!);
             if(user == null)
             {
-                return Results.NotFound();
+                return Results.BadRequest();
             }
 
             if(user.DiscordUser == null)
             {
-                return Results.Json(new { Error = "No discord user assigned." });
+                response.Error = "No discord user assigned.";
+                return Results.Json(response);
             }
 
             if(user.Hwid != null)
             {
-                return Results.Json(new { Error = "Key already assigned." });
+                response.Error = "Key already assigned. Please reset it through the bot!";
+                return Results.Json(response);
             }
 
-            var hwidList = Hwid.ToString().Split('+').ToList();
+            var filteredInput = hwid.ToString().Split('+').ToList();
 
-            if(hwidList.Count is <= 5)
+            if(filteredInput.Count is not 5)
             {
-                return Results.BadRequest(new { Error = "Invalid HWID" });
+                response.Error = "Invalid HWID Size";
+                return Results.Json(response);
             }
 
-            await userManagerService.AssignLicenseHwidAsync(License.ToString(), hwidList);
-            return Results.Json(new { Error = "none", Message = "Success!" });
+            foreach(var item in filteredInput)
+            {
+                if(item!.Length is not 64)
+                {
+                    response.Error = "Invalid HWID Format";
+                    return Results.Json(response);
+                }
+            }
+
+            var newHwid = new Hwid()
+            {
+                Cpu = filteredInput[0],
+                Bios = filteredInput[1],
+                Ram = filteredInput[2],
+                Disk = filteredInput[3],
+                Display = filteredInput[4]
+            };
+
+            await userManagerService.AssignLicenseHwidAsync(License.ToString(), newHwid);
+
+            response.Result = "Success!";
+            return Results.Json(response);
         }
     }
 }

@@ -42,12 +42,12 @@ namespace DiscordTemplate.AuthClient
             // Create the URL -> please change this later
 
             var query =
-            $"?Response_type={_api!.Response_type}" +
+            $"?response_type={_api!.Response_type}" +
             $"&client_id={_api.ClientId}" +
             $"&code_challenge=" + code_verifier +
-            $"&Code_challenge_method={_api.Code_challenge_method}" +
-            $"&Scope={_api.Scope}" +
-            $"&State={_api.State}";
+            $"&code_challenge_method={_api.Code_challenge_method}" +
+            $"&scope={_api.Scope}" +
+            $"&state={_api.State}";
 
             // Create Request and add headers
 
@@ -56,7 +56,6 @@ namespace DiscordTemplate.AuthClient
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, _api.AuthorizationEndpoint + query);
                 request.Headers.Add("Accept", "application/json");
-
 
                 return _httpClient.SendAsync(request);
             });
@@ -76,10 +75,11 @@ namespace DiscordTemplate.AuthClient
             // Rerturn the Access Token
             return authorizationResponse;
         }
-#warning YO, DONT FORGET ME
+
         public async Task<TokenResponse?> GetAccessToken()
         {
-            if(lastToken?.ExpiresIn < DateTime.Now)
+#warning You need to implement the endpoint to check if access token is still valid
+            if(DateTime.Now > lastToken?.ExpiresIn)
             {
                 lastToken.ExpiresIn = DateTime.UtcNow.AddMinutes(30.0);
                 return lastToken;

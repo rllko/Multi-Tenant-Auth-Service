@@ -88,7 +88,15 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.7.3, )"
+              "version": "[6.8.1, )"
+            },
+            "Swashbuckle.AspNetCore.Swagger": {
+              "target": "Package",
+              "version": "[6.8.1, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerGen": {
+              "target": "Package",
+              "version": "[6.8.1, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
@@ -106,12 +114,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.Net.Sdk.Compilers.Toolset",
-              "version": "[9.0.100-rc.1.24452.12, 9.0.100-rc.1.24452.12]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"

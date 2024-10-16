@@ -9,19 +9,28 @@ namespace HeadHunter.Endpoints.ProtectedResources.DiscordOperations
         [Authorize(Policy = "Special")]
         internal static async Task<IResult> Handle(HttpContext context, IUserManagerService userManager)
         {
+            var response = new DiscordResponse<List<string>>();
+
             if(!context.Request.Query.TryGetValue("discordId", out var License))
             {
-                return Results.BadRequest(new { Error = "Invalid Discord Id" });
+                response.Error = "Invalid Discord Id";
+                response.Result = [];
+                return Results.BadRequest(response);
             }
 
-            var userLicenses = await userManager.GetUserLicenseListAsync(long.Parse(License));
+            var userLicenses = await userManager.GetUserLicenseListAsync(long.Parse(License!));
 
             if(userLicenses == null)
             {
-                return Results.BadRequest();
+                response.Error = "User Has no Licenses";
+                response.Result = [];
+                return Results.BadRequest(response);
             }
 
-            return Results.Json(new { Error = "none", Result = userLicenses.Select(x => x.License).ToList() });
+            response.Result = userLicenses.Select(x => x.License).ToList();
+
+
+            return Results.Json(response);
         }
     }
 }

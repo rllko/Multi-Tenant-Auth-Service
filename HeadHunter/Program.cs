@@ -4,6 +4,7 @@ using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources.DiscordOperations;
 using HeadHunter.Models.Context;
 using HeadHunter.Services;
+using HeadHunter.Services.ActivityLogger;
 using HeadHunter.Services.ClientComponents;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Interfaces;
@@ -15,7 +16,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,16 +24,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
-options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-
 builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 
 builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
+builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
 builder.Services.AddSingleton<DevKeys>();
 var devKeys = new DevKeys();
@@ -89,17 +88,16 @@ builder.Services.AddRateLimiter(options =>
         rateLimiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         rateLimiterOptions.QueueLimit = 5;
     });
-    // We'll talk about adding specific rate limiting policies later.
+
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Special", policy =>
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Special", policy =>
         policy.RequireAssertion(context =>
-            context.User.HasClaim(c => c.Type == "scope" &&
+            context.User.HasClaim(c => c.Type == "Scope" &&
             (c.Value == "admin" || c.Value == "license:write")
-            && c.Issuer == IdentityData.Issuer)));
-});
+            && c.Issuer == IdentityData.Issuer))
+        .RequireAssertion(policy => policy.User.Identity.IsAuthenticated));
 
 var connectionString = builder.Configuration["BaseDBConnection"];
 builder.Services.AddDbContext<HeadhunterDbContext>(options =>
@@ -139,26 +137,36 @@ app.UseExceptionHandler(appError =>
         context.Response.StatusCode = 500;
         context.Response.ContentType = "application/json";
 
-        var ContextFeature = context.Features.Get<IExceptionHandlerFeature>();
-        if(ContextFeature is not null)
+        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if(contextFeature is not null)
         {
-            Console.WriteLine($"Error: {ContextFeature.Error}");
+            Console.WriteLine($"Error: {contextFeature.Error}");
 
-            await context.Response.WriteAsJsonAsync(
-                new
-                {
-                    ExceptionMessage = ContextFeature.Error.Message,
-                    StackTrace = ContextFeature.Error.StackTrace,
-                });
+            if(context.Request.Path.StartsWithSegments("/skibidiAuth"))
+            {
+                await context.Response.WriteAsJsonAsync(
+                    new ExceptionResponse
+                    (contextFeature.Error.Message,
+                    contextFeature.Error.StackTrace));
+            }
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         }
     });
 });
 
 // Authorization Code to Brearer Middleware
 app.UseWhen(
-    context => context.Request.Headers ["Authorization"].ToString().StartsWith("Bearer"),
-    builder => builder.UseMiddleware<AuthorizationMiddleware>()
+    context => context.Request.Path.StartsWithSegments("/skibidiAuth"),
+    applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
 );
+
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/protected"),
+    applicationBuilder => applicationBuilder.UseMiddleware<PersistenceMiddleware>()
+);
+
+
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -169,32 +177,36 @@ app.UseRateLimiter();
 //app.UseHttpsRedirection();
 //}
 
+var oauthEndpoints = app.MapGroup("skibidiAuth");
+
 // OAuth Authorization Endpoint
-app.MapGet("/skibidiAuth/authorize", AuthorizationEndpoint.Handle);
+oauthEndpoints.MapGet("authorize", AuthorizationEndpoint.Handle);
 
 // OAuth Token Endpoint
-app.MapPost("/skibidiAuth/token", TokenEndpoint.Handle);
+oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
 
 // Create a new License
-app.MapGet("/skibidiAuth/create", CreateEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("create", CreateEndpoint.Handle).RequireAuthorization();
 
 // Create multiple Licenses
-app.MapGet("/skibidiAuth/create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
+oauthEndpoints.MapGet("create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
 
 // Reset User License
-app.MapGet("/skibidiAuth/reset-hwid", ResetHwidEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("reset-hwid", ResetHwidEndpoint.Handle).RequireAuthorization();
 
 // Get User Liceses
-app.MapGet("/skibidiAuth/get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
 
 // Set Offsets
-app.MapPost("/skibidiAuth/software-offsets", OffsetsEndpoint.HandlePost).RequireAuthorization();
+oauthEndpoints.MapPost("software-offsets", OffsetsEndpoint.HandlePost).RequireAuthorization();
 
 // Check Discord Code and get user info
-app.MapPost("/skibidiAuth/confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
-// Get Offsets
-app.MapGet("2525546191", OffsetsEndpoint.HandleGet);
+
+var protectedRoutes = app.MapGroup("protected")
+    .MapGet("2525546191/{filename}", OffsetsEndpoint.HandleGet); // Get Offsets
+
 
 // Login Sign In
 app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
@@ -206,7 +218,8 @@ app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
 
 // Refresh user token and get offsets
-app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
+app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;
+
 
 //app.MapGet("/", (HttpContext ctx) =>
 //    ctx.Response.WriteAsync("""
@@ -230,7 +243,5 @@ app.MapPost("2283439600", ClientRefreshEndpoint.Handle);
 //        </body>
 //    </html>
 //    """));
-
-
 
 app.Run();

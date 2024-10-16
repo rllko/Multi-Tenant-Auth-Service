@@ -1080,19 +1080,19 @@
           }
         }
       },
-      "Swashbuckle.AspNetCore/6.7.3": {
+      "Swashbuckle.AspNetCore/6.8.1": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "6.0.5",
-          "Swashbuckle.AspNetCore.Swagger": "6.7.3",
-          "Swashbuckle.AspNetCore.SwaggerGen": "6.7.3",
-          "Swashbuckle.AspNetCore.SwaggerUI": "6.7.3"
+          "Swashbuckle.AspNetCore.Swagger": "6.8.1",
+          "Swashbuckle.AspNetCore.SwaggerGen": "6.8.1",
+          "Swashbuckle.AspNetCore.SwaggerUI": "6.8.1"
         },
         "build": {
           "build/Swashbuckle.AspNetCore.props": {}
         }
       },
-      "Swashbuckle.AspNetCore.Swagger/6.7.3": {
+      "Swashbuckle.AspNetCore.Swagger/6.8.1": {
         "type": "package",
         "dependencies": {
           "Microsoft.OpenApi": "1.6.14"
@@ -1111,10 +1111,10 @@
           "Microsoft.AspNetCore.App"
         ]
       },
-      "Swashbuckle.AspNetCore.SwaggerGen/6.7.3": {
+      "Swashbuckle.AspNetCore.SwaggerGen/6.8.1": {
         "type": "package",
         "dependencies": {
-          "Swashbuckle.AspNetCore.Swagger": "6.7.3"
+          "Swashbuckle.AspNetCore.Swagger": "6.8.1"
         },
         "compile": {
           "lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
@@ -1127,7 +1127,7 @@
           }
         }
       },
-      "Swashbuckle.AspNetCore.SwaggerUI/6.7.3": {
+      "Swashbuckle.AspNetCore.SwaggerUI/6.8.1": {
         "type": "package",
         "compile": {
           "lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
@@ -3762,22 +3762,22 @@
         "polly.extensions.http.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore/6.7.3": {
-      "sha512": "PYTm/M5YrkEUHmguhj6vF1DshG2deKMMcsnhKet1BkcKzZHNX/VVQady0T/jNpXrtxhLR3vB10hWhONF1Nbglw==",
+    "Swashbuckle.AspNetCore/6.8.1": {
+      "sha512": "JN6ccH37QKtNOwBrvSxc+jBYIB+cw6RlZie2IKoJhjjf6HzBH+2kPJCpxmJ5EHIqmxvq6aQG+0A8XklGx9rAxA==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore/6.7.3",
+      "path": "swashbuckle.aspnetcore/6.8.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "build/Swashbuckle.AspNetCore.props",
-        "swashbuckle.aspnetcore.6.7.3.nupkg.sha512",
+        "swashbuckle.aspnetcore.6.8.1.nupkg.sha512",
         "swashbuckle.aspnetcore.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.Swagger/6.7.3": {
-      "sha512": "plNVrOpup/UCIP0aSE5cznIzXMC17EOOqIceWqhP829evEAUwTomCc+1TPy2xK2E+OilYcYEdUus3rOUMjjm/g==",
+    "Swashbuckle.AspNetCore.Swagger/6.8.1": {
+      "sha512": "eOkdM4bsWBU5Ty3kWbyq5O9L+05kZT0vOdGh4a92vIb/LLQGQTPLRHXuJdnUBNIPNC8XfKWfSbtRfqzI6nnbqw==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swagger/6.7.3",
+      "path": "swashbuckle.aspnetcore.swagger/6.8.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3800,14 +3800,14 @@
         "lib/netstandard2.0/Swashbuckle.AspNetCore.Swagger.pdb",
         "lib/netstandard2.0/Swashbuckle.AspNetCore.Swagger.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swagger.6.7.3.nupkg.sha512",
+        "swashbuckle.aspnetcore.swagger.6.8.1.nupkg.sha512",
         "swashbuckle.aspnetcore.swagger.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.SwaggerGen/6.7.3": {
-      "sha512": "kvjGd+g85YFZqyEQZSBUCPtEDDCZsiPPYcjgBN6si3C3oik2c9d7Zlq4PIm07pgY/QmBMgyFOVEzHbks6a398w==",
+    "Swashbuckle.AspNetCore.SwaggerGen/6.8.1": {
+      "sha512": "TjBPxsN0HeJzxEXZYeDXBNNMSyhg+TYXtkbwX+Cn8GH/y5ZeoB/chw0p71kRo5tR2sNshbKwL24T6f9pTF9PHg==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swaggergen/6.7.3",
+      "path": "swashbuckle.aspnetcore.swaggergen/6.8.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3830,14 +3830,14 @@
         "lib/netstandard2.0/Swashbuckle.AspNetCore.SwaggerGen.pdb",
         "lib/netstandard2.0/Swashbuckle.AspNetCore.SwaggerGen.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swaggergen.6.7.3.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggergen.6.8.1.nupkg.sha512",
         "swashbuckle.aspnetcore.swaggergen.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.SwaggerUI/6.7.3": {
-      "sha512": "exXUT9h++OU70jTCfQALiHzeBthqL7c5IFQm+aa67Hi/6X945t32NtOMO16TaRn44xFXdqMZ2CyMbgnTmx+w2A==",
+    "Swashbuckle.AspNetCore.SwaggerUI/6.8.1": {
+      "sha512": "lpEszYJ7vZaTTE5Dp8MrsbSHrgDfjhDMjzW1qOA1Xs1Dnj3ZRBJAcPZUTsa5Bva+nLaw91JJ8OI8FkSg8hhIyA==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swaggerui/6.7.3",
+      "path": "swashbuckle.aspnetcore.swaggerui/6.8.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3860,7 +3860,7 @@
         "lib/netstandard2.0/Swashbuckle.AspNetCore.SwaggerUI.pdb",
         "lib/netstandard2.0/Swashbuckle.AspNetCore.SwaggerUI.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swaggerui.6.7.3.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggerui.6.8.1.nupkg.sha512",
         "swashbuckle.aspnetcore.swaggerui.nuspec"
       ]
     },
@@ -4505,7 +4505,9 @@
       "Microsoft.Extensions.Http.Polly >= 9.0.0-rc.1.24452.1",
       "Newtonsoft.Json >= 13.0.3",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.0-rc.1",
-      "Swashbuckle.AspNetCore >= 6.7.3",
+      "Swashbuckle.AspNetCore >= 6.8.1",
+      "Swashbuckle.AspNetCore.Swagger >= 6.8.1",
+      "Swashbuckle.AspNetCore.SwaggerGen >= 6.8.1",
       "System.IdentityModel.Tokens.Jwt >= 8.1.2"
     ]
   },
@@ -4597,7 +4599,15 @@
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",
-            "version": "[6.7.3, )"
+            "version": "[6.8.1, )"
+          },
+          "Swashbuckle.AspNetCore.Swagger": {
+            "target": "Package",
+            "version": "[6.8.1, )"
+          },
+          "Swashbuckle.AspNetCore.SwaggerGen": {
+            "target": "Package",
+            "version": "[6.8.1, )"
           },
           "System.IdentityModel.Tokens.Jwt": {
             "target": "Package",
@@ -4615,12 +4625,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.Net.Sdk.Compilers.Toolset",
-            "version": "[9.0.100-rc.1.24452.12, 9.0.100-rc.1.24452.12]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -4634,6 +4638,16 @@
     }
   },
   "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Microsoft.Extensions.Caching.Memory' 9.0.0-rc.1.24431.7 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj",
+      "libraryId": "Microsoft.Extensions.Caching.Memory",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    },
     {
       "code": "NU1904",
       "level": "Warning",

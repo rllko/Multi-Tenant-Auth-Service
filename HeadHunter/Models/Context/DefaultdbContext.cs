@@ -1,5 +1,4 @@
-﻿
-using HeadHunter.Models.Entities;
+﻿using HeadHunter.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Models.Context;
@@ -15,15 +14,22 @@ public partial class HeadhunterDbContext : DbContext
     {
     }
 
+
     public virtual DbSet<Client> Clients { get; set; }
 
     public virtual DbSet<DiscordUser> DiscordUsers { get; set; }
+
+    public virtual DbSet<Hwid> Hwids { get; set; }
 
     public virtual DbSet<Offset> Offsets { get; set; }
 
     public virtual DbSet<Scope> Scopes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserActivityLog> Useractivitylogs { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +62,11 @@ public partial class HeadhunterDbContext : DbContext
             entity.Property(e => e.DiscordId).ValueGeneratedNever();
         });
 
+        modelBuilder.Entity<Hwid>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("hwids_pkey");
+        });
+
         modelBuilder.Entity<Offset>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("pk_person");
@@ -70,15 +81,29 @@ public partial class HeadhunterDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
+            entity.Property(e => e.CreationDate).HasDefaultValueSql("now()");
             entity.Property(e => e.KeyResetCount).HasDefaultValue(0);
 
             entity.HasOne(d => d.DiscordUserNavigation).WithMany(p => p.Users)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("users_discord_user_fkey");
+
+            entity.HasOne(d => d.Hw).WithMany(p => p.Users)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("users_hwid_fkey");
+        });
+
+        modelBuilder.Entity<UserActivityLog>(entity =>
+        {
+            entity.HasKey(e => e.Useractivitylogid).HasName("useractivitylog_pkey");
+
+            entity.Property(e => e.Useractivitylogid).UseIdentityAlwaysColumn();
+            entity.Property(e => e.Interactiontime).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Useractivitylogs).HasConstraintName("useractivitylog_userid_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);
-
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

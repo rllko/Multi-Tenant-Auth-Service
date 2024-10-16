@@ -1,25 +1,17 @@
 ﻿using HeadHunter.Models;
 using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
+using HeadHunter.Services.ActivityLogger;
 using HeadHunter.Services.CodeService;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Services.Users
 {
-    public class UserManagerService : IUserManagerService
+    public class UserManagerService(HeadhunterDbContext dbContext,
+        ICodeStorageService codeStoreService,
+        IActivityLogger logger) : IUserManagerService
     {
-        private readonly HeadhunterDbContext dbContext;
-        private readonly ICodeStorageService codeStoreService;
-        private readonly ILogger<UserManagerService> _logger;
-
-        public UserManagerService(HeadhunterDbContext dbContext,
-            ICodeStorageService codeStoreService,
-            ILogger<UserManagerService> logger)
-        {
-            this.dbContext = dbContext;
-            this.codeStoreService = codeStoreService;
-            _logger = logger;
-        }
+        private readonly HeadhunterDbContext dbContext = dbContext;
 
         public async Task<User?> GetUserByIdAsync(long userId)
         {
@@ -35,7 +27,9 @@ namespace HeadHunter.Services.Users
 
         public async Task<User?> GetUserByLicenseAsync(string license)
         {
-            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.License == license);
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation)
+                .Include(x => x.Hw)
+                .FirstOrDefaultAsync(user => user.License == license);
             return user;
         }
 
@@ -57,14 +51,10 @@ namespace HeadHunter.Services.Users
             return list;
         }
 
-        public async Task<User?> GetUserByHwidAsync(string Hwid)
+        public async Task<User?> GetUserByHwidAsync(long id)
         {
-            if(string.IsNullOrEmpty(Hwid))
-            {
-                return null;
-            }
-
-            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).FirstOrDefaultAsync(user => user.Hwid!.Contains(Hwid));
+            var user = await dbContext.Users.Include(x => x.DiscordUserNavigation)
+                .FirstOrDefaultAsync(user => user.Hw != null && user.Hw.Id == id);
             return user;
         }
 
@@ -116,7 +106,20 @@ namespace HeadHunter.Services.Users
             return null;
         }
 
-        public async Task<bool> AssignLicenseHwidAsync(string license, List<string> hwid)
+        public async Task<User?> GetUserByPersistanceTokenAsync(string token)
+        {
+            if(!Guid.TryParse(token, out var persistanceToken))
+            {
+                return null;
+            }
+
+            var newUser = await dbContext.Users.Include(x => x.Useractivitylogs)
+                .FirstOrDefaultAsync(user => user.PersistentToken == token);
+
+            return newUser;
+        }
+
+        public async Task<bool> AssignLicenseHwidAsync(string license, Hwid hwid)
         {
             var user =  await GetUserByLicenseAsync(license);
 
@@ -126,7 +129,8 @@ namespace HeadHunter.Services.Users
             }
 
             await UpdateLicensePersistenceTokenAsync(license);
-            user.Hwid = hwid;
+
+            user.Hw = hwid;
             await dbContext.SaveChangesAsync();
 
             return true;
@@ -174,6 +178,7 @@ namespace HeadHunter.Services.Users
             user.PersistentToken = null;
             user.LastToken = null;
             user.Hwid = null;
+            
             await dbContext.SaveChangesAsync();
 
             return true;
@@ -206,15 +211,17 @@ namespace HeadHunter.Services.Users
                 DiscordUser = discordId ?? null,
             };
 
-            if(discordId != null && GetUserByDiscordAsync((long) discordId) == null)
+            if(discordId != null && await GetUserByDiscordAsync((long) discordId) == null)
             {
                 await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = (long) discordId, DateLinked = DateTime.Now });
             }
 
-            var createUserResult = await dbContext.Users.AddAsync(user);
+            await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();
 
             return user;
         }
+
+
     }
 }

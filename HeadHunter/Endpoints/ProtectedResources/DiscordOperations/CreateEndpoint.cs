@@ -12,21 +12,26 @@ namespace HeadHunter.Endpoints.ProtectedResources.DiscordOperations
             httpContext.Request.Query.TryGetValue("discordId", out var discordIdString);
             var isNotNull = long.TryParse(discordIdString, out var discordIdLong);
 
+            var response = new DiscordResponse<string>();
+
             var key = await userManagerService.CreateUserAsync(isNotNull ? discordIdLong : null);
 
-            if (key == null)
+            if(key == null)
             {
-                return Results.BadRequest("Something went wrong :(");
+                response.Error = "Something went wrong :(";
+                return Results.BadRequest(response);
             }
 
-            return Results.Ok(key);
+
+            response.Result = key.License;
+            return Results.Json(response);
         }
 
         internal static async Task<IResult> HandleBulk(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
         {
             httpContext.Request.Query.TryGetValue("amount", out var amount);
 
-            if (int.TryParse(amount, out var amountInt) == false)
+            if(int.TryParse(amount, out var amountInt) == false)
             {
                 return Results.BadRequest(new { Error = "Amount is not a valid number" });
             }

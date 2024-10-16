@@ -1,11 +1,9 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Models.Context;
 using HeadHunter.OauthResponse;
-using HeadHunter.Services;
 using HeadHunter.Services.CodeService;
 using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace HeadHunter.Endpoints
 {
@@ -16,8 +14,7 @@ namespace HeadHunter.Endpoints
         public async static Task<IResult> Handle(HttpContext httpContext,
             [FromServices] IUserManagerService userManagerService,
             HeadhunterDbContext dbContext,
-            ICodeStorageService codeStorage,
-            DevKeys devKeys)
+            ICodeStorageService codeStorage)
         {
             var Request = httpContext.Request;
 
@@ -37,12 +34,10 @@ namespace HeadHunter.Endpoints
                 return Results.BadRequest();
             }
 
-            if(user.DiscordUserNavigation != null)
+            if(user.DiscordUser != null)
             {
                 return Results.Json(new { Error = "Key is already confirmed." });
             }
-
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
             var discordCode = codeStorage.CreateDiscordCode(dbContext,License!);
 

@@ -8,15 +8,24 @@ CREATE TABLE discord_users (
 
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    hwid varchar(150)[],
     license varchar(150) UNIQUE NOT NULL,
     email varchar(150),
 	ip_address varchar(40),
 	key_reset_count integer default 0,
 	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE,
+	hwid bigint REFERENCES hwids(id) ON DELETE CASCADE,
 	persistent_token varchar(40),
 	last_token TIMESTAMPTZ,
-	);
+	creation_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE UserActivityLog (
+    UserActivityLogId bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    UserId INTEGER references users(id),
+    IPAddress inet NOT NULL,
+	ActivityType VARCHAR(100) NOT NULL,
+    InteractionTime TIMESTAMP DEFAULT NOW()
+);
 
 -- Auth stuff
 
@@ -43,6 +52,15 @@ CREATE TABLE client_scopes (
 create table offsets(
 	id serial primary key
 	list jsonb
+)
+
+CREATE TABLE hwids(
+	id BIGSERIAL PRIMARY KEY,
+	cpu varchar(64) UNIQUE NOT NULL,
+	bios varchar(64) UNIQUE NOT NULL,
+	ram varchar(64) UNIQUE NOT NULL,
+	disk varchar(64) UNIQUE NOT NULL,
+	display varchar(64) UNIQUE NOT NULL
 )
 
 -- Insert data

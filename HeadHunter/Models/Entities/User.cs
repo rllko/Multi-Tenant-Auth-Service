@@ -12,9 +12,6 @@ public partial class User
     [Column("id")]
     public long Id { get; set; }
 
-    [Column("hwid")]
-    public List<string>? Hwid { get; set; }
-
     [Column("license")]
     [StringLength(150)]
     public string License { get; set; } = null!;
@@ -23,15 +20,14 @@ public partial class User
     [StringLength(150)]
     public string? Email { get; set; }
 
-    [Column("ip_address")]
-    [StringLength(40)]
-    public string? IpAddress { get; set; }
-
     [Column("key_reset_count")]
     public int? KeyResetCount { get; set; }
 
     [Column("discord_user")]
     public long? DiscordUser { get; set; }
+
+    [Column("hwid")]
+    public long? Hwid { get; set; }
 
     [Column("persistent_token")]
     [StringLength(40)]
@@ -40,9 +36,17 @@ public partial class User
     [Column("last_token")]
     public DateTime? LastToken { get; set; }
 
-    public bool HasExpired() => DateTime.Now >= LastToken!.Value.AddDays(7);
+    [Column("creation_date", TypeName = "timestamp without time zone")]
+    public DateTime? CreationDate { get; set; }
 
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
     public virtual DiscordUser? DiscordUserNavigation { get; set; }
+
+    [ForeignKey("Hwid")]
+    [InverseProperty("Users")]
+    public virtual Hwid? Hw { get; set; }
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserActivityLog> Useractivitylogs { get; set; } = [];
 }
