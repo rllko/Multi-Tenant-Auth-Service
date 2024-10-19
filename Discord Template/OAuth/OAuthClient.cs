@@ -35,7 +35,7 @@ namespace DiscordTemplate.AuthClient
                 throw new Exception("API CONFIGURATION FILE NOT FOUND");
             }
         }
-        private async Task<AuthenticationResponse?> GetCode()
+        private async Task<AuthenticationResponse?>  GetCode()
         {
             var code_verifier = GenerateCodeChallenge();
 
@@ -79,9 +79,8 @@ namespace DiscordTemplate.AuthClient
         public async Task<TokenResponse?> GetAccessToken()
         {
 #warning You need to implement the endpoint to check if access token is still valid
-            if(DateTime.Now > lastToken?.ExpiresIn)
+            if(DateTime.Now.ToUniversalTime() > lastToken?.ExpiresIn.Value.ToUniversalTime())
             {
-                lastToken.ExpiresIn = DateTime.UtcNow.AddMinutes(30.0);
                 return lastToken;
             }
             var authenticationResponse = await GetCode();

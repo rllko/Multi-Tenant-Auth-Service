@@ -5,7 +5,7 @@ namespace HeadHunter.Services.ActivityLogger;
 
 public class ActivityLogger(HeadhunterDbContext dbContext) : IActivityLogger
 {
-    public async Task LogActivityAsync(long userId, ActivityType activityType, string ipAddress)
+    public async Task LogActivityAsync( ActivityType activityType, string ipAddress,long? userId)
     {
 
         var activityLog = new UserActivityLog()

@@ -26,9 +26,9 @@ namespace HeadHunter.Services
             {
                 context.Response.Headers.Remove("Server");
                 return Task.CompletedTask;
-            });
+                });
 
-            // extract guid token form from header
+                // extract guid token form from header
             var access_token = context.Request.Headers.Authorization;
 
             if(string.IsNullOrEmpty(access_token))
@@ -36,6 +36,7 @@ namespace HeadHunter.Services
                 await _next(context);
             }
 
+            
             var codeUsed = access_token.ToString().Split(" ")[1];
 
             // obtain code from database
@@ -61,11 +62,11 @@ namespace HeadHunter.Services
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
                 Claims = new Dictionary<string,object>()
                 {
-                    ["Scope"] = authorizationCode.RequestedScopes.Select(u => u).ToList(),
+                    ["Scope"] = authorizationCode.RequestedScopes!.Select(u => u).ToList(),
                     ["sub"] = authorizationCode.Subject,
-                    ["ClientId"] =  authorizationCode.ClientIdentifier,
+                    ["ClientId"] =  authorizationCode.ClientIdentifier!,
                     ["jti"] = codeUsed,
-                    ["jti_created_at"] = authorizationCode.CreationTime.ToString()
+                    ["jti_created_at"] = authorizationCode.CreationTime
                 }
             };
 

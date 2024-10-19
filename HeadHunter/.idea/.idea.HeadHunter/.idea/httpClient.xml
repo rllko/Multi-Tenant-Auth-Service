@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="HttpClientEndpointsTabState">
+    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;9f3425244e093cbe9706a9c471d98a836e204efb&quot; value=&quot;###&amp;#10;GET http://localhost:64421/1391220247&quot; /&gt;&#10;  &lt;entry key=&quot;041236e285cbebb4ef24290fc7b98da90cee82a5&quot; value=&quot;###&amp;#10;GET http://localhost:64421/protected/2525546191/{{filename}}&quot; /&gt;&#10;  &lt;entry key=&quot;55043852697cea2c58de84fa8604fa4fdeb49372&quot; value=&quot;###&amp;#10;POST http://localhost:64421/2283439600&quot; /&gt;&#10;  &lt;entry key=&quot;cc1c8ae6a9c24be8049ead34feb4c5fa026107e4&quot; value=&quot;###&amp;#10;GET http://localhost:64421/skibidiAuth/authorize&quot; /&gt;&#10;  &lt;entry key=&quot;993edb8e57ffdd77616772a1316d03bda3f05f0d&quot; value=&quot;###&amp;#10;POST http://localhost:64421/skibidiAuth/confirm-discord-license&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+  </component>
+</project>

@@ -1,4 +1,5 @@
-﻿using HeadHunter.Models;
+﻿using HeadHunter.Common;
+using HeadHunter.Models;
 using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.ActivityLogger;
@@ -7,12 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Services.Users
 {
-    public class UserManagerService(HeadhunterDbContext dbContext,
-        ICodeStorageService codeStoreService,
-        IActivityLogger logger) : IUserManagerService
+    public class UserManagerService(HeadhunterDbContext dbContext): IUserManagerService
     {
-        private readonly HeadhunterDbContext dbContext = dbContext;
-
         public async Task<User?> GetUserByIdAsync(long userId)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
@@ -182,6 +179,16 @@ namespace HeadHunter.Services.Users
             await dbContext.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<int> GetUserHwidResetCount(string license)
+        {
+           var user = await dbContext.Users.Include((x => x.Useractivitylogs))
+                .FirstOrDefaultAsync(x => x.License == license);
+
+           var resetCount =user!.Useractivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription() 
+                                                             &&  x.Interactiontime.Month == DateTime.Now.Month)!;
+           return resetCount;
         }
 
         public async Task<List<User>> CreateUserInBulk(int amount)

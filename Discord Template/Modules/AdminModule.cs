@@ -36,7 +36,7 @@ namespace DiscordTemplate.Modules
 
             if(keyResponse.Succeed is false)
             {
-                await fetchingService.SendMessageExceptionToChannelAsync(keyResponse, Context.User);
+                await _fetchingService.SendMessageExceptionToChannelAsync(keyResponse, Context.User);
                 await FollowupAsync("Something wrong happened, Please try again later.");
             }
 
@@ -125,6 +125,7 @@ namespace DiscordTemplate.Modules
 
             if(tokenResponse!.Succeed == false)
             {
+                #warning add more info to the exceptions, this doesnt say much more details
                 await _fetchingService.SendMessageExceptionToChannelAsync(tokenResponse, Context.User);
                 return;
             }
@@ -137,7 +138,7 @@ namespace DiscordTemplate.Modules
 
             var setOffsetsOperation = await _offsetService
                 .SetOffsets(tokenResponse!.AccessToken!, attachment.Url
-                , filename ?? attachment.Filename);
+                , filename ?? attachment.Filename, Context.User.Id);
 
             if(setOffsetsOperation.Succeed == false)
             {
@@ -167,14 +168,15 @@ namespace DiscordTemplate.Modules
                 return;
             }
 
-            var keyResponse = await _offsetService.GetOffsets(tokenResponse.AccessToken, filename);
+            var offsetOperation = await _offsetService.GetOffsets(tokenResponse.AccessToken, filename);
 
-            if(keyResponse == null)
+            if(offsetOperation.Succeed is false)
             {
-                await FollowupAsync("File Doesnt Exist.");
+                await FollowupAsync(offsetOperation.Error);
+                return;
             }
 
-            var e = new FileAttachment(keyResponse, filename ?? "");
+            var e = new FileAttachment(offsetOperation.Result, filename ?? "");
 
             try
             {

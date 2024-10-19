@@ -31,12 +31,12 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         var accessToken = new AccessToken
         {
             ClientIdentifier = client.ClientIdentifier,
-            ClientSecret = client.ClientSecret,
+            ClientSecret = client.ClientSecret!,
             CreationTime = DateTime.UtcNow,
             RequestedScopes = client.RequestedScopes,
             Subject = client.Subject,
-            CodeChallenge = client.CodeChallenge,
-            CodeChallengeMethod = client.CodeChallengeMethod,
+            CodeChallenge = client.CodeChallenge!,
+            CodeChallengeMethod = client.CodeChallengeMethod!,
         };
 
         var code = Guid.NewGuid();

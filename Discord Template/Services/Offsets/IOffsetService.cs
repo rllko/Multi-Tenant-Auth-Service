@@ -2,7 +2,8 @@
 {
     public interface IOffsetService
     {
-        public Task<Stream?> GetOffsets(string accessToken, string filename);
-        public Task<OffsetsResponse<bool>> SetOffsets(string accessToken, string offsetString, string filename);
+        public Task<OffsetsResponse<Stream>> GetOffsets(string accessToken, string filename);
+        public Task<OffsetsResponse<bool>> SetOffsets(string accessToken, string offsetString,
+            string filename, ulong discordId);
     }
 }

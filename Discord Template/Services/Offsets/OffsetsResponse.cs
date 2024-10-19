@@ -17,7 +17,7 @@ namespace DiscordTemplate.Services.Offsets
             {
                 return response;
             }
-
+        
             return new OffsetsResponse<T>()
             {
                 ExceptionMessage = "Unexpected Error",

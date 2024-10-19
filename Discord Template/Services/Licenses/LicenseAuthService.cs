@@ -67,7 +67,7 @@ namespace DiscordTemplate.Services.Licenses
                 return licenses;
             }
 
-            string endpoint = $"{_api!.GetLicensesEndpoint}?discordId={discordId}";
+            string endpoint = $"{_api!.GetLicensesEndpoint}/{discordId}";
 
             var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -125,7 +125,7 @@ namespace DiscordTemplate.Services.Licenses
                 return license;
             }
 
-            string endpoint = $"{_api!.ResetHwidEndpoint}?discordId={discordId}&license={License}";
+            string endpoint = $"{_api!.ResetHwidEndpoint}/{discordId}/license={License}";
 
             var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

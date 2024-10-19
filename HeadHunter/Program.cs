@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.RateLimiting;
+using HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,8 +97,7 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireAssertion(context =>
             context.User.HasClaim(c => c.Type == "Scope" &&
             (c.Value == "admin" || c.Value == "license:write")
-            && c.Issuer == IdentityData.Issuer))
-        .RequireAssertion(policy => policy.User.Identity.IsAuthenticated));
+            && c.Issuer == IdentityData.Issuer)));
 
 var connectionString = builder.Configuration["BaseDBConnection"];
 builder.Services.AddDbContext<HeadhunterDbContext>(options =>
@@ -157,7 +157,7 @@ app.UseExceptionHandler(appError =>
 
 // Authorization Code to Brearer Middleware
 app.UseWhen(
-    context => context.Request.Path.StartsWithSegments("/skibidiAuth"),
+    context => context.Request.Headers.Authorization.Count > 0,
     applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
 );
 
@@ -192,21 +192,23 @@ oauthEndpoints.MapGet("create", CreateEndpoint.Handle).RequireAuthorization();
 oauthEndpoints.MapGet("create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
 
 // Reset User License
-oauthEndpoints.MapGet("reset-hwid", ResetHwidEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("reset-hwid/{discordId:long}/{license}", ResetHwidEndpoint.Handle).RequireAuthorization();
 
 // Get User Liceses
-oauthEndpoints.MapGet("get-licenses", LicenseEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("get-licenses/{discordId:long}", LicenseEndpoint.Handle).RequireAuthorization();
 
 // Set Offsets
-oauthEndpoints.MapPost("software-offsets", OffsetsEndpoint.HandlePost).RequireAuthorization();
+oauthEndpoints.MapPost("cdn", DiscordOffsetEndpoint.HandlePost).RequireAuthorization();
+
+// Set Offsets
+oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint.HandleGet).RequireAuthorization();
 
 // Check Discord Code and get user info
 oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
-
+// Persistence Endpoints
 var protectedRoutes = app.MapGroup("protected")
     .MapGet("2525546191/{filename}", OffsetsEndpoint.HandleGet); // Get Offsets
-
 
 // Login Sign In
 app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
@@ -218,7 +220,7 @@ app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
 
 // Refresh user token and get offsets
-app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;
+//app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;
 
 
 //app.MapGet("/", (HttpContext ctx) =>

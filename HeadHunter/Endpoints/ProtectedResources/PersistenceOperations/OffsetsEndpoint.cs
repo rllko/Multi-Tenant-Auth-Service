@@ -4,7 +4,7 @@ using HeadHunter.Services.ClientComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeadHunter.Endpoints;
+namespace HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 
 [Authorize]
 public class OffsetsEndpoint
@@ -12,56 +12,41 @@ public class OffsetsEndpoint
 
     public static async Task<IResult> HandleGet(HttpContext context, IActivityLogger logger, string filename)
     {
-        if(string.IsNullOrEmpty(filename))
-        {
-            return Results.NotFound();
-        }
-
-        var path = Path.Combine(Directory.GetCurrentDirectory(),"Files", filename.ToString());
-
-        if(path.StartsWith(Directory.GetCurrentDirectory()) is false)
-        {
-            return Results.NotFound();
-        }
-
-        if(System.IO.File.Exists(path) is false)
+        var response = new DiscordResponse<string>();
+        
+        if(string.IsNullOrEmpty(filename))  
         {
             return Results.NotFound();
         }
 
         if(context.Items ["user"] is not User loggedUser)
         {
-            return Results.NotFound();
+            response.Error = "Something went wrong.";
+            return Results.Json(response);
         }
         
-        await logger.LogActivityAsync(loggedUser.Id, ActivityType.Login, context.Request.Headers ["cf-connecting-ip"]!);
-        var stream = new FileStream(path, FileMode.Open);
-        return Results.File(stream, "APPLICATION/octet-stream", filename);
-    }
+        var path = Path.Combine(Directory.GetCurrentDirectory(),"Files", filename.ToString());
 
-    [HttpPost]
-    [Authorize(Policy = "Special")]
-    public static async Task<IResult> HandlePost(HttpContext context, ISoftwareComponents softwareComponents)
-    {
-        if(!context.Request.Form.TryGetValue("url", out var url) ||
-            !context.Request.Form.TryGetValue("filename", value: out var fileName))
+        if(path.StartsWith(Directory.GetCurrentDirectory()) is false)
         {
-            return Results.NotFound();
+            response.Error = "Invalid directory path";
+            return Results.Json(response);
         }
 
-        var path = Path.Combine(Directory.GetCurrentDirectory(),"Files", $"{fileName}");
-
-        var offsets = await softwareComponents.GetOffsets(url.ToString());
-
-        if(offsets is null)
+        if(System.IO.File.Exists(path) is false)
         {
-            return Results.BadRequest(new DiscordResponse<bool>() { Result = false, Error = "Something went wrong on downloading :shrug:" });
+            response.Error = "File not found";
+            return Results.Json(response);
         }
 
-        // Create a new local file and copy contents of the uploaded file
-        await using var localFile = System.IO.File.Create(path);
-        await offsets.CopyToAsync(localFile);
-
-        return Results.Ok(new DiscordResponse<bool>() { Result = true });
+        var stream = await File.ReadAllBytesAsync(path);
+        response.Result = Convert.ToBase64String(stream);
+        
+        // Log the result
+        await logger.LogActivityAsync(ActivityType.FileDownload, context.Request.Headers ["cf-connecting-ip"]!,loggedUser.Id);
+        
+        return Results.Json(response);
     }
+
+   
 }

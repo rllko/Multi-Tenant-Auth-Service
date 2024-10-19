@@ -7,6 +7,6 @@ namespace HeadHunter.Services.Interfaces
     public interface IAuthorizeResultService
     {
         AuthorizeResponse AuthorizeRequest(HttpContext httpContextAccessor, AuthorizationRequest authorizationRequest);
-        Task<TokenResponse> GenerateTokenAsync(HttpContext context, [FromServices] DevKeys devKeys);
+        TokenResponse GenerateToken(HttpContext context, [FromServices] DevKeys devKeys);
     }
 }

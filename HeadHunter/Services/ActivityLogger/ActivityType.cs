@@ -14,8 +14,8 @@ namespace HeadHunter.Services.ActivityLogger
         BotCommand,
         [Description("file_upload")]
         FileUpload,
-        [Description("file_request")]
-        FileRequest,
+        [Description("file_download")]
+        FileDownload,
         [Description("key_reset")]
         KeyReset,
         [Description("key_misused")]

@@ -101,7 +101,7 @@ namespace HeadHunter.Endpoints
                 return Results.BadRequest(response);
             }
 
-            await logger.LogActivityAsync(userKey.Id, ActivityType.Login, context.Request.Headers ["cf-connecting-ip"]!);
+            await logger.LogActivityAsync( ActivityType.Login, context.Request.Headers ["cf-connecting-ip"]!,userKey.Id);
 
             // create the token string
             string token = handler.WriteToken(handler.CreateToken(tokenDescriptor));

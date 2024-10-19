@@ -1,37 +1,52 @@
-﻿using HeadHunter.Services.Users;
+﻿using HeadHunter.Endpoints;
+using HeadHunter.Services.ActivityLogger;
+using HeadHunter.Services.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 [Authorize(Policy = "Special")]
 internal class ResetHwidEndpoint
 {
-    internal static async Task<IResult> Handle(HttpContext context, IUserManagerService userManager)
+    internal static async Task<IResult> Handle(
+        HttpContext context,
+        IUserManagerService userManager,
+        IActivityLogger logger, long discordId,string license)
     {
-        if(!context.Request.Query.TryGetValue("discordId", out var discordId) ||
-            !context.Request.Query.TryGetValue("License", out var License))
-        {
-            return Results.BadRequest(new { Error = "Invalid Discord Id" });
-        }
 
-        var userLicense = await userManager.GetUserByLicenseAsync(License.ToString());
+        var response = new DiscordResponse<string>();
+
+        var userLicense = await userManager.GetUserByLicenseAsync(license.ToString());
 
         if(userLicense == null)
         {
             return Results.BadRequest();
         }
-
-        if(userLicense.DiscordUser != long.Parse(discordId))
+        #warning Fix this on the bot
+        if(userLicense.DiscordUser != discordId)
         {
-            return Results.BadRequest();
+            response.Error = "This license doesnt belong to your Discord Account";
+            return Results.Json(response);
         }
 
         if(userLicense.Hwid == null)
         {
-            return Results.BadRequest();
+            response.Error = "You Achieved the limit of this month (3/3)";
+            return Results.Json(response);
         }
 
-        await userManager.ResetUserHwidAsync((long) userLicense.DiscordUser);
+        var hwidResetCount = await userManager.GetUserHwidResetCount(userLicense.License);
+        const int maxHwidResets = 3;
+        
+        if (hwidResetCount >= maxHwidResets)
+        {
+            response.Error = $"You Achieved the limit of this month ({maxHwidResets}/{maxHwidResets})";
+            return Results.Json(response);
+        }
 
-        // This cant be this way, we need to give a message
-        return Results.Ok();
+        await logger.LogActivityAsync(ActivityType.KeyReset, "",userLicense.Id);
+        await userManager.ResetUserHwidAsync((long) userLicense.DiscordUser);
+        
+        response.Result = $"Successfully reset license ``{userLicense.License}`` ({hwidResetCount} / {maxHwidResets}";
+        return Results.Json(response);
     }
 }

@@ -2,7 +2,7 @@
 {
     public class AccessToken
     {
-        public required string ClientIdentifier { get; set; }
+        public required string? ClientIdentifier { get; set; }
         public required string ClientSecret { get; set; }
         public string? RedirectUri { get; set; }
 

@@ -13,8 +13,8 @@ namespace HeadHunter.Endpoints.OAuth
             [FromServices] DevKeys devKeys)
         {
 
-            var result =  await authorizeResultService
-                .GenerateTokenAsync(httpContext,devKeys);
+            var result =  authorizeResultService
+                .GenerateToken(httpContext,devKeys);
 
             if(result.HasError)
                 return Results.Json(new

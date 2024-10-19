@@ -78,8 +78,7 @@
               "RelativeToolTip": "Endpoints\\ProtectedResources\\PersistenceOperations\\OffsetsEndpoint.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAswBgAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:29:21.282Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:29:21.282Z"
             },
             {
               "$type": "Document",
@@ -91,8 +90,7 @@
               "RelativeToolTip": "Services\\AuthorizationMiddleware.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAA0wBwAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:27:19.741Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:27:19.741Z"
             },
             {
               "$type": "Document",
@@ -104,8 +102,7 @@
               "RelativeToolTip": "Endpoints\\OAuth\\TokenEndpoint.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:27:14.198Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:27:14.198Z"
             },
             {
               "$type": "Document",
@@ -117,8 +114,7 @@
               "RelativeToolTip": "Endpoints\\OAuth\\AuthorizationEndpoint.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:27:07.031Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:27:07.031Z"
             },
             {
               "$type": "Document",
@@ -130,8 +126,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAHoAAAAAnNUCezwDwJgAAABTAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:24:08.504Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:24:08.504Z"
             },
             {
               "$type": "Document",
@@ -167,8 +162,7 @@
               "RelativeToolTip": "Services\\ActivityLogger\\ActivityLogger.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:07:03.19Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:07:03.19Z"
             },
             {
               "$type": "Document",
@@ -180,8 +174,7 @@
               "RelativeToolTip": "Services\\PersistanceMiddleware.cs",
               "ViewState": "AgIAADkAAAAAAAAAAAAAAE0AAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:03:33.642Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:03:33.642Z"
             },
             {
               "$type": "Document",
@@ -205,8 +198,7 @@
               "RelativeToolTip": "Models\\Context\\DefaultdbContext.cs",
               "ViewState": "AgIAAE8AAAAAAAAAAAAWwF8AAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:01:45.93Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:01:45.93Z"
             },
             {
               "$type": "Document",

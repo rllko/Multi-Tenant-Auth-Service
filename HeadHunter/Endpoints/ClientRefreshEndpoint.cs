@@ -49,7 +49,7 @@ internal class ClientRefreshEndpoint
             return Results.BadRequest("Invalid User");
         }
 
-        if(checkTokenResult.token.ValidTo < DateTime.Now)
+        if(checkTokenResult.token!.ValidTo < DateTime.Now)
         {
             return Results.BadRequest(new { Error = "Token Hasnt Expired yet" });
         }

@@ -29,25 +29,25 @@ namespace HeadHunter.Services.Interfaces
         {
             AuthorizeResponse response = new();
 
-            var clientResult = VerifyClientById(clientIdentifier:authorizationRequest.ClientId);
+            var clientResult = VerifyClientById(clientIdentifier:authorizationRequest.client_id);
 
             #region Domain Checking
 
             if(clientResult.IsSuccess is false)
             {
-                response.Error = clientResult.ErrorDescription;
+                response.Error = clientResult.ErrorDescription!;
                 return response;
             }
 
-            if(clientResult.Client.Scopes.Count == 0)
+            if(clientResult.Client!.Scopes.Count == 0)
             {
                 response.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
                 response.ErrorDescription = "client has no scopes";
                 return response;
             }
 
-            if(string.IsNullOrEmpty(authorizationRequest.ResponseType) ||
-                authorizationRequest.ResponseType != "code")
+            if(string.IsNullOrEmpty(authorizationRequest.response_type) ||
+                authorizationRequest.response_type != "code")
             {
                 response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
                 response.ErrorDescription = "response type is required or is not valid";
@@ -62,7 +62,7 @@ namespace HeadHunter.Services.Interfaces
             //    return response;
             //}
 
-            if(string.IsNullOrWhiteSpace(authorizationRequest.CodeChallenge))
+            if(string.IsNullOrWhiteSpace(authorizationRequest.code_challenge))
             {
                 response.Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription();
                 response.ErrorDescription = "code challenge required";
@@ -75,7 +75,7 @@ namespace HeadHunter.Services.Interfaces
 
             #endregion
 
-            var scopes = authorizationRequest.Scope.Split(' ');
+            var scopes = authorizationRequest.scope!.Split(' ');
 
             if(scopes.Length == 0)
             {
@@ -89,17 +89,17 @@ namespace HeadHunter.Services.Interfaces
 
             var authoCode = new AuthorizationCode
             {
-                ClientIdentifier = authorizationRequest.ClientId,
+                ClientIdentifier = authorizationRequest.client_id,
                 RequestedScopes = [.. clientScopes],
                 IsOpenId = clientScopes.Contains("openid"),
-                CodeChallenge = authorizationRequest.CodeChallenge,
+                CodeChallenge = authorizationRequest.code_challenge,
                 CodeChallengeMethod = authorizationRequest.code_challenge_method,
                 CreationTime = DateTime.UtcNow,
 
                 Subject = clientResult.Client.ClientIdentifier!,
             };
 
-            string? code = _codeStoreService.CreateAuthorizationCode(_dbContext,authorizationRequest.ClientId, authoCode);
+            string? code = _codeStoreService.CreateAuthorizationCode(_dbContext,authorizationRequest.client_id, authoCode);
             if(code == null)
             {
                 response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
@@ -108,8 +108,8 @@ namespace HeadHunter.Services.Interfaces
 
 
             response.Code = code;
-            response.ResponseType = authorizationRequest.ResponseType;
-            response.State = authorizationRequest.State;
+            response.ResponseType = authorizationRequest.response_type;
+            response.State = authorizationRequest.state;
             response.RequestedScopes = [.. clientScopes];
 
             return response;
@@ -117,40 +117,32 @@ namespace HeadHunter.Services.Interfaces
 
 
 
-        public async Task<TokenResponse> GenerateTokenAsync(HttpContext httpContext, [FromServices] DevKeys devKeys)
+        public  TokenResponse GenerateToken(HttpContext httpContext, [FromServices] DevKeys devKeys)
         {
-            var httpRequest = httpContext.Request;
-
-            httpRequest.EnableBuffering();
-
-            var bodyBytes = await httpRequest.BodyReader.ReadAsync();
-
-
-            var bodyContent = Encoding.UTF8.GetString(bodyBytes.Buffer);
-            var query = HttpUtility.ParseQueryString(bodyContent);
-
+            var form = httpContext.Request.Form;
+         
             var request = new TokenRequest
             {
-                ClientId = query["client_id"]!,
-                ClientSecret = query["client_secret"]!,
-                Code = query["code"]!,
-                GrantType = query["grant_type"]!,
+                client_id = form["client_id"]!,
+                client_secret = form["client_secret"]!,
+                code = form["code"]!,
+                grant_type = form["grant_type"]!,
             };
 
-            var checkClientResult = VerifyClientById(request.ClientId, true, request.ClientSecret);
+            var checkClientResult = VerifyClientById(request.client_id, true, request.client_secret);
             if(!checkClientResult.IsSuccess)
             {
-                return new TokenResponse { Error = checkClientResult.Error, ErrorDescription = checkClientResult.ErrorDescription };
+                return new TokenResponse { Error = checkClientResult.Error!, ErrorDescription = checkClientResult.ErrorDescription! };
             }
 
             // check code from the Concurrent Dictionary
-            var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code);
+            var clientCodeChecker = _codeStoreService.GetClientByCode(request.code);
             if(clientCodeChecker == null)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
             // check if the current client who is one made this authentication request
 
-            if(request.ClientId != clientCodeChecker.ClientIdentifier)
+            if(request.client_id != clientCodeChecker.ClientIdentifier)
                 return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
 
@@ -165,7 +157,7 @@ namespace HeadHunter.Services.Interfaces
                 {
                     Claims = new Dictionary<string, object>()
                     {
-                        [JwtRegisteredClaimNames.Sub] = request.ClientId,
+                        [JwtRegisteredClaimNames.Sub] = request.client_id,
                         [JwtRegisteredClaimNames.Aud] = IdentityData.Audience,
                         [JwtRegisteredClaimNames.Iss] = IdentityData.Issuer,
                         [JwtRegisteredClaimNames.Iat] = DateTime.Now.Second,
@@ -182,17 +174,17 @@ namespace HeadHunter.Services.Interfaces
                 id_token = handler.WriteToken(token);
             }
 
-            var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.Code));
+            var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.code));
 
             // here remove the code from the Concurrent Dictionary
-            _codeStoreService.RemoveClientByCode(Guid.Parse(request.Code));
+            _codeStoreService.RemoveClientByCode(Guid.Parse(request.code));
 
             var tokenResponse = new TokenResponse
             {
                 RequestedScopes = string.Join(" ", clientCodeChecker.RequestedScopes),
                 AccessToken = access_token ?? null,
                 IdToken = id_token ?? null,
-                Code = request.Code,
+                Code = request.code,
             };
 
             return tokenResponse;
@@ -200,7 +192,7 @@ namespace HeadHunter.Services.Interfaces
 
 
 
-        private CheckClientResult VerifyClientById(string clientIdentifier, bool checkWithSecret = false, string? clientSecret = null)
+        private CheckClientResult VerifyClientById(string? clientIdentifier, bool checkWithSecret = false, string? clientSecret = null)
         {
             var result = new CheckClientResult();
 

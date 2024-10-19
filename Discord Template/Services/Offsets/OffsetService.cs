@@ -19,51 +19,62 @@ namespace DiscordTemplate.Services.Offsets
             }
         }
 
-        public async Task<Stream?> GetOffsets(string accessToken, string filename)
+        public async Task<OffsetsResponse<Stream>> GetOffsets(string accessToken, string filename)
         {
+            var response = new OffsetsResponse<Stream>();
+            
             if(string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(filename))
             {
-                return null;
+                response.ExceptionMessage = "Invalid Parameters";
+                return response;
             }
 
-            var endpoint = $"{_api!.PublicOffsetsEndpoint }?file={filename}";
+            var endpoint = $"{_api!.OffsetsEndpoint }/{filename}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
+            var request = new HttpRequestMessage(HttpMethod.Get,endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
+            
             var httpResponseMessage = await _httpClient.SendAsync(request);
-            var response = await httpResponseMessage.Content.ReadAsStreamAsync();
+            var requestResponseJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            
+            var temp = OffsetsResponse<string>.Parse(requestResponseJson);
 
+            if (temp.Succeed is false || temp.Error is not "none")
+            {
+                response.Error = temp.Error;
+                response.ExceptionMessage = temp.ExceptionMessage;
+                response.StackTrace = temp.StackTrace;
+                return response;
+            }
+
+            var responseStream = Convert.FromBase64String(temp.Result!);
+            response.Result =  new MemoryStream(responseStream);
+            
             return response;
-
         }
 
-        public async Task<OffsetsResponse<bool>> SetOffsets(string accessToken, string offsetsUrl, string filename)
+        public async Task<OffsetsResponse<bool>> SetOffsets(string accessToken, string offsetsUrl, string filename, ulong discordId)
         {
             var offsets = new OffsetsResponse<bool>();
 
-            if(string.IsNullOrEmpty(offsetsUrl) || string.IsNullOrEmpty(filename) || string.IsNullOrEmpty(accessToken))
+            if(string.IsNullOrEmpty(offsetsUrl) ||
+                 string.IsNullOrEmpty(filename) ||
+                 string.IsNullOrEmpty(accessToken))
             {
                 offsets.Error = "Invalid url or filename!";
                 offsets.Result = false;
                 return offsets;
             }
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, _api!.OffsetsEndpoint)
-            {
-                Content =
-                    new FormUrlEncodedContent(
-                    new Dictionary<string, string>
-                    {
-                        {"url", offsetsUrl },
-                        {"filename", filename }
-                    }),
-                Headers =
-
-                    {
-                        { "Accept", "application/json"},
-                    },
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Post, _api!.OffsetsEndpoint);
+            request.Content = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    {"url", offsetsUrl },
+                    {"filename", filename },
+                    {"discordId",discordId.ToString()}
+                });
+            request.Headers.Add("Accept", "application/json");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             using var httpResponseMessage = await _httpClient.SendAsync(request);
 

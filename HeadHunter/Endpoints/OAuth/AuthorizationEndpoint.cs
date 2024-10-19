@@ -35,12 +35,12 @@ namespace HeadHunter.Endpoints.OAuth
 
             var authorizationRequest = new AuthorizationRequest
             {
-                ResponseType = responseType!,
-                ClientId = clientId!,
-                CodeChallenge = codeChallenge!,
+                response_type = responseType!,
+                client_id = clientId!,
+                code_challenge = codeChallenge!,
                 code_challenge_method = codeChallengeMethod!,
-                Scope = scope!,
-                State = state!,
+                scope = scope!,
+                state = state!,
             };
 
 

@@ -86,7 +86,7 @@ namespace HeadHunter.Services
 
             var logger = scope.ServiceProvider.GetRequiredService<IActivityLogger>();
 
-            await logger.LogActivityAsync(user.Id, ActivityType.PersistenceInteraction, currentIp!);
+            await logger.LogActivityAsync(ActivityType.PersistenceInteraction, currentIp!,user.Id);
 
             var claims = new List<Claim>()
             {

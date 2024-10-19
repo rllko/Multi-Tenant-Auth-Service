@@ -16,7 +16,7 @@ public class CodeStorageService : ICodeStorageService
         StartCleanupTask(TimeSpan.FromMinutes(5));
     }
 
-    public string? CreateAuthorizationCode(HeadhunterDbContext _dbContext, string clientIdentifier, AuthorizationCode authorizationCode)
+    public string? CreateAuthorizationCode(HeadhunterDbContext _dbContext, string? clientIdentifier, AuthorizationCode authorizationCode)
     {
         var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
 

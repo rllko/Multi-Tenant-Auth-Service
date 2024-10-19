@@ -20,18 +20,18 @@ public class ApiConfiguration
 
     public string TokenEndpoint => BaseUrl + "skibidiAuth/token";
 
-    public string CreateLicenseEndpoint => BaseUrl + "skibidiAuth/create";
+    public string BaseDirectory => BaseUrl + "skibidiAuth/";
+    
+    public string CreateLicenseEndpoint => BaseDirectory + "create";
 
-    public string CreateBulkLicenseEndpoint => BaseUrl + "skibidiAuth/create-bulk";
+    public string CreateBulkLicenseEndpoint => BaseDirectory + "create-bulk";
 
-    public string ResetHwidEndpoint => BaseUrl + "skibidiAuth/reset-hwid";
+    public string ResetHwidEndpoint => BaseDirectory + "reset-hwid";
 
-    public string GetLicensesEndpoint => BaseUrl + "skibidiAuth/get-licenses";
+    public string GetLicensesEndpoint => BaseDirectory + "get-licenses";
 
-    public string GetConfirmEndpoint => BaseUrl + "skibidiAuth/confirm-discord-license";
+    public string GetConfirmEndpoint => BaseDirectory + "confirm-discord-license";
 
-    public string OffsetsEndpoint => BaseUrl + "skibidiAuth/software-offsets";
-
-    public string PublicOffsetsEndpoint => BaseUrl + "2525546191";
+    public string OffsetsEndpoint => BaseDirectory + "cdn";
 }
 
