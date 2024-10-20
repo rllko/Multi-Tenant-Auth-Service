@@ -2,6 +2,6 @@
 
 public interface IActivityLogger
 {
-    public Task LogActivityAsync( ActivityType activityType, string ipAddress,long? userId = null);
+    public Task LogActivityAsync( ActivityType activityType, string ipAddress,long? targetId = null);
 
 }

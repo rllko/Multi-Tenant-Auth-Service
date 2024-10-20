@@ -1,8 +1,11 @@
-﻿using HeadHunter.Models.Entities;
+﻿using System.Text;
+using HeadHunter.Models.Entities;
+using HeadHunter.Services;
 using HeadHunter.Services.ActivityLogger;
 using HeadHunter.Services.ClientComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NSec.Cryptography;
 
 namespace HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 
@@ -10,7 +13,9 @@ namespace HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 public class OffsetsEndpoint
 {
 
-    public static async Task<IResult> HandleGet(HttpContext context, IActivityLogger logger, string filename)
+    public static async Task<IResult> HandleGet(
+        HttpContext context, IActivityLogger logger,
+        DevKeys devKeys, string filename)
     {
         var response = new DiscordResponse<string>();
         
@@ -39,13 +44,28 @@ public class OffsetsEndpoint
             return Results.Json(response);
         }
 
-        var stream = await File.ReadAllBytesAsync(path);
-        response.Result = Convert.ToBase64String(stream);
+        if (loggedUser.Hw is { Bios: null, Cpu: null })
+        {
+            response.Error = "There isnt an hwid associated to this user.";
+            return Results.Json(response);
+        }
         
-        // Log the result
+        var firstChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Bios!).Chunk(6).First();
+        var secondChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Cpu!).Chunk(6).First();
+        
+        var nonce = firstChunk.Concat(secondChunk).ToArray();
+        byte[] aad = new byte[0];
+        var data = await File.ReadAllBytesAsync(path);
+        
+        var alg = AeadAlgorithm.ChaCha20Poly1305;
+        var key = devKeys.ChaChaKey;
+        
+        // sign the data using the private key
+        var signature = alg.Encrypt(key,nonce,aad,data);
+        
         await logger.LogActivityAsync(ActivityType.FileDownload, context.Request.Headers ["cf-connecting-ip"]!,loggedUser.Id);
         
-        return Results.Json(response);
+        return Results.File(signature,fileDownloadName:filename);
     }
 
    

@@ -3,12 +3,11 @@ using HeadHunter.Models;
 using HeadHunter.Models.Context;
 using HeadHunter.Models.Entities;
 using HeadHunter.Services.ActivityLogger;
-using HeadHunter.Services.CodeService;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Services.Users
 {
-    public class UserManagerService(HeadhunterDbContext dbContext): IUserManagerService
+    public class UserManagerService(HeadhunterDbContext dbContext) : IUserManagerService
     {
         public async Task<User?> GetUserByIdAsync(long userId)
         {
@@ -110,7 +109,9 @@ namespace HeadHunter.Services.Users
                 return null;
             }
 
-            var newUser = await dbContext.Users.Include(x => x.Useractivitylogs)
+            var newUser = await dbContext.Users
+                .Include(x => x.Useractivitylogs)
+                .Include(x => x.Hw)
                 .FirstOrDefaultAsync(user => user.PersistentToken == token);
 
             return newUser;
@@ -163,9 +164,9 @@ namespace HeadHunter.Services.Users
             return true;
         }
 
-        public async Task<bool> ResetUserHwidAsync(long discordId)
+        public async Task<bool> ResetUserHwidAsync(string license)
         {
-            var user = await GetUserByDiscordAsync(discordId);
+            var user = await GetUserByLicenseAsync(license);
 
             if(user == null)
             {
@@ -174,8 +175,9 @@ namespace HeadHunter.Services.Users
 
             user.PersistentToken = null;
             user.LastToken = null;
-            user.Hwid = null;
-            
+            user.KeyResetCount += 1;
+            dbContext.Hwids.Remove(user.Hw!);
+
             await dbContext.SaveChangesAsync();
 
             return true;
@@ -183,12 +185,12 @@ namespace HeadHunter.Services.Users
 
         public async Task<int> GetUserHwidResetCount(string license)
         {
-           var user = await dbContext.Users.Include((x => x.Useractivitylogs))
-                .FirstOrDefaultAsync(x => x.License == license);
+            var user = await dbContext.Users.Include((x => x.Useractivitylogs))
+               .FirstOrDefaultAsync(x => x.License == license);
 
-           var resetCount =user!.Useractivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription() 
-                                                             &&  x.Interactiontime.Month == DateTime.Now.Month)!;
-           return resetCount;
+            var resetCount =user!.Useractivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription()
+                                                           &&  x.Interactiontime.Value.Month == DateTime.Now.Month)!;
+            return resetCount;
         }
 
         public async Task<List<User>> CreateUserInBulk(int amount)

@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace HeadHunter.Models.Entities;
 
@@ -47,6 +49,6 @@ public partial class User
     [InverseProperty("Users")]
     public virtual Hwid? Hw { get; set; }
 
-    [InverseProperty("User")]
-    public virtual ICollection<UserActivityLog> Useractivitylogs { get; set; } = [];
+    [InverseProperty("Target")]
+    public virtual ICollection<Useractivitylog> Useractivitylogs { get; set; } = new List<Useractivitylog>();
 }

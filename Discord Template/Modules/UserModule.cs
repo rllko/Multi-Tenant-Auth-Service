@@ -78,21 +78,22 @@ namespace DiscordTemplate.Modules
                 await FollowupAsync("Something went wrong");
                 return;
             }
-
-            var resetHwidOperation = await _licenseService.ResetHwidAsync(tokenResponse.AccessToken, currentUserId, licenses.First());
-
+            
             if(licenses.Count == 1)
             {
-                await FollowupAsync(
-                    resetHwidOperation.Succeed && resetHwidOperation.Error == null
-                    ? "HWID reset was a Success!" : resetHwidOperation.Error);
+                var resetHwidOperation = await _licenseService
+                    .ResetHwidAsync(tokenResponse.AccessToken, currentUserId, licenses.First());
+
+                await FollowupAsync(	text: resetHwidOperation.Result ?? resetHwidOperation.Error);
                 return;
             }
-            SelectMenuBuilder selectMenu = new SelectMenuBuilder().WithPlaceholder("Select a License to reset").WithCustomId("license_selection:" + tokenResponse.AccessToken);
-            licenses.ForEach(delegate (string license)
+            
+            var selectMenu = new SelectMenuBuilder().WithPlaceholder("Select a License to reset").WithCustomId("license_selection:" + tokenResponse.AccessToken);
+            licenses.ForEach( license =>
             {
                 selectMenu.AddOption(new SelectMenuOptionBuilder(license, license));
             });
+            
             ComponentBuilder component = new ComponentBuilder().WithSelectMenu(selectMenu);
             await FollowupAsync("Please select a License", null, isTTS: false, ephemeral: true, null, null, component.Build());
         }
@@ -113,7 +114,7 @@ namespace DiscordTemplate.Modules
             var resetOperation = await _licenseService
                 .ResetHwidAsync(accessToken, user.Id, selected[0]);
 
-            await FollowupAsync(text: resetOperation.Result ? "HWID reset successfully." : resetOperation.Error, ephemeral: true);
+            await FollowupAsync(text: resetOperation.Result ?? resetOperation.Error, ephemeral: true);
         }
     }
 }

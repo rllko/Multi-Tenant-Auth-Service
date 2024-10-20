@@ -1,8 +1,8 @@
 ﻿using HeadHunter.Common;
 using HeadHunter.Endpoints;
+using HeadHunter.Models.Context;
 using HeadHunter.Services.ActivityLogger;
 using HeadHunter.Services.Users;
-using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 
 namespace HeadHunter.Services
@@ -41,11 +41,12 @@ namespace HeadHunter.Services
 
             using var scope = host.Services.CreateScope();
 
-            var _userManager = scope.ServiceProvider.GetRequiredService<IUserManagerService>();
+            var userManager = scope.ServiceProvider.GetRequiredService<IUserManagerService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<HeadhunterDbContext>();
 
 
             // obtain code from database
-            var user = await _userManager.GetUserByPersistanceTokenAsync(token.ToString());
+            var user = await userManager.GetUserByPersistanceTokenAsync(token.ToString());
 
             if(user == null || user.LastToken == null)
             {
@@ -66,18 +67,18 @@ namespace HeadHunter.Services
             var activityLogs = user.Useractivitylogs;
 
             var lastInteraction = activityLogs
-                .LastOrDefault(interaction => 
+                .LastOrDefault(interaction =>
                     interaction.Activitytype == ActivityType.PersistenceInteraction.GetEnumDescription());
 
             if(lastInteraction != null)
             {
-                var lastInteractionTime = lastInteraction.Interactiontime.ToUniversalTime().Second;
+                var lastInteractionTime = lastInteraction.Interactiontime!.Value.ToUniversalTime().Second;
                 var currentTime = DateTime.Now.ToUniversalTime().Second;
 
                 if(currentTime - lastInteractionTime < 10 &&
                     currentIp != lastInteraction.Ipaddress)
                 {
-                    await _userManager.ResetLicensePersistenceToken(user.License);
+                    await userManager.ResetLicensePersistenceToken(user.License);
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     response.Error = "Misuse of license, please login again";
                     return;
@@ -86,7 +87,7 @@ namespace HeadHunter.Services
 
             var logger = scope.ServiceProvider.GetRequiredService<IActivityLogger>();
 
-            await logger.LogActivityAsync(ActivityType.PersistenceInteraction, currentIp!,user.Id);
+            await logger.LogActivityAsync(ActivityType.PersistenceInteraction, currentIp!, user.Id);
 
             var claims = new List<Claim>()
             {

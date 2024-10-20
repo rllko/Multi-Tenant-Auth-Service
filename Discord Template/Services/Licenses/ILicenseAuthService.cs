@@ -8,7 +8,7 @@
 
         Task<LicenseResponse<List<string>?>> GetUserLicenses(string accessToken, ulong id);
 
-        Task<LicenseResponse<bool>> ResetHwidAsync(string accessToken, ulong discordId, string License);
+        Task<LicenseResponse<string>> ResetHwidAsync(string accessToken, ulong discordId, string License);
 
         Task<LicenseResponse<bool>> ConfirmDiscordLicense(string accessToken, string key, ulong id);
     }

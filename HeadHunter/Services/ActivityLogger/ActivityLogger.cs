@@ -5,12 +5,12 @@ namespace HeadHunter.Services.ActivityLogger;
 
 public class ActivityLogger(HeadhunterDbContext dbContext) : IActivityLogger
 {
-    public async Task LogActivityAsync( ActivityType activityType, string ipAddress,long? userId)
+    public async Task LogActivityAsync(ActivityType activityType, string ipAddress, long? targetId)
     {
 
-        var activityLog = new UserActivityLog()
+        var activityLog = new Useractivitylog()
         {
-            Userid = userId,
+            Targetid = targetId,
             Activitytype = activityType.ToString(),
             Ipaddress = ipAddress,
             Interactiontime = DateTime.Now

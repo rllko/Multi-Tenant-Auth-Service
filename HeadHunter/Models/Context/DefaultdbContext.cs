@@ -27,9 +27,7 @@ public partial class HeadhunterDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<UserActivityLog> Useractivitylogs { get; set; }
-
-
+    public virtual DbSet<Useractivitylog> Useractivitylogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +79,7 @@ public partial class HeadhunterDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
             entity.Property(e => e.CreationDate).HasDefaultValueSql("now()");
             entity.Property(e => e.KeyResetCount).HasDefaultValue(0);
 
@@ -89,18 +88,20 @@ public partial class HeadhunterDbContext : DbContext
                 .HasConstraintName("users_discord_user_fkey");
 
             entity.HasOne(d => d.Hw).WithMany(p => p.Users)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("users_hwid_fkey");
         });
 
-        modelBuilder.Entity<UserActivityLog>(entity =>
+        modelBuilder.Entity<Useractivitylog>(entity =>
         {
             entity.HasKey(e => e.Useractivitylogid).HasName("useractivitylog_pkey");
 
             entity.Property(e => e.Useractivitylogid).UseIdentityAlwaysColumn();
             entity.Property(e => e.Interactiontime).HasDefaultValueSql("now()");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Useractivitylogs).HasConstraintName("useractivitylog_userid_fkey");
+            entity.HasOne(d => d.Target).WithMany(p => p.Useractivitylogs)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("useractivitylog_targetid_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

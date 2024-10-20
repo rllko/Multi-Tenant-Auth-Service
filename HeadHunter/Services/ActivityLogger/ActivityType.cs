@@ -4,23 +4,22 @@ namespace HeadHunter.Services.ActivityLogger
 {
     public enum ActivityType
     {
-        [Description("login")]
+        [Description("Login")]
         Login,
-        [Description("persistence_download")]
+        [Description("PersistenceDownload")]
         PersistenceDownload,
-        [Description("persistence_interaction")]
         PersistenceInteraction,
-        [Description("bot_command")]
+        [Description("BotCommand")]
         BotCommand,
         [Description("file_upload")]
         FileUpload,
-        [Description("file_download")]
+        [Description("FileDownload")]
         FileDownload,
-        [Description("key_reset")]
+        [Description("KeyReset")]
         KeyReset,
-        [Description("key_misused")]
+        [Description("LicenseMisuse")]
         LicenseMisuse,
-        [Description("license_redeem")]
+        [Description("LicenseRedeem")]
         LicenseRedeem
     }
 

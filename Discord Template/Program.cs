@@ -71,7 +71,7 @@ public class Program
         // Get the Api Configuration from the Configuration file
         config.GetSection("ApiConfiguration").Get<ApiConfiguration>();
 
-        provider.GetRequiredService<IOAuthClient>();
+        var oauth = provider.GetRequiredService<IOAuthClient>();
 
         // You need a Service instance to register commands to your server
         var sCommands = provider.GetRequiredService<InteractionService>();
@@ -81,8 +81,10 @@ public class Program
 
         // Add The log events so we can see what is happening
         client.Log += async message => Console.WriteLine($"{message.Source}: {message.Message}");
+        client.UserJoined += async user => await FetchingService.GetUserPermissionsAsync(user,oauth);
+        
         sCommands.Log += async message => Console.WriteLine($"{message.Source}: {message.Message}");
-
+        
         client.Ready += async () =>
         {
             // Then register the commands to your guild

@@ -166,8 +166,6 @@ app.UseWhen(
     applicationBuilder => applicationBuilder.UseMiddleware<PersistenceMiddleware>()
 );
 
-
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();

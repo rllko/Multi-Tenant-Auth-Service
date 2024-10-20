@@ -7,23 +7,22 @@ CREATE TABLE discord_users (
 );
 
 CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    license varchar(150) UNIQUE NOT NULL,
-    email varchar(150),
-	ip_address varchar(40),
-	key_reset_count integer default 0,
-	discord_user bigint REFERENCES discord_users(discord_id) ON DELETE CASCADE,
-	hwid bigint REFERENCES hwids(id) ON DELETE CASCADE,
-	persistent_token varchar(40),
-	last_token TIMESTAMPTZ,
-	creation_date TIMESTAMP DEFAULT NOW()
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    license VARCHAR(150) UNIQUE NOT NULL,
+    email VARCHAR(150),
+    key_reset_count INTEGER DEFAULT 0,
+    discord_user BIGINT REFERENCES discord_users(discord_id) ON DELETE CASCADE, 
+    hwid BIGINT REFERENCES hwids(id) ON DELETE SET NULL,
+    persistent_token VARCHAR(40),
+    last_token TIMESTAMPTZ,
+    creation_date TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE UserActivityLog (
-    UserActivityLogId bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    UserId INTEGER references users(id),
-    IPAddress inet NOT NULL,
-	ActivityType VARCHAR(100) NOT NULL,
+    UserActivityLogId BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    targetId BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    IPAddress VARCHAR(50) NOT NULL,
+    ActivityType VARCHAR(100) NOT NULL,
     InteractionTime TIMESTAMP DEFAULT NOW()
 );
 

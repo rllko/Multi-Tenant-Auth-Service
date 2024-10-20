@@ -115,9 +115,9 @@ namespace DiscordTemplate.Services.Licenses
         }
 
 
-        public async Task<LicenseResponse<bool>> ResetHwidAsync(string accessToken, ulong discordId, string License)
+        public async Task<LicenseResponse<string>> ResetHwidAsync(string accessToken, ulong discordId, string License)
         {
-            var license = new LicenseResponse<bool>();
+            var license = new LicenseResponse<string>();
 
             if(string.IsNullOrEmpty(License) || discordId == 0L || string.IsNullOrEmpty(accessToken))
             {
@@ -125,14 +125,14 @@ namespace DiscordTemplate.Services.Licenses
                 return license;
             }
 
-            string endpoint = $"{_api!.ResetHwidEndpoint}/{discordId}/license={License}";
+            string endpoint = $"{_api!.ResetHwidEndpoint}/{discordId}/{License}";
 
             var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             using var httpResponseMessage = await _httpClient.SendAsync(request);
-
-            license = LicenseResponse<bool>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            var jsonresponse = await httpResponseMessage.Content.ReadAsStringAsync();
+            license = LicenseResponse<string>.Parse(jsonresponse);
             return license;
         }
     }

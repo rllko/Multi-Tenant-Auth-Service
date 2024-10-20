@@ -15,13 +15,20 @@ internal class ResetHwidEndpoint
 
         var response = new DiscordResponse<string>();
 
+        if (string.IsNullOrEmpty(license))
+        {
+            response.Error = "License is required";
+            return Results.Json(response);
+        }
+        
         var userLicense = await userManager.GetUserByLicenseAsync(license.ToString());
 
         if(userLicense == null)
         {
-            return Results.BadRequest();
+            response.Error = "Something went wrong.";
+            return Results.Json(response);
         }
-        #warning Fix this on the bot
+
         if(userLicense.DiscordUser != discordId)
         {
             response.Error = "This license doesnt belong to your Discord Account";
@@ -30,7 +37,7 @@ internal class ResetHwidEndpoint
 
         if(userLicense.Hwid == null)
         {
-            response.Error = "You Achieved the limit of this month (3/3)";
+            response.Error = "This license doesnt need a reset!";
             return Results.Json(response);
         }
 
@@ -39,14 +46,14 @@ internal class ResetHwidEndpoint
         
         if (hwidResetCount >= maxHwidResets)
         {
-            response.Error = $"You Achieved the limit of this month ({maxHwidResets}/{maxHwidResets})";
+            response.Error = $"You have achieved the limit of this month ({maxHwidResets}/{maxHwidResets})";
             return Results.Json(response);
         }
 
         await logger.LogActivityAsync(ActivityType.KeyReset, "",userLicense.Id);
-        await userManager.ResetUserHwidAsync((long) userLicense.DiscordUser);
+        await userManager.ResetUserHwidAsync( userLicense.License);
         
-        response.Result = $"Successfully reset license ``{userLicense.License}`` ({hwidResetCount} / {maxHwidResets}";
+        response.Result = $"Successfully reset license ``{userLicense.License}`` ({hwidResetCount+1} / {maxHwidResets})";
         return Results.Json(response);
     }
 }
