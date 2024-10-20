@@ -17,8 +17,7 @@ public class LicenseModule(IOAuthClient authClient, ILicenseAuthService licenseS
     private readonly ILicenseAuthService _licenseService = licenseService;
     private readonly IFetchingService _fetchingService = fetchingService;
 
-
-
+    
     [SlashCommand("redeem-code", "redeem code given by the launcher")]
     public async Task HandleRedeemDiscordCode(string code)
     {
@@ -52,7 +51,7 @@ public class LicenseModule(IOAuthClient authClient, ILicenseAuthService licenseS
             return;
         }
 
-        if(response.Error != null)
+        if(response.Error != "none")
         {
             await FollowupAsync(response.Error);
             return;
@@ -66,7 +65,7 @@ public class LicenseModule(IOAuthClient authClient, ILicenseAuthService licenseS
             await user.AddRoleAsync(
                 await base.Context.Guild.CreateRoleAsync(
                     "Owner", GuildPermissions.None, Color.Green));
-            await FollowupAsync("License Redeemed Successfully!");
+            await FollowupAsync(response.Result);
             return;
         }
 
@@ -75,6 +74,6 @@ public class LicenseModule(IOAuthClient authClient, ILicenseAuthService licenseS
             await user.AddRoleAsync(ownerRole);
         }
 
-        await FollowupAsync("License Redeemed Successfully!");
+        await FollowupAsync(response.Result);
     }
 }

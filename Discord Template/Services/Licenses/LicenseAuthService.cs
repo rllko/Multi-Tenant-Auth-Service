@@ -79,9 +79,9 @@ namespace DiscordTemplate.Services.Licenses
         }
 
 
-        public async Task<LicenseResponse<bool>> ConfirmDiscordLicense(string accessToken, string key, ulong discordId)
+        public async Task<LicenseResponse<string>> ConfirmDiscordLicense(string accessToken, string key, ulong discordId)
         {
-            var license = new LicenseResponse<bool>();
+            var license = new LicenseResponse<string>();
 
             if(string.IsNullOrEmpty(key) || discordId == 0L || string.IsNullOrEmpty(accessToken))
             {
@@ -108,8 +108,8 @@ namespace DiscordTemplate.Services.Licenses
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             using var httpResponseMessage = await _httpClient.SendAsync(request);
-
-            license = LicenseResponse<bool>.Parse(await httpResponseMessage.Content.ReadAsStringAsync());
+            var response = await httpResponseMessage.Content.ReadAsStringAsync();
+            license = LicenseResponse<string>.Parse(response);
             return license;
 
         }

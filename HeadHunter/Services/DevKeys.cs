@@ -53,8 +53,8 @@ namespace HeadHunter.Services
             }
         }
 
-        public RSA RsaSignKey { get; }
-        public RSA RsaEncryptKey { get; }
-        public Key ChaChaKey { get; }
+        public  RSA RsaSignKey { get; init; }
+        public  RSA RsaEncryptKey { get; init; }
+        public  Key ChaChaKey { get; init; }
     }
 }

@@ -78,8 +78,8 @@ namespace DiscordTemplate.AuthClient
 
         public async Task<TokenResponse?> GetAccessToken()
         {
-#warning You need to implement the endpoint to check if access token is still valid
-            if(DateTime.Now.ToUniversalTime() > lastToken?.ExpiresIn.Value.ToUniversalTime())
+            #warning You need to implement the endpoint to check if access token is still valid
+            if(DateTime.Now.ToUniversalTime() < lastToken?.ExpiresIn.Value.ToUniversalTime())
             {
                 return lastToken;
             }
@@ -89,11 +89,12 @@ namespace DiscordTemplate.AuthClient
             {
                 return null;
             }
-
-            var TokenResponse = await RetrieveAcessToken(authenticationResponse.Code!);
-            string value = await TokenResponse.Content.ReadAsStringAsync();
-
-            return lastToken = JsonConvert.DeserializeObject<TokenResponse>(value);
+            var tokenResponse = await RetrieveAcessToken(authenticationResponse.Code!);
+            
+            var value = await tokenResponse.Content.ReadAsStringAsync();
+            lastToken = JsonConvert.DeserializeObject<TokenResponse>(value);
+            
+            return lastToken;
         }
 
         #region Helper Methods

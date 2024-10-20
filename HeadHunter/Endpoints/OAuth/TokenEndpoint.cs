@@ -7,7 +7,7 @@ namespace HeadHunter.Endpoints.OAuth
     internal static class TokenEndpoint
     {
         [HttpPost]
-        public static async Task<IResult> Handle(
+        public static IResult Handle(
             HttpContext httpContext,
             [FromServices] IAuthorizeResultService authorizeResultService,
             [FromServices] DevKeys devKeys)

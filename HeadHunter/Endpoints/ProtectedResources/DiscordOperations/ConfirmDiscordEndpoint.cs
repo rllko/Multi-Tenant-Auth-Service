@@ -15,32 +15,32 @@ public class ConfirmDiscordEndpoint
         IUserManagerService userManagerService,
         ICodeStorageService codeStorage)
     {
+        var response = new DiscordResponse<string>();
+        
         var Request = httpContext.Request;
-        Request.Form.TryGetValue("code", out var Code);
-        Request.Form.TryGetValue("discord_id", out var DiscordId);
-
-        if(string.IsNullOrEmpty(Code) || string.IsNullOrEmpty(DiscordId))
+        Request.Form.TryGetValue("code", out var code);
+        Request.Form.TryGetValue("discord_id", out var discordId);
+        
+        if(string.IsNullOrEmpty(code))
         {
-            await httpContext.Response.WriteAsJsonAsync(new { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
-            return Results.Json(new { Error = "Invalid Params!" });
+            response.Error = "Invalid Params!";
+            return Results.Json(response);
         }
 
-        var userFromCode = codeStorage.GetUserByCode(Code.ToString());
+        var userFromCode = codeStorage.GetUserByCode(code.ToString());
 
         if(userFromCode == null)
         {
-            return Results.BadRequest(new { Error = "Key is invalid." });
+            response.Error = "Key is invalid.";
+            return Results.Json(response);
         }
 
-        if(long.TryParse(DiscordId.ToString(), out long DiscordUser) is false)
-        {
-            return Results.BadRequest(new { Error = "Discord ID is invalid." });
-        }
-
-
-        userFromCode.User.DiscordUser = DiscordUser;
+        long.TryParse(discordId, out var discord);
+        
+        userFromCode.User.DiscordUser = discord;
         var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
 
-        return Results.Json(new { Error = "", result = updatedUser });
+        response.Result = "Sucess!";
+        return Results.Json(response);
     }
 }

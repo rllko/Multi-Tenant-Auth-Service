@@ -21,13 +21,6 @@ namespace HeadHunter.Services
 
         public async Task InvokeAsync(HttpContext context)
         {
-
-            context.Response.OnStarting(() =>
-            {
-                context.Response.Headers.Remove("Server");
-                return Task.CompletedTask;
-                });
-
                 // extract guid token form from header
             var access_token = context.Request.Headers.Authorization;
 

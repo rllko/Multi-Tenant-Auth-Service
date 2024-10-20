@@ -189,7 +189,7 @@ namespace HeadHunter.Services.Users
                .FirstOrDefaultAsync(x => x.License == license);
 
             var resetCount =user!.Useractivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription()
-                                                           &&  x.Interactiontime.Value.Month == DateTime.Now.Month)!;
+                                                           &&  x.Interactiontime!.Value.Month == DateTime.Now.Month)!;
             return resetCount;
         }
 

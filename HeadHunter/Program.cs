@@ -167,8 +167,8 @@ app.UseWhen(
 );
 
 app.UseAuthentication();
-app.UseAuthorization();
 app.UseRateLimiter();
+app.UseAuthorization();
 
 //if(!app.Environment.IsDevelopment())
 //{
