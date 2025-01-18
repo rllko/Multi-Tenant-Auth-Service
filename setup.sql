@@ -1,4 +1,4 @@
--- User data
+	-- User data
 
 CREATE TABLE hwids(
 	id BIGSERIAL PRIMARY KEY,
@@ -7,7 +7,7 @@ CREATE TABLE hwids(
 	ram varchar(64) UNIQUE NOT NULL,
 	disk varchar(64) UNIQUE NOT NULL,
 	display varchar(64) UNIQUE NOT NULL
-)
+);
 
 CREATE TABLE discords (
     discord_id bigint PRIMARY KEY ,
@@ -18,7 +18,7 @@ CREATE TABLE discords (
 CREATE TABLE licenses (
     id BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 10 INCREMENT BY 69) PRIMARY KEY,
     license UUID DEFAULT gen_random_uuid(),
-    discord BIGINT REFERENCES discords(discords_id) ON DELETE CASCADE,
+    discord BIGINT REFERENCES discords(discord_id) ON DELETE CASCADE,
     hwid BIGINT REFERENCES hwids(id) ON DELETE SET NULL,
     creation_date TIMESTAMP DEFAULT NOW()
 );
@@ -43,7 +43,6 @@ CREATE TABLE activity_types (
 CREATE TABLE activity_logs (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT REFERENCES licenses(id), -- Nullable for non-authenticated activities
-    ip_address VARCHAR(50) NOT NULL,
     activity_type_id BIGINT NOT NULL REFERENCES activity_types(id),
     interaction_time TIMESTAMP DEFAULT NOW()
 );
