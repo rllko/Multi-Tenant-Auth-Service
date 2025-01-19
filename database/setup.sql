@@ -8,7 +8,7 @@ CREATE TABLE hwids(
 	disk varchar(64) UNIQUE NOT NULL,
 	display varchar(64) UNIQUE NOT NULL
 );
-
+-- check for email structure
 CREATE TABLE discords (
     discord_id bigint PRIMARY KEY ,
     email varchar(64) UNIQUE NOT NULL,
@@ -25,15 +25,13 @@ CREATE TABLE licenses (
 
 CREATE TABLE session_tokens (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    token VARCHAR(40) NOT NULL UNIQUE,
+    token UUID NOT NULL UNIQUE,
     license_id BIGINT NOT NULL REFERENCES licenses(id) ON DELETE CASCADE,
     ip_address VARCHAR(50),
-    expires_at TIMESTAMP NOT NULL, -- Token expiration date (7 days by default)
+    expires_at TIMESTAMP GENERATED ALWAYS AS (created_at + interval '7 days') STORED,
     created_at TIMESTAMP DEFAULT NOW(),
-    refreshed_at TIMESTAMP DEFAULT NULL
+    refreshed_at TIMESTAMP DEFAULT NULL -- for when people do a PUT to the /licenses/uuid with the current token
 );
-
--- create user_logs
 
 CREATE TABLE activity_types (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -46,32 +44,3 @@ CREATE TABLE activity_logs (
     activity_type_id BIGINT NOT NULL REFERENCES activity_types(id),
     interaction_time TIMESTAMP DEFAULT NOW()
 );
-
--- Auth stuff
-
-CREATE TABLE scopes (
-    scope_id SERIAL PRIMARY KEY,
-    scope_name VARCHAR(255) UNIQUE NOT NULL -- e.g., "read", "write", "admin"
-);
-
-CREATE TABLE clients (
-    client_id SERIAL PRIMARY KEY,
-    client_identifier varchar(150),
-    client_secret varchar(150),
-    grant_type varchar(20),
-    client_uri varchar(150)
-);
-
-CREATE TABLE client_scopes (
-    client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
-    scope_id INT REFERENCES scopes(scope_id) ON DELETE CASCADE,
-    PRIMARY KEY (client_id, scope_id)
-);
-
--- managed by the bot
-create table offsets(
-	id serial primary key
-	list jsonb
-)
-
-
