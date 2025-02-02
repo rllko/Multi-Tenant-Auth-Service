@@ -24,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
@@ -169,11 +170,7 @@ app.UseWhen(
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
-
-//if(!app.Environment.IsDevelopment())
-//{
-//app.UseHttpsRedirection();
-//}
+app.MapControllers();
 
 var oauthEndpoints = app.MapGroup("skibidiAuth");
 
