@@ -1,0 +1,97 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/rikko/Documents/GitHub/HeadHunter-OAuth/Discord Template/Discord Template.csproj": {}
+  },
+  "projects": {
+    "/home/rikko/Documents/GitHub/HeadHunter-OAuth/Discord Template/Discord Template.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/rikko/Documents/GitHub/HeadHunter-OAuth/Discord Template/Discord Template.csproj",
+        "projectName": "Discord Template",
+        "projectPath": "/home/rikko/Documents/GitHub/HeadHunter-OAuth/Discord Template/Discord Template.csproj",
+        "packagesPath": "/home/rikko/.nuget/packages/",
+        "outputPath": "/home/rikko/Documents/GitHub/HeadHunter-OAuth/Discord Template/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/rikko/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Discord.Net": {
+              "target": "Package",
+              "version": "[3.16.0, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.4.2, )"
+            },
+            "Polly.Contrib.WaitAndRetry": {
+              "target": "Package",
+              "version": "[1.1.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/home/rikko/.dotnet/sdk/9.0.100/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
