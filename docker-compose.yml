@@ -1,0 +1,20 @@
+services:
+  database:
+    image: postgres
+    ports:
+      - "80:8080"
+    environment:
+      - PGUSER=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=auth
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - store_database_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  store_database_data:
