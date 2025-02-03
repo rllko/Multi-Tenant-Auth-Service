@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="HeadHunter: FolderProfile" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
+    <riderPublish configuration="Debug" platform="Any CPU" publish_profile="FolderProfile.pubxml" pubxml_path="$PROJECT_DIR$/Properties/PublishProfiles/FolderProfile.pubxml" uuid_high="5887100008910376268" uuid_low="-5079549779329170713" />
+    <method v="2" />
+  </configuration>
+</component>
