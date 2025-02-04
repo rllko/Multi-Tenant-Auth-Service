@@ -15,6 +15,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  server:
+    build: ./Server
+    container_name: auth_server_c
+    ports:
+      - "8080:8080"
+      
 volumes:
   store_database_data:

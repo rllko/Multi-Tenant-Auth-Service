@@ -1,12 +1,10 @@
 
-/Discord Template/bin/
+/DiscordBot/bin
 /.vs
 /.idea
-/Discord Template/obj/Debug
-/Discord Template/obj/Debug
-/Discord Template/obj/
-/Discord Template/bin/
-/HeadHunter/bin/
-/HeadHunter/obj/Debug
-/HeadHunter/obj/
-/HeadHunter/bin/
+/DiscordBot/obj/Debug
+/DiscordBot/obj
+/Server/bin
+/Server/obj/Debug
+/Server/obj
+/DiscordBot/obj

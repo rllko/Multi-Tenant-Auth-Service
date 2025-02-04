@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.RateLimiting;
+using HeadHunter.Database;
 using HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +37,8 @@ builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
 builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
-builder.Services.AddSingleton<DevKeys>();
+builder.Services.AddSingleton(_ => new DatabaseInitializer());
+builder.Services.AddSingleton(_ => new DevKeys());
 var devKeys = new DevKeys();
 
 builder.Services.AddAuthentication(x =>
@@ -103,7 +105,7 @@ builder.Services.AddAuthorizationBuilder()
 var connectionString = builder.Configuration["BaseDBConnection"];
 builder.Services.AddDbContext<HeadhunterDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString)HeadHunter;
 }, ServiceLifetime.Transient);
 
 
