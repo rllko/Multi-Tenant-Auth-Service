@@ -2,7 +2,6 @@ using System.Threading.RateLimiting;
 using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
-using Authentication.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -138,7 +137,7 @@ app.UseExceptionHandler(appError =>
 });
 
 // Authorization Code to Brearer Middleware
-app.UseWhen(
+/*app.UseWhen(
     context => context.Request.Headers.Authorization.Count > 0,
     applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
 );
@@ -146,9 +145,9 @@ app.UseWhen(
 app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/protected"),
     applicationBuilder => applicationBuilder.UseMiddleware<PersistenceMiddleware>()
-);
+);*/
 
-app.UseAuthentication();
+//app.UseAuthentication();
 app.UseRateLimiter();
 //app.UseAuthorization();
 // app.MapControllers();
@@ -201,27 +200,27 @@ app.MapPost("2198251026", ClientRedeemEndpoint.Handle);*/
 //app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;
 
 
-//app.MapGet("/", (HttpContext ctx) =>
-//    ctx.Response.WriteAsync("""
-//    <html>
-//        <head></head>
-//        <body style="background:black">
-//        <style>
-//        *{
-//        color:white;
-//        font-size:0.7em
-//        }
-//            img {
-//                display: block;
-//                margin-left: auto;
-//                margin-right: auto;
-//                width: 50%;
-//            }
-//        </style>
-//        Server v1.0
-//        <img style="margin:auto" draggable="false" src='https://http.cat/418' />
-//        </body>
-//    </html>
-//    """));
+app.MapGet("/", ctx =>
+    ctx.Response.WriteAsync("""
+                            <html>
+                                <head></head>
+                                <body style="background:black">
+                                <style>
+                                *{
+                                color:white;
+                                font-size:0.7em
+                                }
+                                    img {
+                                        display: block;
+                                        margin-left: auto;
+                                        margin-right: auto;
+                                        width: 50%;
+                                    }
+                                </style>
+                                Server v1.0
+                                <img style="margin:auto" draggable="false" src='https://http.cat/418' />
+                                </body>
+                            </html>
+                            """));
 
 app.Run();
