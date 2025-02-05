@@ -1,7 +1,10 @@
+using System.Threading.RateLimiting;
 using HeadHunter.Common;
+using HeadHunter.Database;
 using HeadHunter.Endpoints;
 using HeadHunter.Endpoints.OAuth;
 using HeadHunter.Endpoints.ProtectedResources.DiscordOperations;
+using HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 using HeadHunter.Models.Context;
 using HeadHunter.Services;
 using HeadHunter.Services.ActivityLogger;
@@ -16,9 +19,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using System.Threading.RateLimiting;
-using HeadHunter.Database;
-using HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +37,9 @@ builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
 builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
-builder.Services.AddSingleton(_ => new DatabaseInitializer());
-builder.Services.AddSingleton(_ => new DevKeys());
+builder.Services.AddSingleton(_ => new DatabaseInitializer(
+    Environment.GetEnvironmentVariable("DATABASE_URL")));
+
 var devKeys = new DevKeys();
 
 builder.Services.AddAuthentication(x =>
@@ -48,7 +49,7 @@ builder.Services.AddAuthentication(x =>
     x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(x =>
 {
-    x.Configuration = new OpenIdConnectConfiguration()
+    x.Configuration = new OpenIdConnectConfiguration
     {
         SigningKeys = { new RsaSecurityKey(devKeys.RsaSignKey) }
     };
@@ -62,20 +63,17 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuer = true,
         IssuerSigningKey = new RsaSecurityKey(devKeys.RsaSignKey),
 
-        ValidateLifetime = true,
+        ValidateLifetime = true
     };
 
-    x.Events = new()
+    x.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            if(context.Request.Headers.
-            TryGetValue("Authorization", out var Token))
-            {
+            if (context.Request.Headers.TryGetValue("Authorization", out var Token))
                 context.Token = Token;
-            }
             return Task.CompletedTask;
-        },
+        }
     };
 
     x.MapInboundClaims = false;
@@ -92,40 +90,37 @@ builder.Services.AddRateLimiter(options =>
         rateLimiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         rateLimiterOptions.QueueLimit = 5;
     });
-
 });
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Special", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c => c.Type == "Scope" &&
-            (c.Value == "admin" || c.Value == "license:write")
-            && c.Issuer == IdentityData.Issuer)));
+                                       (c.Value == "admin" || c.Value == "license:write")
+                                       && c.Issuer == IdentityData.Issuer)));
 
 var connectionString = builder.Configuration["BaseDBConnection"];
-builder.Services.AddDbContext<HeadhunterDbContext>(options =>
-{
-    options.UseNpgsql(connectionString)HeadHunter;
-}, ServiceLifetime.Transient);
+builder.Services.AddDbContext<HeadhunterDbContext>(options => { options.UseNpgsql(connectionString); },
+    ServiceLifetime.Transient);
 
 
-var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy.AllowAnyOrigin()
-                                .AllowAnyHeader()
-                                .AllowAnyMethod();
-                      });
+    options.AddPolicy(MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if(app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -141,17 +136,15 @@ app.UseExceptionHandler(appError =>
         context.Response.ContentType = "application/json";
 
         var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-        if(contextFeature is not null)
+        if (contextFeature is not null)
         {
             Console.WriteLine($"Error: {contextFeature.Error}");
 
-            if(context.Request.Path.StartsWithSegments("/skibidiAuth"))
-            {
+            if (context.Request.Path.StartsWithSegments("/skibidiAuth"))
                 await context.Response.WriteAsJsonAsync(
                     new ExceptionResponse
                     (contextFeature.Error.Message,
-                    contextFeature.Error.StackTrace));
-            }
+                        contextFeature.Error.StackTrace));
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         }
