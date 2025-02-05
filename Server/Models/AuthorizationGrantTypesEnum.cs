@@ -1,19 +1,14 @@
 ﻿using System.ComponentModel;
 
-namespace HeadHunter.Models
+namespace Authentication.Models;
+
+internal enum AuthorizationGrantTypesEnum : byte
 {
-    internal enum AuthorizationGrantTypesEnum : byte
-    {
-        [Description("code")]
-        Code,
+    [Description("code")] Code,
 
-        [Description("Implicit")]
-        Implicit,
+    [Description("Implicit")] Implicit,
 
-        [Description("ClientCredentials")]
-        ClientCredentials,
+    [Description("ClientCredentials")] ClientCredentials,
 
-        [Description("ResourceOwnerPassword")]
-        ResourceOwnerPassword
-    }
+    [Description("ResourceOwnerPassword")] ResourceOwnerPassword
 }

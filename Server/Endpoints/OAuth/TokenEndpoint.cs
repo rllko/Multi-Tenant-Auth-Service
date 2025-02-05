@@ -1,36 +1,34 @@
-﻿using HeadHunter.Services;
-using HeadHunter.Services.Interfaces;
+﻿using Authentication.Services;
+using Authentication.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeadHunter.Endpoints.OAuth
+namespace Authentication.Endpoints.OAuth;
+
+internal static class TokenEndpoint
 {
-    internal static class TokenEndpoint
+    [HttpPost]
+    public static IResult Handle(
+        HttpContext httpContext,
+        [FromServices] IAuthorizeResultService authorizeResultService,
+        [FromServices] DevKeys devKeys)
     {
-        [HttpPost]
-        public static IResult Handle(
-            HttpContext httpContext,
-            [FromServices] IAuthorizeResultService authorizeResultService,
-            [FromServices] DevKeys devKeys)
-        {
+        var result = authorizeResultService
+            .GenerateToken(httpContext, devKeys);
 
-            var result =  authorizeResultService
-                .GenerateToken(httpContext,devKeys);
-
-            if(result.HasError)
-                return Results.Json(new
-                {
-                    Error = "Something happened during token creation",
-                    Debug = result.Error.ToString()
-                });
-
-            return Results.Ok(new
+        if (result.HasError)
+            return Results.Json(new
             {
-                AccessToken = result.AccessToken,
-                IdentityToken = result.IdToken,
-                TokenType = result.TokenType,
-                Scope = result.RequestedScopes,
-                ExpiresIn = DateTime.UtcNow.AddMinutes(30)
+                Error = "Something happened during token creation",
+                Debug = result.Error
             });
-        }
+
+        return Results.Ok(new
+        {
+            result.AccessToken,
+            IdentityToken = result.IdToken,
+            result.TokenType,
+            Scope = result.RequestedScopes,
+            ExpiresIn = DateTime.UtcNow.AddMinutes(30)
+        });
     }
 }

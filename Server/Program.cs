@@ -1,83 +1,69 @@
 using System.Threading.RateLimiting;
-using HeadHunter.Common;
-using HeadHunter.Database;
-using HeadHunter.Endpoints;
-using HeadHunter.Endpoints.OAuth;
-using HeadHunter.Endpoints.ProtectedResources.DiscordOperations;
-using HeadHunter.Endpoints.ProtectedResources.PersistenceOperations;
-using HeadHunter.Models.Context;
-using HeadHunter.Services;
-using HeadHunter.Services.ActivityLogger;
-using HeadHunter.Services.ClientComponents;
-using HeadHunter.Services.CodeService;
-using HeadHunter.Services.Interfaces;
-using HeadHunter.Services.Users;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Authentication.Common;
+using Authentication.Database;
+using Authentication.Endpoints;
+using Authentication.Services;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+// builder.Services.AddControllers();
 
-builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
-builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
-
-builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-
-builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-builder.Services.AddScoped<IUserManagerService, UserManagerService>();
-builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
-builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
+// builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
+// builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
+//
+// builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+//
+// builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
+// builder.Services.AddScoped<IUserManagerService, UserManagerService>();
+// builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
+// builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
-var devKeys = new DevKeys();
 
-builder.Services.AddAuthentication(x =>
-{
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x =>
-{
-    x.Configuration = new OpenIdConnectConfiguration
-    {
-        SigningKeys = { new RsaSecurityKey(devKeys.RsaSignKey) }
-    };
-
-    x.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        ValidateAudience = true,
-        ValidAudience = IdentityData.Audience,
-        ValidIssuer = IdentityData.Issuer,
-        ValidateIssuer = true,
-        IssuerSigningKey = new RsaSecurityKey(devKeys.RsaSignKey),
-
-        ValidateLifetime = true
-    };
-
-    x.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            if (context.Request.Headers.TryGetValue("Authorization", out var Token))
-                context.Token = Token;
-            return Task.CompletedTask;
-        }
-    };
-
-    x.MapInboundClaims = false;
-});
+// builder.Services.AddAuthentication(x =>
+// {
+//     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//     x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+// }).AddJwtBearer(x =>
+// {
+//     var devKeys = new DevKeys();
+//     x.Configuration = new OpenIdConnectConfiguration
+//     {
+//         SigningKeys = { new RsaSecurityKey(devKeys.RsaSignKey) }
+//     };
+//
+//     x.TokenValidationParameters = new TokenValidationParameters
+//     {
+//         ValidateIssuerSigningKey = true,
+//         ValidateAudience = true,
+//         ValidAudience = IdentityData.Audience,
+//         ValidIssuer = IdentityData.Issuer,
+//         ValidateIssuer = true,
+//         IssuerSigningKey = new RsaSecurityKey(devKeys.RsaSignKey),
+//
+//         ValidateLifetime = true
+//     };
+//
+//     x.Events = new JwtBearerEvents
+//     {
+//         OnMessageReceived = context =>
+//         {
+//             if (context.Request.Headers.TryGetValue("Authorization", out var Token))
+//                 context.Token = Token;
+//             return Task.CompletedTask;
+//         }
+//     };
+//
+//     x.MapInboundClaims = false;
+// });
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -99,9 +85,9 @@ builder.Services.AddAuthorizationBuilder()
                                        (c.Value == "admin" || c.Value == "license:write")
                                        && c.Issuer == IdentityData.Issuer)));
 
-var connectionString = builder.Configuration["BaseDBConnection"];
-builder.Services.AddDbContext<HeadhunterDbContext>(options => { options.UseNpgsql(connectionString); },
-    ServiceLifetime.Transient);
+// var connectionString = builder.Configuration["BaseDBConnection"];
+// builder.Services.AddDbContext<AuthenticationDbContext>(options => { options.UseNpgsql(connectionString); },
+//     ServiceLifetime.Transient);
 
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -164,15 +150,17 @@ app.UseWhen(
 
 app.UseAuthentication();
 app.UseRateLimiter();
-app.UseAuthorization();
-app.MapControllers();
+//app.UseAuthorization();
+// app.MapControllers();
 
 var oauthEndpoints = app.MapGroup("skibidiAuth");
 
+/*
 // OAuth Authorization Endpoint
 oauthEndpoints.MapGet("authorize", AuthorizationEndpoint.Handle);
 
 // OAuth Token Endpoint
+
 oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
 
 // Create a new License
@@ -207,7 +195,7 @@ app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
 app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
 
 // Use License to obtain discord code
-app.MapPost("2198251026", ClientRedeemEndpoint.Handle);
+app.MapPost("2198251026", ClientRedeemEndpoint.Handle);*/
 
 // Refresh user token and get offsets
 //app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;

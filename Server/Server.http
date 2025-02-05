@@ -1,6 +1,6 @@
-# @HeadHunter_HostAddress = http://localhost:80
+# @Authentication_HostAddress = http://localhost:80
 
-# GET {{HeadHunter_HostAddress}}/
+# GET {{Authentication_HostAddress}}/
 # Accept: application/json
 
 # ###

@@ -1,15 +1,15 @@
-﻿using HeadHunter.Models.Entities;
+﻿using Authentication.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Context;
+namespace Authentication.Models.Context;
 
-public partial class HeadhunterDbContext : DbContext
+public partial class AuthenticationDbContext : DbContext
 {
-    public HeadhunterDbContext()
+    public AuthenticationDbContext()
     {
     }
 
-    public HeadhunterDbContext(DbContextOptions<HeadhunterDbContext> options)
+    public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
         : base(options)
     {
     }
@@ -60,20 +60,11 @@ public partial class HeadhunterDbContext : DbContext
             entity.Property(e => e.DiscordId).ValueGeneratedNever();
         });
 
-        modelBuilder.Entity<Hwid>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("hwids_pkey");
-        });
+        modelBuilder.Entity<Hwid>(entity => { entity.HasKey(e => e.Id).HasName("hwids_pkey"); });
 
-        modelBuilder.Entity<Offset>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("pk_person");
-        });
+        modelBuilder.Entity<Offset>(entity => { entity.HasKey(e => e.Id).HasName("pk_person"); });
 
-        modelBuilder.Entity<Scope>(entity =>
-        {
-            entity.HasKey(e => e.ScopeId).HasName("scopes_pkey");
-        });
+        modelBuilder.Entity<Scope>(entity => { entity.HasKey(e => e.ScopeId).HasName("scopes_pkey"); });
 
         modelBuilder.Entity<User>(entity =>
         {

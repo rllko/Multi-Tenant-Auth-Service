@@ -1,11 +1,11 @@
-﻿using HeadHunter.Models;
+﻿using Authentication.Models;
 
-namespace HeadHunter.Services.CodeService
+namespace Authentication.Services.CodeService;
+
+public interface IAcessTokenStorageService
 {
-    public interface IAcessTokenStorageService
-    {
-        string? Generate(Guid accessCode);
-        AccessToken? GetByCode(Guid accessCode);
-        // AuthorizationCode? UpdatedByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes);
-    }
+    string? Generate(Guid accessCode);
+
+    AccessToken? GetByCode(Guid accessCode);
+    // AuthorizationCode? UpdatedByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes);
 }
