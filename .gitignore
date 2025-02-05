@@ -1,10 +1,8 @@
-
-/DiscordBot/bin
 /.vs
 /.idea
-/DiscordBot/obj/Debug
-/DiscordBot/obj
-/Server/bin
-/Server/obj/Debug
-/Server/obj
-/DiscordBot/obj
+**/.run
+**/DiscordBot/obj
+**/DiscordBot/bin
+**/Server/obj
+**/Server/bin
+docker-compose.env
