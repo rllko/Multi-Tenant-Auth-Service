@@ -24,5 +24,5 @@ public class Hwid
 
     [Column("display")] [StringLength(64)] public string Display { get; set; } = null!;
 
-    [InverseProperty("Hw")] public virtual ICollection<User> Users { get; set; } = new List<User>();
+    [InverseProperty("Hw")] public virtual ICollection<License> Users { get; set; } = new List<License>();
 }
