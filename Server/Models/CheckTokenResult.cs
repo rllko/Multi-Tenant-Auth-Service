@@ -1,12 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 
-namespace HeadHunter.Models
-{
-    public class CheckTokenResult
-    {
-        public JwtSecurityToken? token { get; init; } = null;
-        public bool IsSuccess { get; set; } = false;
+namespace Authentication.Models;
 
-        public string? ErrorDescription { get; init; }
-    }
+public class CheckTokenResult
+{
+    public JwtSecurityToken? token { get; init; } = null;
+    public bool IsSuccess { get; set; } = false;
+
+    public string? ErrorDescription { get; init; }
 }

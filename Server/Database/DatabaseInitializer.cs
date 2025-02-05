@@ -1,6 +1,6 @@
 using DbUp;
 
-namespace HeadHunter.Database;
+namespace Authentication.Database;
 
 public class DatabaseInitializer(string? connectionString)
 {

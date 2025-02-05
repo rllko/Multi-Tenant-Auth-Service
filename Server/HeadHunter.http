@@ -1,6 +1,0 @@
-# @HeadHunter_HostAddress = http://localhost:80
-
-# GET {{HeadHunter_HostAddress}}/
-# Accept: application/json
-
-# ###

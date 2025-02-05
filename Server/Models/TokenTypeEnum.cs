@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace HeadHunter.Models
+namespace Authentication.Models;
+
+public enum TokenTypeEnum : byte
 {
-    public enum TokenTypeEnum : byte
-    {
-        [Description("Bearer")]
-        Bearer
-    }
+    [Description("Bearer")] Bearer
 }

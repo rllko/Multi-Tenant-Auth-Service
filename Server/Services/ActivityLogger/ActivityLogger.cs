@@ -1,14 +1,13 @@
-﻿using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
+﻿using Authentication.Models.Context;
+using Authentication.Models.Entities;
 
-namespace HeadHunter.Services.ActivityLogger;
+namespace Authentication.Services.ActivityLogger;
 
-public class ActivityLogger(HeadhunterDbContext dbContext) : IActivityLogger
+public class ActivityLogger(AuthenticationDbContext dbContext) : IActivityLogger
 {
     public async Task LogActivityAsync(ActivityType activityType, string ipAddress, long? targetId)
     {
-
-        var activityLog = new Useractivitylog()
+        var activityLog = new Useractivitylog
         {
             Targetid = targetId,
             Activitytype = activityType.ToString(),

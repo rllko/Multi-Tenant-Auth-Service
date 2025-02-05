@@ -1,7 +1,7 @@
-﻿using HeadHunter.Models;
+﻿using Authentication.Models;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace HeadHunter.Services.CodeService;
+namespace Authentication.Services.CodeService;
 
 public class AcessTokenStorageService : IAcessTokenStorageService
 {
@@ -12,9 +12,9 @@ public class AcessTokenStorageService : IAcessTokenStorageService
     {
         _codeStorageService = codeStorageService;
 
-        var cacheOptions = new MemoryCacheOptions()
+        var cacheOptions = new MemoryCacheOptions
         {
-            ExpirationScanFrequency= TimeSpan.FromMinutes(10)
+            ExpirationScanFrequency = TimeSpan.FromMinutes(10)
         };
         _tokenCache = new MemoryCache(cacheOptions);
     }
@@ -23,10 +23,7 @@ public class AcessTokenStorageService : IAcessTokenStorageService
     {
         var client = _codeStorageService.GetClientByCode(accessCode.ToString());
 
-        if(client is null)
-        {
-            return null;
-        }
+        if (client is null) return null;
 
         var accessToken = new AccessToken
         {
@@ -36,7 +33,7 @@ public class AcessTokenStorageService : IAcessTokenStorageService
             RequestedScopes = client.RequestedScopes,
             Subject = client.Subject,
             CodeChallenge = client.CodeChallenge!,
-            CodeChallengeMethod = client.CodeChallengeMethod!,
+            CodeChallengeMethod = client.CodeChallengeMethod!
         };
 
         var code = Guid.NewGuid();
@@ -49,7 +46,11 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         return code.ToString();
     }
 
-    public AccessToken? GetByCode(Guid code) => _tokenCache
-        .TryGetValue(code, out AccessToken? authorizationCode)
-        ? authorizationCode : null;
+    public AccessToken? GetByCode(Guid code)
+    {
+        return _tokenCache
+            .TryGetValue(code, out AccessToken? authorizationCode)
+            ? authorizationCode
+            : null;
+    }
 }

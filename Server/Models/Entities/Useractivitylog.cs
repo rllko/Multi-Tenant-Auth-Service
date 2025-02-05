@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Entities;
+namespace Authentication.Models.Entities;
 
 [Table("useractivitylog")]
-public partial class Useractivitylog
+public class Useractivitylog
 {
-    [Key]
-    [Column("useractivitylogid")]
-    public long Useractivitylogid { get; set; }
+    [Key] [Column("useractivitylogid")] public long Useractivitylogid { get; set; }
 
-    [Column("targetid")]
-    public long? Targetid { get; set; }
+    [Column("targetid")] public long? Targetid { get; set; }
 
     [Column("ipaddress")]
     [StringLength(50)]
