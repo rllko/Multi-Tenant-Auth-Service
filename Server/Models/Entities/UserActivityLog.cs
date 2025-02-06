@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Authentication.Models.Entities;
 
-[Table("useractivitylog")]
-public class Useractivitylog
+[Table("activity_logs")]
+public record UserActivityLog
 {
     [Key] [Column("useractivitylogid")] public long Useractivitylogid { get; set; }
 
@@ -23,5 +23,5 @@ public class Useractivitylog
 
     [ForeignKey("Targetid")]
     [InverseProperty("Useractivitylogs")]
-    public virtual License? Target { get; set; }
+    public License? Target { get; set; }
 }
