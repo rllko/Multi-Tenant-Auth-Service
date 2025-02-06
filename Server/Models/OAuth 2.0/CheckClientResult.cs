@@ -1,4 +1,4 @@
-﻿using Authentication.Models.Entities;
+﻿using Authentication.Models.Entities.OAuth;
 
 namespace Authentication.Models;
 

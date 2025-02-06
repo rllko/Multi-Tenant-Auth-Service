@@ -3,7 +3,7 @@ namespace Authentication.Models.Entities;
 public record SessionToken(
     int SessionId,
     Guid Token,
-    long LicenseId,
+    License License,
     string IpAddress,
     DateTime Expiration,
     DateTime IssuedAt,

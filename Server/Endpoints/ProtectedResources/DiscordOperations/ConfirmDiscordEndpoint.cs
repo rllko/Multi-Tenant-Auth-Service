@@ -10,7 +10,7 @@ public class ConfirmDiscordEndpoint
 {
     [HttpPost]
     public static async Task<IResult> Handle(HttpContext httpContext,
-        IUserManagerService userManagerService,
+        ILicenseManagerService userManagerService,
         ICodeStorageService codeStorage)
     {
         var response = new DiscordResponse<string>();
@@ -35,8 +35,8 @@ public class ConfirmDiscordEndpoint
 
         long.TryParse(discordId, out var discord);
 
-        userFromCode.User.DiscordUser = discord;
-        var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
+        //userFromCode.User.DiscordUser = discord;
+        // var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
 
         response.Result = "Sucess!";
         return Results.Json(response);

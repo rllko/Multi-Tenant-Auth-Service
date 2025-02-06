@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen();
 // builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 //
 // builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-// builder.Services.AddScoped<IUserManagerService, UserManagerService>();
+// builder.Services.AddScoped<ILicenseManagerService, UserManagerService>();
 // builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
 // builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 

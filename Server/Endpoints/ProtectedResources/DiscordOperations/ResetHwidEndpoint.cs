@@ -8,7 +8,7 @@ internal class ResetHwidEndpoint
 {
     internal static async Task<IResult> Handle(
         HttpContext context,
-        IUserManagerService userManager,
+        ILicenseManagerService userManager,
         IActivityLogger logger, long discordId, string license)
     {
         var response = new DiscordResponse<string>();
@@ -19,7 +19,7 @@ internal class ResetHwidEndpoint
             return Results.Json(response);
         }
 
-        var userLicense = await userManager.GetUserByLicenseAsync(license);
+        var userLicense = await userManager.GetLicenseByLicenseAsync(license);
 
         if (userLicense == null)
         {
@@ -27,19 +27,19 @@ internal class ResetHwidEndpoint
             return Results.Json(response);
         }
 
-        if (userLicense.DiscordUser != discordId)
+        if (userLicense.DiscordUser != null && userLicense.DiscordUser.DiscordId != discordId)
         {
             response.Error = "This license doesnt belong to your Discord Account";
             return Results.Json(response);
         }
 
-        if (userLicense.Hwid == null)
+        if (userLicense.Hw == null)
         {
             response.Error = "This license doesnt need a reset!";
             return Results.Json(response);
         }
 
-        var hwidResetCount = await userManager.GetUserHwidResetCount(userLicense.License);
+        var hwidResetCount = await userManager.GetLicenseHwidResetCount("todo");
         const int maxHwidResets = 3;
 
         if (hwidResetCount >= maxHwidResets)
@@ -49,10 +49,10 @@ internal class ResetHwidEndpoint
         }
 
         await logger.LogActivityAsync(ActivityType.KeyReset, "", userLicense.Id);
-        await userManager.ResetUserHwidAsync(userLicense.License);
+        await userManager.ResetLicenseHwidAsync("todo");
 
-        response.Result =
-            $"Successfully reset license ``{userLicense.License}`` ({hwidResetCount + 1} / {maxHwidResets})";
+        // response.Result =
+        //   $"Successfully reset license ``{userLicense.License}`` ({hwidResetCount + 1} / {maxHwidResets})";
         return Results.Json(response);
     }
 }

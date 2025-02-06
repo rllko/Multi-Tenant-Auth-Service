@@ -1,5 +1,4 @@
 ﻿using Authentication.Common;
-using Authentication.Models.Context;
 using Authentication.OauthResponse;
 using Authentication.Services.CodeService;
 using Authentication.Services.Users;
@@ -11,8 +10,7 @@ public class ClientRedeemEndpoint
 {
     [HttpPost]
     public static async Task<IResult> Handle(HttpContext httpContext,
-        [FromServices] IUserManagerService userManagerService,
-        AuthenticationDbContext dbContext,
+        [FromServices] ILicenseManagerService userManagerService,
         ICodeStorageService codeStorage)
     {
         var Request = httpContext.Request;
@@ -26,7 +24,7 @@ public class ClientRedeemEndpoint
             return Results.NotFound();
         }
 
-        var user = await userManagerService.GetUserByLicenseAsync(License!);
+        var user = await userManagerService.GetLicenseByLicenseAsync(License!);
 
         if (user == null)
         {
@@ -37,8 +35,8 @@ public class ClientRedeemEndpoint
 
         if (user.DiscordUser != null) return Results.Json(new { Error = "Key is already confirmed." });
 
-        var discordCode = codeStorage.CreateDiscordCode(dbContext, License!);
+        // var discordCode = codeStorage.CreateDiscordCode(dbContext, License!);
 
-        return Results.Json(new { Error = "none", Result = discordCode });
+        return Results.Json(new { Error = "none", Result = 0 });
     }
 }

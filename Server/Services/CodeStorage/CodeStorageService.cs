@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Authentication.Common;
 using Authentication.Models;
-using Authentication.Models.Context;
 
 namespace Authentication.Services.CodeService;
 
@@ -16,12 +15,12 @@ public class CodeStorageService : ICodeStorageService
         StartCleanupTask(TimeSpan.FromMinutes(5));
     }
 
-    public string? CreateAuthorizationCode(AuthenticationDbContext _dbContext, string? clientIdentifier,
+    public string? CreateAuthorizationCode(string? clientIdentifier,
         AuthorizationCode authorizationCode)
     {
-        var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
+        // var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
 
-        if (client is null) return null;
+        // if (client is null) return null;
 
         var ExistingCode = _authorizeCodeIssued.FirstOrDefault(x => x.Value.ClientIdentifier == clientIdentifier);
 
@@ -35,25 +34,25 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public string? CreateDiscordCode(AuthenticationDbContext _dbContext, string license)
+    public string? CreateDiscordCode(string license)
     {
-        var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
+        // var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
 
-        if (ExistingUser is null) return null;
+        // if (ExistingUser is null) return null;
 
-        var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.User.License == license);
+        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.User.License == license);
 
-        if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
-
-        var tempClient = new DiscordCode
-        {
-            User = ExistingUser
-        };
+        // if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
+        //
+        // var tempClient = new DiscordCode
+        // {
+        //     User = ExistingUser
+        // };
 
         var code = EncodingFunctions.GetUniqueKey(20);
 
         // then store the code is the Concurrent Dictionary
-        _discordCodeIssued[code] = tempClient;
+        // _discordCodeIssued[code] = tempClient;
 
         return code;
     }

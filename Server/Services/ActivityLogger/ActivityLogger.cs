@@ -1,9 +1,8 @@
-﻿using Authentication.Models.Context;
-using Authentication.Models.Entities;
+﻿using Authentication.Models.Entities;
 
 namespace Authentication.Services.ActivityLogger;
 
-public class ActivityLogger(AuthenticationDbContext dbContext) : IActivityLogger
+public class ActivityLogger : IActivityLogger
 {
     public async Task LogActivityAsync(ActivityType activityType, string ipAddress, long? targetId)
     {
@@ -15,7 +14,7 @@ public class ActivityLogger(AuthenticationDbContext dbContext) : IActivityLogger
             Interactiontime = DateTime.Now
         };
 
-        await dbContext.Useractivitylogs.AddAsync(activityLog);
-        await dbContext.SaveChangesAsync();
+        // await dbContext.Useractivitylogs.AddAsync(activityLog);
+        // await dbContext.SaveChangesAsync();
     }
 }

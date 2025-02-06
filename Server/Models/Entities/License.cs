@@ -17,7 +17,7 @@ public class License
 
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
-    public DiscordUser? DiscordUserNavigation { get; init; }
+    public DiscordUser? DiscordUser { get; init; }
 
     [ForeignKey("Hwid")]
     [InverseProperty("Users")]

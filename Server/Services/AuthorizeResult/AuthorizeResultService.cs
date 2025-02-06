@@ -1,13 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Authentication.Common;
 using Authentication.Models;
-using Authentication.Models.Context;
-using Authentication.Models.Entities;
+using Authentication.Models.Entities.OAuth;
 using Authentication.OauthRequest;
 using Authentication.OauthResponse;
 using Authentication.Services.CodeService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
@@ -15,15 +13,13 @@ namespace Authentication.Services.Interfaces;
 
 public class AuthorizeResultService(
     ICodeStorageService codeStoreService,
-    IAcessTokenStorageService acessTokenStorageService,
-    AuthenticationDbContext dbContext
+    IAcessTokenStorageService acessTokenStorageService
 ) : IAuthorizeResultService
 {
     private readonly IAcessTokenStorageService _acessTokenStorageService = acessTokenStorageService;
 
     //private readonly InMemoryClientDatabase _clientStore = new();
     private readonly ICodeStorageService _codeStoreService = codeStoreService;
-    private readonly AuthenticationDbContext _dbContext = dbContext;
 
     public AuthorizeResponse AuthorizeRequest(HttpContext httpContext, AuthorizationRequest authorizationRequest)
     {
@@ -97,15 +93,15 @@ public class AuthorizeResultService(
             Subject = clientResult.Client.ClientIdentifier!
         };
 
-        var code = _codeStoreService.CreateAuthorizationCode(_dbContext, authorizationRequest.client_id, authoCode);
-        if (code == null)
-        {
-            response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
-            return response;
-        }
+        // // var code = _codeStoreService.CreateAuthorizationCode(_dbContext, authorizationRequest.client_id, authoCode);
+        // if (code == null)
+        // {
+        //     response.Error = ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription();
+        //     return response;
+        // }
 
 
-        response.Code = code;
+        // response.Code = code;
         response.ResponseType = authorizationRequest.response_type;
         response.State = authorizationRequest.state;
         response.RequestedScopes = [.. clientScopes];
@@ -203,8 +199,8 @@ public class AuthorizeResultService(
         try
         {
             // check if client exists
-            storedClient = _dbContext.Clients.Include(x => x.Scopes)
-                .First(x => x.ClientIdentifier!.Equals(clientIdentifier));
+            // storedClient = _dbContext.Clients.Include(x => x.Scopes)
+            // .First(x => x.ClientIdentifier!.Equals(clientIdentifier));
         }
         catch (Exception)
         {
@@ -212,6 +208,7 @@ public class AuthorizeResultService(
             return result;
         }
 
+        /*
         if (storedClient == null)
         {
             result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
@@ -234,6 +231,7 @@ public class AuthorizeResultService(
 
         result.IsSuccess = true;
         result.Client = storedClient;
+        */
 
         return result;
     }

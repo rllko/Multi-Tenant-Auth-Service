@@ -1,9 +1,6 @@
-﻿using System.Security.Claims;
-using Authentication.Common;
-using Authentication.Endpoints;
-using Authentication.Models.Context;
-using Authentication.Services.ActivityLogger;
-using Authentication.Services.Users;
+﻿using Authentication.Endpoints;
+
+// using Authentication.Models.Context;
 
 namespace Authentication.Services;
 
@@ -40,67 +37,67 @@ public class PersistenceMiddleware(RequestDelegate next, IHost host)
 
         using var scope = host.Services.CreateScope();
 
-        var userManager = scope.ServiceProvider.GetRequiredService<IUserManagerService>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
+        // var userManager = scope.ServiceProvider.GetRequiredService<ILicenseManagerService>();
+        // var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
 
 
         // obtain code from database
-        var user = await userManager.GetUserByPersistanceTokenAsync(token.ToString());
+        // var user = await userManager.GetUserByPersistanceTokenAsync(token.ToString());
 
-        if (user == null || user.LastToken == null)
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            response.Error = "Invalid Token";
-
-            return;
-        }
-
-        if (user.LastToken.Value.AddDays(7) < DateTime.Now)
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            response.Error = "Invalid Token";
-            Results.BadRequest(response);
-            return;
-        }
-
-        var activityLogs = user.Useractivitylogs;
-
-        var lastInteraction = activityLogs
-            .LastOrDefault(interaction =>
-                interaction.Activitytype == ActivityType.PersistenceInteraction.GetEnumDescription());
-
-        if (lastInteraction != null)
-        {
-            var lastInteractionTime = lastInteraction.Interactiontime!.Value.ToUniversalTime().Second;
-            var currentTime = DateTime.Now.ToUniversalTime().Second;
-
-            if (currentTime - lastInteractionTime < 10 &&
-                currentIp != lastInteraction.Ipaddress)
-            {
-                await userManager.ResetLicensePersistenceToken(user.License);
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                response.Error = "Misuse of license, please login again";
-                return;
-            }
-        }
-
-        var logger = scope.ServiceProvider.GetRequiredService<IActivityLogger>();
-
-        await logger.LogActivityAsync(ActivityType.PersistenceInteraction, currentIp!, user.Id);
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Name, "username"),
-            new(ClaimTypes.NameIdentifier, "userId"),
-            new("name", "John Doe")
-        };
-        var identity = new ClaimsIdentity(claims, "PersistenceType");
-        var claimsPrincipal = new ClaimsPrincipal(identity);
-
-        context.User = claimsPrincipal;
-        context.Items["user"] = user;
-
-        // Permission handling is taken care by each endpoint
-        await next(context);
+        // if (user == null || user.lasttoken == null)
+        // {
+        //     context.response.statuscode = statuscodes.status403forbidden;
+        //     response.error = "invalid token";
+        //
+        //     return;
+        // }
+        //
+        // if (user.lasttoken.value.adddays(7) < datetime.now)
+        // {
+        //     context.response.statuscode = statuscodes.status403forbidden;
+        //     response.error = "invalid token";
+        //     results.badrequest(response);
+        //     return;
+        // }
+        //
+        // var activitylogs = user.useractivitylogs;
+        //
+        // var lastinteraction = activitylogs
+        //     .lastordefault(interaction =>
+        //         interaction.activitytype == activitytype.persistenceinteraction.getenumdescription());
+        //
+        // if (lastinteraction != null)
+        // {
+        //     var lastinteractiontime = lastinteraction.interactiontime!.value.touniversaltime().second;
+        //     var currenttime = datetime.now.touniversaltime().second;
+        //
+        //     if (currenttime - lastinteractiontime < 10 &&
+        //         currentip != lastinteraction.ipaddress)
+        //     {
+        //         await usermanager.resetlicensepersistencetoken(user.license);
+        //         context.response.statuscode = statuscodes.status403forbidden;
+        //         response.error = "misuse of license, please login again";
+        //         return;
+        //     }
+        // }
+        //
+        // var logger = scope.ServiceProvider.GetRequiredService<IActivityLogger>();
+        //
+        // await logger.LogActivityAsync(ActivityType.PersistenceInteraction, currentIp!, user.Id);
+        //
+        // var claims = new List<Claim>
+        // {
+        //     new(ClaimTypes.Name, "username"),
+        //     new(ClaimTypes.NameIdentifier, "userId"),
+        //     new("name", "John Doe")
+        // };
+        // var identity = new ClaimsIdentity(claims, "PersistenceType");
+        // var claimsPrincipal = new ClaimsPrincipal(identity);
+        //
+        // context.User = claimsPrincipal;
+        // // context.Items["user"] = user;
+        //
+        // // Permission handling is taken care by each endpoint
+        // await next(context);
     }
 }

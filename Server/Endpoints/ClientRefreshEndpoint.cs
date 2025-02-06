@@ -10,7 +10,7 @@ internal class ClientRefreshEndpoint
 {
     [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys,
-        IUserManagerService userManagerService)
+        ILicenseManagerService userManagerService)
     {
         if (!httpContext.Request.Form.TryGetValue("3917505287", out var encryptedJwt)) return Results.NotFound();
 
@@ -27,7 +27,7 @@ internal class ClientRefreshEndpoint
 
         if (string.IsNullOrEmpty(userlicense)) return Results.BadRequest("Invalid Token");
 
-        var externalUser = await userManagerService.GetUserByLicenseAsync(userlicense);
+        var externalUser = await userManagerService.GetLicenseByLicenseAsync(userlicense);
 
         if (externalUser == null) return Results.BadRequest("Invalid User");
 

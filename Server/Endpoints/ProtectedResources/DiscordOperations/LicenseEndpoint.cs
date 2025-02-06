@@ -6,11 +6,11 @@ namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
 public class LicenseEndpoint
 {
     [Authorize(Policy = "Special")]
-    internal static async Task<IResult> Handle(HttpContext context, IUserManagerService userManager, long discordId)
+    internal static async Task<IResult> Handle(HttpContext context, ILicenseManagerService userManager, long discordId)
     {
         var response = new DiscordResponse<List<string>>();
 
-        var userLicenses = await userManager.GetUserLicenseListAsync(discordId);
+        var userLicenses = await userManager.GetLicenseLicenseListAsync(discordId);
 
         if (userLicenses == null)
         {
@@ -19,7 +19,7 @@ public class LicenseEndpoint
             return Results.BadRequest(response);
         }
 
-        response.Result = userLicenses.Select(x => x.License).ToList();
+        //response.Result = userLicenses.Select(x => x.License).ToList();
 
 
         return Results.Json(response);

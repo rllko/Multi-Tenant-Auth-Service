@@ -14,7 +14,7 @@ public static class ClientLoginEndpoint
 {
     [HttpGet("{key:guid}")]
     public static async Task<IResult> HandleGet(HttpContext context,
-        IUserManagerService userManagerService,
+        ILicenseManagerService userManagerService,
         [FromServices] DevKeys _devKeys, IActivityLogger logger)
     {
         if (context.Request.Query.TryGetValue("3917505287", out var License) == false ||
@@ -25,7 +25,7 @@ public static class ClientLoginEndpoint
 
         var response = new DiscordResponse<List<string>>();
 
-        var userKey = await userManagerService.GetUserByLicenseAsync(License!);
+        var userKey = await userManagerService.GetLicenseByLicenseAsync(License!);
 
         if (userKey == null)
         {
@@ -44,7 +44,7 @@ public static class ClientLoginEndpoint
             return Results.Json(response);
         }
 
-        if (userKey.Hwid == null)
+        if (userKey.Hw == null)
         {
             response.Error = "birdy, send a post request to this endpoint.";
             return Results.Json(response);
@@ -75,7 +75,7 @@ public static class ClientLoginEndpoint
             return Results.Json(response);
         }
 
-        if (await userManagerService.UpdateLicensePersistenceTokenAsync(userKey.License) == false)
+        if (await userManagerService.UpdateLicensePersistenceTokenAsync("") == false)
         {
             response.Error = "Failed While updating token";
             return Results.BadRequest(response);
@@ -120,7 +120,7 @@ public static class ClientLoginEndpoint
     }
 
     [HttpPost]
-    public static async Task<IResult> HandlePost(HttpContext httpContext, IUserManagerService userManagerService)
+    public static async Task<IResult> HandlePost(HttpContext httpContext, ILicenseManagerService userManagerService)
     {
         if (httpContext.Request.Form.TryGetValue("3391056346", out var hwid) == false ||
             httpContext.Request.Form.TryGetValue("3917505287", out var License) == false)
@@ -130,7 +130,7 @@ public static class ClientLoginEndpoint
 
         var response = new DiscordResponse<string>();
 
-        var user = await userManagerService.GetUserByLicenseAsync(License!);
+        var user = await userManagerService.GetLicenseByLicenseAsync(License!);
         if (user == null) return Results.BadRequest();
 
         if (user.DiscordUser == null)
@@ -139,7 +139,7 @@ public static class ClientLoginEndpoint
             return Results.Json(response);
         }
 
-        if (user.Hwid != null)
+        if (user.Hw != null)
         {
             response.Error = "Key already assigned. Please reset it through the bot!";
             return Results.Json(response);

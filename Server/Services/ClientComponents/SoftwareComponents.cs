@@ -1,12 +1,9 @@
 ﻿using System.Net.Http.Headers;
-using Authentication.Models.Context;
 
 namespace Authentication.Services.ClientComponents;
 
-public class SoftwareComponents(AuthenticationDbContext dbContext) : ISoftwareComponents
+public class SoftwareComponents : ISoftwareComponents
 {
-    private readonly AuthenticationDbContext _dbContext = dbContext;
-
     public async Task<Stream?> GetOffsets(string link)
     {
         if (string.IsNullOrEmpty(link)) return null;

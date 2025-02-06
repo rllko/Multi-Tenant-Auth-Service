@@ -1,196 +1,198 @@
-﻿using Authentication.Common;
-using Authentication.Models;
-using Authentication.Models.Context;
+﻿using Authentication.Models;
 using Authentication.Models.Entities;
-using Authentication.Services.ActivityLogger;
-using Microsoft.EntityFrameworkCore;
 
 namespace Authentication.Services.Users;
 
-public class UserManagerService(AuthenticationDbContext dbContext) : IUserManagerService
+public class Licensemanagerservice : ILicenseManagerService
 {
-    public async Task<User?> GetUserByIdAsync(long userId)
+    public async Task<License?> GetLicenseByIdAsync(long LicenseId)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
-        return user;
+        // var License = await dbContext.Licenses.FirstOrDefaultAsync(License => License.Id == LicenseId);
+        return null;
     }
 
-    public async Task<User?> GetUserByEmailAsync(string userEmail)
+    public async Task<License?> GetLicenseByEmailAsync(string LicenseEmail)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
-        return user;
+        // var License = await dbContext.Licenses.FirstOrDefaultAsync(License => License.Email == LicenseEmail);
+        return null;
     }
 
-    public async Task<User?> GetUserByLicenseAsync(string license)
+    public async Task<License?> GetLicenseByLicenseAsync(string license)
     {
-        var user = await dbContext.Users.Include(x => x.DiscordUserNavigation)
-            .Include(x => x.Hw)
-            .FirstOrDefaultAsync(user => user.License == license);
-        return user;
+        // var License = await dbContext.Licenses.Include(x => x.DiscordLicenseNavigation)
+        // .Include(x => x.Hw)
+        // .FirstOrDefaultAsync(License => License.License == license);
+        return null;
     }
 
-    public async Task<List<User>?> GetUserLicenseListAsync(long discordId)
+    public async Task<List<License>?> GetLicenseLicenseListAsync(long discordId)
     {
-        var list = await dbContext.Users.Include(x => x.DiscordUserNavigation)
-            .Where(user => user.DiscordUser == discordId).ToListAsync();
+        // var list = await dbContext.Licenses.Include(x => x.DiscordLicenseNavigation)
+        // .Where(License => License.DiscordLicense == discordId).ToListAsync();
 
-        if (list.Count == 0) return null;
+        // if (list.Count == 0) return null;
 
-        return list;
+        // return list;
+        return null;
     }
 
-    public async Task<User?> GetUserByHwidAsync(long id)
+    public async Task<License?> GetLicenseByHwidAsync(long id)
     {
-        var user = await dbContext.Users.Include(x => x.DiscordUserNavigation)
-            .FirstOrDefaultAsync(user => user.Hw != null && user.Hw.Id == id);
-        return user;
+        // var License = await dbContext.Licenses.Include(x => x.DiscordLicenseNavigation)
+        // .FirstOrDefaultAsync(License => License.Hw != null && License.Hw.Id == id);
+        // return License;
+        return null;
     }
 
-    public async Task<User?> ConfirmUserRegistrationAsync(string license, long discordId, string? email = null)
+    public async Task<License?> ConfirmLicenseRegistrationAsync(string license, long discordId, string? email = null)
     {
         if (string.IsNullOrEmpty(license)) return null;
 
         if (discordId <= 0) return null;
 
-        var newUser = await dbContext.Users.Include(x => x.DiscordUserNavigation)
-            .FirstOrDefaultAsync(user => user.License == license);
+        // var newLicense = await dbContext.Licenses.Include(x => x.DiscordLicenseNavigation)
+        // .FirstOrDefaultAsync(License => License.License == license);
 
-        if (newUser == null) return null;
+        // if (newLicense == null) return null;
 
-        if (await GetUserByDiscordAsync(discordId) == null)
-            await dbContext.DiscordUsers.AddAsync(new DiscordUser { DiscordId = discordId, DateLinked = DateTime.Now });
+        // if (await GetLicenseByDiscordAsync(discordId) == null)
+        // await dbContext.DiscordLicenses.AddAsync(new DiscordUser { DiscordId = discordId, DateLinked = DateTime.Now });
 
-        newUser.DiscordUser = discordId;
+        // newLicense.DiscordLicense = discordId;
 
-        await dbContext.SaveChangesAsync();
-        return newUser;
+        // await dbContext.SaveChangesAsync();
+        // return newLicense;
+        return null;
     }
 
-    public async Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode)
+    public async Task<License?> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
     {
-        var user = (long)discordCode.User.DiscordUser!;
+        // var License = (long)discordCode.License!;
 
-        return await ConfirmUserRegistrationAsync(discordCode.User.License, user, discordCode.User.Email);
+        // return await ConfirmLicenseRegistrationAsync(discordCode.License.License, License, discordCode.License.Email);
+        return null;
     }
 
-    public async Task<User?> GetUserByDiscordAsync(long discordId)
+    public async Task<License?> GetLicenseByDiscordAsync(long discordId)
     {
-        var user = await dbContext.Users.Include(x => x.DiscordUserNavigation).Where(x => x.DiscordUser == discordId)
-            .FirstOrDefaultAsync();
-        if (user != null) return user;
+        // var License = await dbContext.Licenses.Include(x => x.DiscordLicenseNavigation).Where(x => x.DiscordLicense == discordId)
+        // .FirstOrDefaultAsync();
+        // if (License != null) return License;
 
         return null;
     }
 
-    public async Task<User?> GetUserByPersistanceTokenAsync(string token)
+    public async Task<License?> GetLicenseByPersistanceTokenAsync(string token)
     {
-        if (!Guid.TryParse(token, out var persistanceToken)) return null;
+        // if (!Guid.TryParse(token, out var persistanceToken)) return null;
 
-        var newUser = await dbContext.Users
-            .Include(x => x.Useractivitylogs)
-            .Include(x => x.Hw)
-            .FirstOrDefaultAsync(user => user.PersistentToken == token);
+        // var newLicense = await dbContext.Licenses
+        // .Include(x => x.Licenseactivitylogs)
+        // .Include(x => x.Hw)
+        // .FirstOrDefaultAsync(License => License.PersistentToken == token);
 
-        return newUser;
+        // return newLicense;
+        return null;
     }
 
     public async Task<bool> AssignLicenseHwidAsync(string license, Hwid hwid)
     {
-        var user = await GetUserByLicenseAsync(license);
+        var License = await GetLicenseByLicenseAsync(license);
 
-        if (user == null) return false;
+        if (License == null) return false;
 
         await UpdateLicensePersistenceTokenAsync(license);
 
-        user.Hw = hwid;
-        await dbContext.SaveChangesAsync();
+        License.Hw = hwid;
+        // await dbContext.SaveChangesAsync();
 
         return true;
     }
 
     public async Task<bool> UpdateLicensePersistenceTokenAsync(string license)
     {
-        var user = await GetUserByLicenseAsync(license);
+        var License = await GetLicenseByLicenseAsync(license);
 
-        if (user == null) return false;
+        if (License == null) return false;
 
-        user.PersistentToken = Guid.NewGuid().ToString();
-        user.LastToken = DateTime.Now.ToUniversalTime();
-        await dbContext.SaveChangesAsync();
+        // License.PersistentToken = Guid.NewGuid().ToString();
+        // License.LastToken = DateTime.Now.ToUniversalTime();
+        // await dbContext.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ResetLicensePersistenceToken(string license)
     {
-        var user = await GetUserByLicenseAsync(license);
+        var License = await GetLicenseByLicenseAsync(license);
 
-        if (user == null) return false;
+        if (License == null) return false;
 
-        user.PersistentToken = null;
-        user.LastToken = null;
-        await dbContext.SaveChangesAsync();
+        // License.PersistentToken = null;
+        // License.LastToken = null;
+        // await dbContext.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> ResetUserHwidAsync(string license)
+    public async Task<bool> ResetLicenseHwidAsync(string license)
     {
-        var user = await GetUserByLicenseAsync(license);
+        var License = await GetLicenseByLicenseAsync(license);
 
-        if (user == null) return false;
+        if (License == null) return false;
 
-        user.PersistentToken = null;
-        user.LastToken = null;
-        user.KeyResetCount += 1;
-        dbContext.Hwids.Remove(user.Hw!);
+        // License.PersistentToken = null;
+        // License.LastToken = null;
+        // License.KeyResetCount += 1;
+        // dbContext.Hwids.Remove(License.Hw!);
 
-        await dbContext.SaveChangesAsync();
+        // await dbContext.SaveChangesAsync();
 
         return true;
     }
 
-    public async Task<int> GetUserHwidResetCount(string license)
+    public async Task<int> GetLicenseHwidResetCount(string license)
     {
-        var user = await dbContext.Users.Include(x => x.Useractivitylogs)
-            .FirstOrDefaultAsync(x => x.License == license);
+        // var License = await dbContext.Licenses.Include(x => x.Licenseactivitylogs)
+        // .FirstOrDefaultAsync(x => x.License == license);
 
-        var resetCount = user!.Useractivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription()
-                                                           && x.Interactiontime!.Value.Month == DateTime.Now.Month)!;
-        return resetCount;
+        // var resetCount = License!.Licenseactivitylogs.Count(x => x.Activitytype == ActivityType.KeyReset.GetEnumDescription()
+        // && x.Interactiontime!.Value.Month == DateTime.Now.Month)!;
+        // return resetCount;
+        return 0;
     }
 
-    public async Task<List<User>> CreateUserInBulk(int amount)
+    public async Task<List<License>> CreateLicenseInBulk(int amount)
     {
-        var users = new List<User>();
+        var Licenses = new List<License>();
 
-        if (amount <= 0) return users;
+        if (amount <= 0) return Licenses;
 
-        for (var i = 0; i < amount; i++) users.Add(await CreateUserAsync());
+        for (var i = 0; i < amount; i++) Licenses.Add(await CreateLicenseAsync());
 
-        return users;
+        return Licenses;
     }
-    // Need to create the bulk creation of users
+    // Need to create the bulk creation of Licenses
 
-    public async Task<User> CreateUserAsync(long? discordId = null)
+    public async Task<License?> CreateLicenseAsync(long? discordId = null)
     {
-        var user = new User
-        {
-            License = Guid.NewGuid().ToString(),
-            DiscordUser = discordId ?? null
-        };
+        // var License = new License
+        // {
+        // DiscordUserNavigation = discordId ?? null
+        // };
+        //
+        // if (discordId != null && await GetLicenseByDiscordAsync((long)discordId) == null)
+        //     await dbContext.DiscordLicenses.AddAsync(new DiscordLicense
+        //         { DiscordId = (long)discordId, DateLinked = DateTime.Now });
+        //
+        // await dbContext.Licenses.AddAsync(License);
+        // await dbContext.SaveChangesAsync();
 
-        if (discordId != null && await GetUserByDiscordAsync((long)discordId) == null)
-            await dbContext.DiscordUsers.AddAsync(new DiscordUser
-                { DiscordId = (long)discordId, DateLinked = DateTime.Now });
-
-        await dbContext.Users.AddAsync(user);
-        await dbContext.SaveChangesAsync();
-
-        return user;
+        return null;
     }
 
-    public async Task<User?> GetUserByPersistenceTokenAsync(string token)
+    public async Task<License?> GetLicenseByPersistenceTokenAsync(string token)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(user => user.PersistentToken == token);
-        return user;
+        // var License = await dbContext.Licenses.FirstOrDefaultAsync(License => License.PersistentToken == token);
+        // return License;
+        return null;
     }
 }

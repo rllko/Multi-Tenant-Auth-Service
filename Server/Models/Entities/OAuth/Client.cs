@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Authentication.Models.Entities;
+namespace Authentication.Models.Entities.OAuth;
 
 [Table("clients")]
-public class Client
+public abstract class Client
 {
     [Key] [Column("client_id")] public int ClientId { get; set; }
 
     [Column("client_identifier")]
     [StringLength(150)]
-    public string? ClientIdentifier { get; set; }
+    public string? ClientIdentifier { get; init; }
 
     [Column("client_secret")]
     [StringLength(150)]

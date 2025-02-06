@@ -8,14 +8,14 @@ internal static class CreateEndpoint
 {
     [Authorize(Policy = "Special")]
     public static async Task<IResult> Handle(HttpContext httpContext,
-        [FromServices] IUserManagerService userManagerService)
+        [FromServices] ILicenseManagerService userManagerService)
     {
         httpContext.Request.Query.TryGetValue("discordId", out var discordIdString);
         var isNotNull = long.TryParse(discordIdString, out var discordIdLong);
 
         var response = new DiscordResponse<string>();
 
-        var key = await userManagerService.CreateUserAsync(isNotNull ? discordIdLong : null);
+        var key = await userManagerService.CreateLicenseAsync(isNotNull ? discordIdLong : null);
 
         if (key == null)
         {
@@ -24,23 +24,23 @@ internal static class CreateEndpoint
         }
 
 
-        response.Result = key.License;
+        // response.Result = key.License;
         return Results.Json(response);
     }
 
     internal static async Task<IResult> HandleBulk(HttpContext httpContext,
-        [FromServices] IUserManagerService userManagerService)
+        [FromServices] ILicenseManagerService userManagerService)
     {
         httpContext.Request.Query.TryGetValue("amount", out var amount);
 
         if (int.TryParse(amount, out var amountInt) == false)
             return Results.BadRequest(new { Error = "Amount is not a valid number" });
 
-        var userList = await userManagerService.CreateUserInBulk(amountInt);
+        // var userList = await userManagerService.CreateUserInBulk(amountInt);
 
         return Results.Ok(new
         {
-            result = userList.Select(x => x.License).ToList()
+            // result = userList.Select(x => x.License).ToList()
         });
     }
 }
