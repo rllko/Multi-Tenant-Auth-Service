@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Authentication.Models.Entities;
 
+[Table("session_tokens")]
 public record SessionToken(
     int SessionId,
     Guid Token,
