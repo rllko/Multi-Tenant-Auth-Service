@@ -1,14 +1,12 @@
-﻿using HeadHunter.Models.Context;
-using HeadHunter.Models.Entities;
+﻿using Authentication.Models.Entities;
 
-namespace HeadHunter.Services.ActivityLogger;
+namespace Authentication.Services.ActivityLogger;
 
-public class ActivityLogger(HeadhunterDbContext dbContext) : IActivityLogger
+public class ActivityLogger : IActivityLogger
 {
     public async Task LogActivityAsync(ActivityType activityType, string ipAddress, long? targetId)
     {
-
-        var activityLog = new Useractivitylog()
+        var activityLog = new Useractivitylog
         {
             Targetid = targetId,
             Activitytype = activityType.ToString(),
@@ -16,7 +14,7 @@ public class ActivityLogger(HeadhunterDbContext dbContext) : IActivityLogger
             Interactiontime = DateTime.Now
         };
 
-        await dbContext.Useractivitylogs.AddAsync(activityLog);
-        await dbContext.SaveChangesAsync();
+        // await dbContext.Useractivitylogs.AddAsync(activityLog);
+        // await dbContext.SaveChangesAsync();
     }
 }

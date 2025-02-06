@@ -1,68 +1,48 @@
-﻿
-using HeadHunter.Common;
-using HeadHunter.Models;
-using HeadHunter.Services;
-using HeadHunter.Services.Users;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Authentication.Common;
+using Authentication.Models;
+using Authentication.Services;
+using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 internal class ClientRefreshEndpoint
 {
     [Authorize(Policy = "Special")]
-    internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys, IUserManagerService userManagerService)
+    internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys,
+        ILicenseManagerService userManagerService)
     {
-        if(!httpContext.Request.Form.TryGetValue("3917505287", out var encryptedJwt))
-        {
-            return Results.NotFound();
-        }
+        if (!httpContext.Request.Form.TryGetValue("3917505287", out var encryptedJwt)) return Results.NotFound();
 
-        if(string.IsNullOrEmpty(encryptedJwt))
-        {
-            return Results.NotFound();
-        }
+        if (string.IsNullOrEmpty(encryptedJwt)) return Results.NotFound();
 
         var handler = new JwtSecurityTokenHandler();
         var checkTokenResult = VerifyKey(handler, encryptedJwt!, keys);
 
-        if(!checkTokenResult.IsSuccess)
-        {
-            return Results.BadRequest(checkTokenResult.ErrorDescription);
-        }
+        if (!checkTokenResult.IsSuccess) return Results.BadRequest(checkTokenResult.ErrorDescription);
 
-        var token = checkTokenResult.token as JwtSecurityToken;
-        if(token == null)
-        {
-            return Results.BadRequest("Invalid Token");
-        }
-        var userlicense = token.Claims.FirstOrDefault(x=> x.Type == JwtRegisteredClaimNames.Jti)?.Value;
+        var token = checkTokenResult.token;
+        if (token == null) return Results.BadRequest("Invalid Token");
+        var userlicense = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti)?.Value;
 
-        if(string.IsNullOrEmpty(userlicense))
-        {
-            return Results.BadRequest("Invalid Token");
-        }
+        if (string.IsNullOrEmpty(userlicense)) return Results.BadRequest("Invalid Token");
 
-        var externalUser = await userManagerService.GetUserByLicenseAsync(userlicense);
+        var externalUser = await userManagerService.GetLicenseByLicenseAsync(userlicense);
 
-        if(externalUser == null)
-        {
-            return Results.BadRequest("Invalid User");
-        }
+        if (externalUser == null) return Results.BadRequest("Invalid User");
 
-        if(checkTokenResult.token!.ValidTo < DateTime.Now)
-        {
+        if (checkTokenResult.token!.ValidTo < DateTime.Now)
             return Results.BadRequest(new { Error = "Token Hasnt Expired yet" });
-        }
 
         // check if the user has confirmed their discord account
-        if(externalUser.DiscordUser == null)
+        if (externalUser.DiscordUser == null)
         {
             httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
             await httpContext.Response.WriteAsJsonAsync(new { Error = "License is not confirmed." });
             return Results.Conflict();
         }
 
-        var newToken = EncodingFunctions.GenerateSecurityTokenDescriptor(externalUser,keys);
+        var newToken = EncodingFunctions.GenerateSecurityTokenDescriptor(externalUser, keys);
 
         var newUser = handler.CreateEncodedJwt(newToken);
 
@@ -82,7 +62,7 @@ internal class ClientRefreshEndpoint
             IssuerSigningKeys = new List<SecurityKey> { new RsaSecurityKey(_devKeys.RsaSignKey) },
 
             // The algorithm for decrypting the symmetric key
-            RequireSignedTokens = true,         // Ensures the token is signed
+            RequireSignedTokens = true, // Ensures the token is signed
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
@@ -94,17 +74,15 @@ internal class ClientRefreshEndpoint
             SecurityToken validatedToken;
             handler.ValidateToken(encryptedJwt, tokenValidationParameters, out validatedToken);
 
-            if(validatedToken == null)
-            {
-                return new CheckTokenResult { ErrorDescription = "Invalid Token" };
-            }
+            if (validatedToken == null) return new CheckTokenResult { ErrorDescription = "Invalid Token" };
 
             // Access the claims and information
             return new CheckTokenResult { token = validatedToken as JwtSecurityToken, IsSuccess = true };
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            return new CheckTokenResult { ErrorDescription = e.Message }; ;
+            return new CheckTokenResult { ErrorDescription = e.Message };
+            ;
         }
     }
 }

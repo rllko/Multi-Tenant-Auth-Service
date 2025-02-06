@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Models.Entities.OAuth;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Entities;
+namespace Authentication.Models.Entities;
 
 [Table("scopes")]
 [Index("ScopeName", Name = "scopes_scope_name_key", IsUnique = true)]
-public partial class Scope
+public class Scope
 {
-    [Key]
-    [Column("scope_id")]
-    public int ScopeId { get; set; }
+    [Key] [Column("scope_id")] public int ScopeId { get; set; }
 
     [Column("scope_name")]
     [StringLength(255)]

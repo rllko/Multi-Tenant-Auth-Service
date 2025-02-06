@@ -1,4 +1,3 @@
-﻿namespace HeadHunter.Endpoints
-{
-    public record ExceptionResponse(string ExceptionMessage, string? StackTrace = null);
-}
+﻿namespace Authentication.Endpoints;
+
+public record ExceptionResponse(string ExceptionMessage, string? StackTrace = null);

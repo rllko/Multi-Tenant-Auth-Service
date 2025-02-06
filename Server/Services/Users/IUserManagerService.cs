@@ -1,27 +1,25 @@
-﻿using HeadHunter.Models;
-using HeadHunter.Models.Entities;
+﻿using Authentication.Models;
+using Authentication.Models.Entities;
 
-namespace HeadHunter.Services.Users
+namespace Authentication.Services.Users;
+
+public interface ILicenseManagerService
 {
-    public interface IUserManagerService
-    {
-        Task<User?> GetUserByIdAsync(long userId);
-        Task<User?> GetUserByEmailAsync(string userEmail);
-        Task<User?> GetUserByLicenseAsync(string license);
-        Task<User?> GetUserByDiscordAsync(long discordId);
-        Task<User?> GetUserByHwidAsync(long Hwid);
-        Task<User?> GetUserByPersistanceTokenAsync(string token);
-        Task<List<User>?> GetUserLicenseListAsync(long discordId);
-        Task<int> GetUserHwidResetCount(string license);
-        Task<bool> AssignLicenseHwidAsync(string License, Hwid hwid);
-        Task<bool> UpdateLicensePersistenceTokenAsync(string license);
-        Task<bool> ResetLicensePersistenceToken(string license);
-        Task<bool> ResetUserHwidAsync(string license);
-        Task<User> CreateUserAsync(long? discordId = null);
+    Task<License?> GetLicenseByIdAsync(long LicenseId);
+    Task<License?> GetLicenseByEmailAsync(string LicenseEmail);
+    Task<License?> GetLicenseByLicenseAsync(string license);
+    Task<License?> GetLicenseByDiscordAsync(long discordId);
+    Task<License?> GetLicenseByHwidAsync(long Hwid);
+    Task<License?> GetLicenseByPersistanceTokenAsync(string token);
+    Task<List<License>?> GetLicenseLicenseListAsync(long discordId);
+    Task<int> GetLicenseHwidResetCount(string license);
+    Task<bool> AssignLicenseHwidAsync(string License, Hwid hwid);
+    Task<bool> UpdateLicensePersistenceTokenAsync(string license);
+    Task<bool> ResetLicensePersistenceToken(string license);
+    Task<bool> ResetLicenseHwidAsync(string license);
+    Task<License> CreateLicenseAsync(long? discordId = null);
 
-        Task<List<User>> CreateUserInBulk(int amount);
-        Task<User?> ConfirmUserRegistrationAsync(string license, long discord, string? email = null);
-        Task<User?> ConfirmUserRegistrationAsync(DiscordCode discordCode);
-
-    }
+    Task<List<License>> CreateLicenseInBulk(int amount);
+    Task<License?> ConfirmLicenseRegistrationAsync(string license, long discord, string? email = null);
+    Task<License?> ConfirmLicenseRegistrationAsync(DiscordCode discordCode);
 }
