@@ -6,7 +6,7 @@ public class ActivityLogger : IActivityLogger
 {
     public async Task LogActivityAsync(ActivityType activityType, string ipAddress, long? targetId)
     {
-        var activityLog = new Useractivitylog
+        var activityLog = new UserActivityLog
         {
             Targetid = targetId,
             Activitytype = activityType.ToString(),

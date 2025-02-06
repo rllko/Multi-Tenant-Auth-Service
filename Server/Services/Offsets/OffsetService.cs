@@ -2,7 +2,7 @@
 
 namespace Authentication.Services.ClientComponents;
 
-public class SoftwareComponents : ISoftwareComponents
+public class OffsetService : IOffsetService
 {
     public async Task<Stream?> GetOffsets(string link)
     {

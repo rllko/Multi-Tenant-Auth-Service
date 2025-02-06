@@ -38,7 +38,7 @@ public class DiscordOffsetEndpoint
     [Authorize(Policy = "Special")]
     public static async Task<IResult> HandlePost(
         HttpContext context,
-        ISoftwareComponents softwareComponents,
+        IOffsetService offsetService,
         IActivityLogger logger)
     {
         var form = context.Request.Form;
@@ -54,7 +54,7 @@ public class DiscordOffsetEndpoint
 
         var path = Path.Combine(Directory.GetCurrentDirectory(), "Files", $"{fileName}");
 
-        var offsets = await softwareComponents.GetOffsets(url.ToString());
+        var offsets = await offsetService.GetOffsets(url.ToString());
 
         if (offsets is null)
         {
