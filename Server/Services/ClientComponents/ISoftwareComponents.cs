@@ -1,8 +1,7 @@
-﻿namespace HeadHunter.Services.ClientComponents
+﻿namespace Authentication.Services.ClientComponents;
+
+public interface ISoftwareComponents
 {
-    public interface ISoftwareComponents
-    {
-        public Task<Stream?> GetOffsets(string link);
-        public bool SetOffsets(string offsets);
-    }
+    public Task<Stream?> GetOffsets(string link);
+    public bool SetOffsets(string offsets);
 }

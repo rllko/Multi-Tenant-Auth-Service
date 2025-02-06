@@ -6,3 +6,4 @@
 **/Server/obj
 **/Server/bin
 docker-compose.env
+*.user

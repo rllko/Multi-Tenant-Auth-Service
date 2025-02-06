@@ -1,14 +1,14 @@
-﻿using HeadHunter.Models;
-using HeadHunter.Models.Context;
+﻿using Authentication.Models;
 
-namespace HeadHunter.Services.CodeService
+namespace Authentication.Services.CodeService;
+
+public interface ICodeStorageService
 {
-    public interface ICodeStorageService
-    {
-        string? CreateAuthorizationCode(HeadhunterDbContext _dbcontext, string? clientId, AuthorizationCode authorizationCode);
-        string? CreateDiscordCode(HeadhunterDbContext _dbContext, string license);
-        AuthorizationCode? GetClientByCode(string key);
-        DiscordCode? GetUserByCode(string code);
-        bool RemoveClientByCode(Guid key);
-    }
+    string? CreateAuthorizationCode(string? clientId,
+        AuthorizationCode authorizationCode);
+
+    string? CreateDiscordCode(string license);
+    AuthorizationCode? GetClientByCode(string key);
+    DiscordCode? GetUserByCode(string code);
+    bool RemoveClientByCode(Guid key);
 }

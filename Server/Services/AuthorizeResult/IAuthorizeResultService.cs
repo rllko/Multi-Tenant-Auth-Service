@@ -1,12 +1,11 @@
-﻿using HeadHunter.OauthRequest;
-using HeadHunter.OauthResponse;
+﻿using Authentication.OauthRequest;
+using Authentication.OauthResponse;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeadHunter.Services.Interfaces
+namespace Authentication.Services.Interfaces;
+
+public interface IAuthorizeResultService
 {
-    public interface IAuthorizeResultService
-    {
-        AuthorizeResponse AuthorizeRequest(HttpContext httpContextAccessor, AuthorizationRequest authorizationRequest);
-        TokenResponse GenerateToken(HttpContext context, [FromServices] DevKeys devKeys);
-    }
+    AuthorizeResponse AuthorizeRequest(HttpContext httpContextAccessor, AuthorizationRequest authorizationRequest);
+    TokenResponse GenerateToken(HttpContext context, [FromServices] DevKeys devKeys);
 }

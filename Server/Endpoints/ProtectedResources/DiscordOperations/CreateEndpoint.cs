@@ -1,47 +1,46 @@
-﻿using HeadHunter.Services.Users;
+﻿using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeadHunter.Endpoints.ProtectedResources.DiscordOperations
+namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
+
+internal static class CreateEndpoint
 {
-    internal static class CreateEndpoint
+    [Authorize(Policy = "Special")]
+    public static async Task<IResult> Handle(HttpContext httpContext,
+        [FromServices] ILicenseManagerService userManagerService)
     {
-        [Authorize(Policy = "Special")]
-        public async static Task<IResult> Handle(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
+        httpContext.Request.Query.TryGetValue("discordId", out var discordIdString);
+        var isNotNull = long.TryParse(discordIdString, out var discordIdLong);
+
+        var response = new DiscordResponse<string>();
+
+        var key = await userManagerService.CreateLicenseAsync(isNotNull ? discordIdLong : null);
+
+        if (key == null)
         {
-            httpContext.Request.Query.TryGetValue("discordId", out var discordIdString);
-            var isNotNull = long.TryParse(discordIdString, out var discordIdLong);
-
-            var response = new DiscordResponse<string>();
-
-            var key = await userManagerService.CreateUserAsync(isNotNull ? discordIdLong : null);
-
-            if(key == null)
-            {
-                response.Error = "Something went wrong :(";
-                return Results.BadRequest(response);
-            }
-
-
-            response.Result = key.License;
-            return Results.Json(response);
+            response.Error = "Something went wrong :(";
+            return Results.BadRequest(response);
         }
 
-        internal static async Task<IResult> HandleBulk(HttpContext httpContext, [FromServices] IUserManagerService userManagerService)
+
+        // response.Result = key.License;
+        return Results.Json(response);
+    }
+
+    internal static async Task<IResult> HandleBulk(HttpContext httpContext,
+        [FromServices] ILicenseManagerService userManagerService)
+    {
+        httpContext.Request.Query.TryGetValue("amount", out var amount);
+
+        if (int.TryParse(amount, out var amountInt) == false)
+            return Results.BadRequest(new { Error = "Amount is not a valid number" });
+
+        // var userList = await userManagerService.CreateUserInBulk(amountInt);
+
+        return Results.Ok(new
         {
-            httpContext.Request.Query.TryGetValue("amount", out var amount);
-
-            if(int.TryParse(amount, out var amountInt) == false)
-            {
-                return Results.BadRequest(new { Error = "Amount is not a valid number" });
-            }
-
-            var userList = await userManagerService.CreateUserInBulk(amountInt);
-
-            return Results.Ok(new
-            {
-                result = userList.Select(x => x.License).ToList()
-            });
-        }
+            // result = userList.Select(x => x.License).ToList()
+        });
     }
 }

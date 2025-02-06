@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace HeadHunter.Models.Entities;
+namespace Authentication.Models.Entities.OAuth;
 
 [Table("clients")]
-public partial class Client
+public abstract class Client
 {
-    [Key]
-    [Column("client_id")]
-    public int ClientId { get; set; }
+    [Key] [Column("client_id")] public int ClientId { get; set; }
 
     [Column("client_identifier")]
     [StringLength(150)]
-    public string? ClientIdentifier { get; set; }
+    public string? ClientIdentifier { get; init; }
 
     [Column("client_secret")]
     [StringLength(150)]
