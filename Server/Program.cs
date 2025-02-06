@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 //
 // builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 // builder.Services.AddScoped<ILicenseManagerService, UserManagerService>();
-// builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
+// builder.Services.AddScoped<IOffsetService, OffsetService>();
 // builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
@@ -143,7 +143,7 @@ app.UseExceptionHandler(appError =>
     });
 });
 
-// Authorization Code to Brearer Middleware
+// Authorization Code to Brearer Middlewares
 /*app.UseWhen(
     context => context.Request.Headers.Authorization.Count > 0,
     applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
@@ -163,7 +163,7 @@ var oauthEndpoints = app.MapGroup("skibidiAuth");
 
 /*
 // OAuth Authorization Endpoint
-oauthEndpoints.MapGet("authorize", AuthorizationEndpoint.Handle);
+oauthEndpoints.MapGet("authorize", AuthorizationController.Handle);
 
 // OAuth Token Endpoint
 
@@ -190,15 +190,15 @@ oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint.HandleGet).Require
 // Check Discord Code and get user info
 oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
-// Persistence Endpoints
+// Persistence Controllers
 var protectedRoutes = app.MapGroup("protected")
     .MapGet("2525546191/{filename}", OffsetsEndpoint.HandleGet); // Get Offsets
 
 // Login Sign In
-app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
+app.MapGet("1391220247", CustomerController.HandleGet);
 
 // Add HWID to reset License
-app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
+app.MapPost("1391220247", CustomerController.HandlePost);
 
 // Use License to obtain discord code
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);*/

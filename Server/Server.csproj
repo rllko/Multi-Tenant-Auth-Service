@@ -40,6 +40,8 @@
 
     <ItemGroup>
         <Folder Include="Files\"/>
+        <Folder Include="Services\Discords\" />
+        <Folder Include="Services\Licenses\" />
     </ItemGroup>
 
     <ItemGroup>

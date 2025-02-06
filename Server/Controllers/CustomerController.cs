@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints;
 
-public static class ClientLoginEndpoint
+public static class CustomerController
 {
     [HttpGet("{key:guid}")]
     public static async Task<IResult> HandleGet(HttpContext context,
