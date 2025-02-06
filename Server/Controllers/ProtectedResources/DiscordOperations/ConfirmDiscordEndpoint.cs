@@ -1,5 +1,4 @@
 ﻿using Authentication.Services.CodeService;
-using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,7 +34,7 @@ public class ConfirmDiscordEndpoint
 
         long.TryParse(discordId, out var discord);
 
-        //userFromCode.User.DiscordUser = discord;
+        //userFromCode.License.DiscordUser = discord;
         // var updatedUser = await userManagerService.ConfirmUserRegistrationAsync(userFromCode);
 
         response.Result = "Sucess!";

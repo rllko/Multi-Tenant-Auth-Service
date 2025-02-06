@@ -41,13 +41,13 @@ public class CodeStorageService : ICodeStorageService
 
         // if (ExistingUser is null) return null;
 
-        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.User.License == license);
+        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.License.License == license);
 
         // if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
         //
         // var tempClient = new DiscordCode
         // {
-        //     User = ExistingUser
+        //     License = ExistingUser
         // };
 
         var code = EncodingFunctions.GetUniqueKey(20);
