@@ -23,5 +23,5 @@ public class Useractivitylog
 
     [ForeignKey("Targetid")]
     [InverseProperty("Useractivitylogs")]
-    public virtual User? Target { get; set; }
+    public virtual License? Target { get; set; }
 }
