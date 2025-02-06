@@ -11,7 +11,7 @@ public class DiscordUser
     [Column("email")] public string? Email { get; set; }
 
     [Column("date_linked", TypeName = "timestamp without time zone")]
-    public DateTime? DateLinked { get; set; }
+    public required DateTime DateLinked { get; set; }
 
     [InverseProperty("DiscordUserNavigation")]
     public virtual ICollection<License> Users { get; set; } = new List<License>();

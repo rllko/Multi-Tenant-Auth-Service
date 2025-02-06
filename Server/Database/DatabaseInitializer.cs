@@ -2,15 +2,20 @@ using DbUp;
 
 namespace Authentication.Database;
 
-public class DatabaseInitializer(string? connectionString)
+public class DatabaseInitializer
 {
-    private readonly string _connectionString = "";
+    public DatabaseInitializer(string? connectionString)
+    {
+        ConnectionString = connectionString;
+    }
+
+    private string? ConnectionString { get; }
 
     public async Task InitializeAsync()
     {
-        EnsureDatabase.For.PostgresqlDatabase(_connectionString);
+        EnsureDatabase.For.PostgresqlDatabase(ConnectionString);
 
-        var upgrader = DeployChanges.To.PostgresqlDatabase(_connectionString)
+        var upgrader = DeployChanges.To.PostgresqlDatabase(ConnectionString)
             .WithScriptsEmbeddedInAssembly(typeof(DatabaseInitializer).Assembly).LogToConsole().Build();
 
         if (upgrader.IsUpgradeRequired())

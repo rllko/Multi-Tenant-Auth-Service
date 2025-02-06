@@ -1,7 +1,9 @@
 using System.Threading.RateLimiting;
+using Authentication.Abstracts.Persistence;
 using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Repositories.DiscordRepository;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -10,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// builder.Services.AddControllers();
+builder.Services.AddControllers();
 
 // builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
 // builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
@@ -25,6 +27,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
+builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddScoped<IDiscordRepository, DiscordRepository>();
 
 // builder.Services.AddAuthentication(x =>
 // {
@@ -104,6 +108,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+await databaseInitializer.InitializeAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -150,7 +157,7 @@ app.UseWhen(
 //app.UseAuthentication();
 app.UseRateLimiter();
 //app.UseAuthorization();
-// app.MapControllers();
+app.MapControllers();
 
 var oauthEndpoints = app.MapGroup("skibidiAuth");
 
