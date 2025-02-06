@@ -24,5 +24,5 @@ public class License
     public Hwid? Hw { get; set; }
 
     [InverseProperty("Target")]
-    public ICollection<Useractivitylog> ActivityLogs { get; init; } = new List<Useractivitylog>();
+    public ICollection<UserActivityLog> ActivityLogs { get; init; } = new List<UserActivityLog>();
 }

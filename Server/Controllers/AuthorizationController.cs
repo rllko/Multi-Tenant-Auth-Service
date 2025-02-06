@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints.OAuth;
 
-internal static class AuthorizationEndpoint
+internal static class AuthorizationController
 {
     public static IResult Handle(
         HttpContext httpContext,

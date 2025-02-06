@@ -1,9 +1,7 @@
 using System.Threading.RateLimiting;
-using Authentication.Abstracts.Persistence;
 using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
-using Authentication.Repositories.DiscordRepository;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -14,23 +12,25 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-// builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
-// builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
-//
-// builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-//
-// builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-// builder.Services.AddScoped<ILicenseManagerService, UserManagerService>();
-// builder.Services.AddScoped<ISoftwareComponents, SoftwareComponents>();
-// builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
-
+// Add migration singleton
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
-builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IDiscordRepository, DiscordRepository>();
+// Add db connection factory
+builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
+    Environment.GetEnvironmentVariable("DATABASE_URL")));
 
-// builder.Services.AddAuthentication(x =>
+// builder.Controllers.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
+// builder.Controllers.AddSingleton<ICodeStorageService, CodeStorageService>();
+//
+// builder.Controllers.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+//
+// builder.Controllers.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
+// builder.Controllers.AddScoped<ILicenseManagerService, UserManagerService>();
+// builder.Controllers.AddScoped<IOffsetService, OffsetService>();
+// builder.Controllers.AddScoped<IActivityLogger, ActivityLogger>();
+
+// builder.Controllers.AddAuthentication(x =>
 // {
 //     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 //     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -89,15 +89,15 @@ builder.Services.AddAuthorizationBuilder()
                                        && c.Issuer == IdentityData.Issuer)));
 
 // var connectionString = builder.Configuration["BaseDBConnection"];
-// builder.Services.AddDbContext<AuthenticationDbContext>(options => { options.UseNpgsql(connectionString); },
+// builder.Controllers.AddDbContext<AuthenticationDbContext>(options => { options.UseNpgsql(connectionString); },
 //     ServiceLifetime.Transient);
 
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(MyAllowSpecificOrigins,
+    options.AddPolicy(myAllowSpecificOrigins,
         policy =>
         {
             policy.AllowAnyOrigin()
@@ -118,7 +118,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(myAllowSpecificOrigins);
 
 app.UseExceptionHandler(appError =>
 {
@@ -143,7 +143,7 @@ app.UseExceptionHandler(appError =>
     });
 });
 
-// Authorization Code to Brearer Middleware
+// Authorization Code to Brearer Middlewares
 /*app.UseWhen(
     context => context.Request.Headers.Authorization.Count > 0,
     applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
@@ -159,13 +159,13 @@ app.UseRateLimiter();
 //app.UseAuthorization();
 app.MapControllers();
 
-var oauthEndpoints = app.MapGroup("skibidiAuth");
+var oauthEndpoints = app.MapGroup("authentication");
 
 /*
-// OAuth Authorization Endpoint
-oauthEndpoints.MapGet("authorize", AuthorizationEndpoint.Handle);
+// Entities Authorization Endpoint
+oauthEndpoints.MapGet("authorize", AuthorizationController.Handle);
 
-// OAuth Token Endpoint
+// Entities Token Endpoint
 
 oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
 
@@ -190,15 +190,15 @@ oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint.HandleGet).Require
 // Check Discord Code and get user info
 oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
 
-// Persistence Endpoints
+// Persistence Controllers
 var protectedRoutes = app.MapGroup("protected")
     .MapGet("2525546191/{filename}", OffsetsEndpoint.HandleGet); // Get Offsets
 
 // Login Sign In
-app.MapGet("1391220247", ClientLoginEndpoint.HandleGet);
+app.MapGet("1391220247", CustomerController.HandleGet);
 
 // Add HWID to reset License
-app.MapPost("1391220247", ClientLoginEndpoint.HandlePost);
+app.MapPost("1391220247", CustomerController.HandlePost);
 
 // Use License to obtain discord code
 app.MapPost("2198251026", ClientRedeemEndpoint.Handle);*/
