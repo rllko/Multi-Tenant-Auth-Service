@@ -2,7 +2,6 @@
 using Authentication.Common;
 using Authentication.Models;
 using Authentication.Services;
-using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
@@ -29,7 +28,7 @@ internal class ClientRefreshEndpoint
 
         var externalUser = await userManagerService.GetLicenseByLicenseAsync(userlicense);
 
-        if (externalUser == null) return Results.BadRequest("Invalid User");
+        if (externalUser == null) return Results.BadRequest("Invalid License");
 
         if (checkTokenResult.token!.ValidTo < DateTime.Now)
             return Results.BadRequest(new { Error = "Token Hasnt Expired yet" });
