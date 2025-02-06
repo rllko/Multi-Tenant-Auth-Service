@@ -1,5 +1,4 @@
-﻿using Authentication.Services.Users;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
 
@@ -10,7 +9,7 @@ public class LicenseEndpoint
     {
         var response = new DiscordResponse<List<string>>();
 
-        var userLicenses = await userManager.GetLicenseLicenseListAsync(discordId);
+        var userLicenses = await userManager.GetLicenseListAsync(discordId);
 
         if (userLicenses == null)
         {
