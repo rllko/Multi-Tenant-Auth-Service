@@ -1,4 +1,4 @@
-using Authentication.Models.Entities.Discord;
+using Authentication.Models;
 using FluentValidation;
 
 namespace Authentication.Validators.Discord;

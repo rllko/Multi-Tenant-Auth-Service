@@ -14,7 +14,7 @@ public class LicenseEndpoint
 
         if (userLicenses == null)
         {
-            response.Error = "User Has no Licenses";
+            response.Error = "License Has no Licenses";
             response.Result = [];
             return Results.BadRequest(response);
         }

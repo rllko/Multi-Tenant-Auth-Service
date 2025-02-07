@@ -36,7 +36,8 @@ public class AuthorizationMiddleware
         if (authorizationCode == null)
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsJsonAsync(new DiscordResponse<string> { Error = "Invalid Token" });
+            await context.Response.WriteAsJsonAsync(
+                new DiscordResponse<string> { Error = "Invalid AuthorizationToken" });
             return;
         }
 
