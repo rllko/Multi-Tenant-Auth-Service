@@ -2,6 +2,7 @@
 using Authentication.Common;
 using Authentication.Models;
 using Authentication.Models.Entities.Discord;
+using DiscordCode = Authentication.Models.DiscordCode;
 
 namespace Authentication.Services.CodeService;
 
@@ -58,8 +59,9 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public DiscordCode? GetUserByCode(string code)
+    public Models.Entities.Discord.DiscordCode? GetUserByCode(string code)
     {
+        /*
         Console.WriteLine(_discordCodeIssued.Select(x => $"{x.Key} -> {x.Value}"));
         if (_discordCodeIssued.TryGetValue(code, out var userCode))
         {
@@ -67,7 +69,7 @@ public class CodeStorageService : ICodeStorageService
 
             return userCode;
         }
-
+        */
         return null;
     }
 

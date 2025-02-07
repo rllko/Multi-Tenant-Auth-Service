@@ -1,3 +1,4 @@
+using Authentication.Models.Entities;
 using FluentValidation;
 
 namespace Authentication.Services.SessionToken;
@@ -19,12 +20,12 @@ public class SessionTokenService(IValidator<Models.Entities.SessionToken> valida
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteLicenseTokenAsync(string license)
+    public Task<License?> GetLicenseBySessionTokenAsync(Models.Entities.SessionToken token)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Models.Entities.SessionToken> GetSessionByLicenseAsync()
+    public Task<bool> DeleteLicenseTokenAsync(string license)
     {
         throw new NotImplementedException();
     }

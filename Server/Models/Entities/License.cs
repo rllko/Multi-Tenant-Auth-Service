@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Models.Entities.Discord;
 
 namespace Authentication.Models.Entities;
 

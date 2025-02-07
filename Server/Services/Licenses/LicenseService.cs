@@ -16,7 +16,17 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         throw new NotImplementedException();
     }
 
-    public Task<License?> GetLicenseByValueAsync(long licenseValue)
+    public Task<License?> GetLicenseByValueAsync(long license)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Models.Entities.SessionToken> GetSessionByLicenseAsync(License license)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<License?> GetLicenseByCreationDateAsync(DateTime license)
     {
         throw new NotImplementedException();
     }
@@ -27,12 +37,6 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
     }
 
     public Task<bool> DeleteLicenseAsync(long id)
-    {
-        throw new NotImplementedException();
-    }
-
-
-    public Task<License?> GetLicenseByCreationDateAsync(long license)
     {
         throw new NotImplementedException();
     }

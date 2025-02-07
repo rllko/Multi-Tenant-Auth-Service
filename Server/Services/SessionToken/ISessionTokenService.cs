@@ -1,3 +1,5 @@
+using Authentication.Models.Entities;
+
 namespace Authentication.Services.SessionToken;
 
 public interface ISessionTokenService
