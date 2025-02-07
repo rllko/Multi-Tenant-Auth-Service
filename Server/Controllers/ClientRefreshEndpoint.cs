@@ -2,7 +2,6 @@
 using Authentication.Common;
 using Authentication.Models;
 using Authentication.Services;
-using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 

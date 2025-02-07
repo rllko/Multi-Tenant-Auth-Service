@@ -1,4 +1,5 @@
 ﻿using Authentication.Models;
+using Authentication.Models.Entities.Discord;
 
 namespace Authentication.Services.CodeService;
 

@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Add migration singleton
 builder.Services.AddSingleton(_ => new DatabaseInitializer(

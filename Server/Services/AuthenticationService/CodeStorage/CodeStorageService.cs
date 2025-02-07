@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Authentication.Common;
 using Authentication.Models;
+using Authentication.Models.Entities.Discord;
 
 namespace Authentication.Services.CodeService;
 
@@ -62,7 +63,7 @@ public class CodeStorageService : ICodeStorageService
         Console.WriteLine(_discordCodeIssued.Select(x => $"{x.Key} -> {x.Value}"));
         if (_discordCodeIssued.TryGetValue(code, out var userCode))
         {
-            if (userCode.isExpired) return null;
+            if (userCode.IsExpired) return null;
 
             return userCode;
         }
