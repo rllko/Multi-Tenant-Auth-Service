@@ -5,7 +5,7 @@ namespace Authentication.Models.Entities;
 [Table("session_tokens")]
 public record SessionToken(
     int SessionId,
-    Guid Token,
+    Guid AuthorizationToken,
     License License,
     string IpAddress,
     DateTime Expiration,

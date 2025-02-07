@@ -62,8 +62,8 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 //     {
 //         OnMessageReceived = context =>
 //         {
-//             if (context.Request.Headers.TryGetValue("Authorization", out var Token))
-//                 context.Token = Token;
+//             if (context.Request.Headers.TryGetValue("Authorization", out var AuthorizationToken))
+//                 context.AuthorizationToken = AuthorizationToken;
 //             return Task.CompletedTask;
 //         }
 //     };
@@ -168,7 +168,7 @@ var oauthEndpoints = app.MapGroup("authentication");
 // Entities Authorization Endpoint
 oauthEndpoints.MapGet("authorize", AuthorizationController.Handle);
 
-// Entities Token Endpoint
+// Entities AuthorizationToken Endpoint
 
 oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
 
