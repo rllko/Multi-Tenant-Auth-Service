@@ -1,31 +1,28 @@
+using Authentication.Database;
 using Authentication.Models.Entities;
 using Authentication.Models.Entities.Discord;
+using FluentValidation;
 
 namespace Authentication.Services.Discords;
 
-public class DiscordService : IDiscordService
+public class DiscordService(IValidator<DiscordCode> validator, IDbConnectionFactory connectionFactory) : IDiscordService
 {
-    public async Task<License?> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
+    public Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<List<License>?> GetLicenseLicenseListAsync(long discordId)
+    public Task<bool> UpdateLicenseOwnershipAsync(long oldId, long newId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<License?> UpdateDiscordLicensesAsync(long discordId)
+    public Task<bool> DeleteDiscordUserAsync(long id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> DeleteLicensesAsync(long discordId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<License?> GetLicenseByDiscordAsync(long discordId)
+    public Task<bool> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
     {
         throw new NotImplementedException();
     }

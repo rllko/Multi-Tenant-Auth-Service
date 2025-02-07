@@ -26,3 +26,5 @@ public class License
     [InverseProperty("Target")]
     public ICollection<UserActivityLog> ActivityLogs { get; init; } = new List<UserActivityLog>();
 }
+
+public record LicenseDto(Guid Value, DateTime CreationDate, DiscordUser? DiscordUser);

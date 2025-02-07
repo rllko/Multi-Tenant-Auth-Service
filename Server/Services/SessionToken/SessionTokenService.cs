@@ -1,33 +1,30 @@
+using FluentValidation;
+
 namespace Authentication.Services.SessionToken;
 
-public class SessionTokenService : ISessionTokenService
+public class SessionTokenService(IValidator<Models.Entities.SessionToken> validator) : ISessionTokenService
 {
-    public async Task<Models.Entities.SessionToken> GetSessionByIdAsync()
+    public Task<Models.Entities.SessionToken> GetSessionByIdAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Models.Entities.SessionToken> GetSessionByLicenseAsync()
+    public Task<Models.Entities.SessionToken> CreateLicenseToken(string license)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> CreateLicenseToken(string license)
+    public Task<bool> UpdateLicenseTokenAsync(string license)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> ResetLicenseToken(string license)
+    public Task<bool> DeleteLicenseTokenAsync(string license)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> UpdateLicenseTokenAsync(string license)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<bool> DeleteLicenseTokenAsync(string license)
+    public Task<Models.Entities.SessionToken> GetSessionByLicenseAsync()
     {
         throw new NotImplementedException();
     }

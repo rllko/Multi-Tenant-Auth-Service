@@ -1,8 +1,10 @@
+using Authentication.Database;
 using Authentication.Models.Entities;
+using FluentValidation;
 
 namespace Authentication.Services.Hwids;
 
-public class HwidService : IHwidService
+public class HwidService(IValidator<Hwid> validator, IDbConnectionFactory connectionFactory) : IHwidService
 {
     public async Task<Hwid> GetHwidByIdAsync(long licenseId)
     {
@@ -20,6 +22,11 @@ public class HwidService : IHwidService
     }
 
     public async Task<bool> DeleteLicenseHwidAsync(string license)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<License>?> GetLicensesByHwidAsync(Hwid hwid)
     {
         throw new NotImplementedException();
     }

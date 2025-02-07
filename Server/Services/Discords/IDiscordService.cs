@@ -5,8 +5,8 @@ namespace Authentication.Services.Discords;
 
 public interface IDiscordService
 {
-    Task<License?> ConfirmLicenseRegistrationAsync(DiscordCode discordCode);
-    Task<List<License>?> GetLicenseLicenseListAsync(long discordId);
-    Task<License?> UpdateDiscordLicensesAsync(long discordId);
-    Task<bool> DeleteLicensesAsync(long discordId);
+    Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId);
+    Task<bool> UpdateLicenseOwnershipAsync(long oldId, long newId);
+    Task<bool> DeleteDiscordUserAsync(long id);
+    Task<bool> ConfirmLicenseRegistrationAsync(DiscordCode discordCode);
 }

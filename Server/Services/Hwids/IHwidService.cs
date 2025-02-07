@@ -8,5 +8,5 @@ public interface IHwidService
     Task<Hwid> GetHwidBySessionTokenAsync(string token);
     Task<bool> AssignLicenseHwidAsync(string license, Hwid hwid);
     Task<bool> DeleteLicenseHwidAsync(string license);
-    Task<List<License>> GetLicensesByHwid(string license);
+    Task<List<License>?> GetLicensesByHwidAsync(Hwid hwid);
 }
