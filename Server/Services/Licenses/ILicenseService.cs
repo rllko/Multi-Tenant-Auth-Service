@@ -11,6 +11,7 @@ public interface ILicenseService
     Task<List<License>> GetLicensesByDiscordId(long discordId);
     Task<License?> GetLicenseByIdAsync(long licenseId);
     Task<License?> GetLicenseByValueAsync(long license);
+    Task<Either<bool, ValidationFailed>> AssignLicenseHwidAsync(string license, Hwid hwid);
     Task<Either<Models.Entities.SessionToken, ValidationFailed>> GetSessionByLicenseAsync(License license);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
     Task<bool> ResetLicenseHwidAsync(long id);

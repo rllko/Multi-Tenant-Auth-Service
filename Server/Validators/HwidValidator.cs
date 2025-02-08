@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Authentication.Validators;
 
-public class HwidValidator : AbstractValidator<Hwid>
+public class HwidValidator : AbstractValidator<HwidDto>
 {
     public HwidValidator()
     {
