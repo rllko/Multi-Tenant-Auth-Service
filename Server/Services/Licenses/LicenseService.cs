@@ -1,5 +1,6 @@
 using Authentication.Database;
 using Authentication.Models.Entities;
+using Authentication.Models.Entities.Discord;
 using Authentication.Validators;
 using FluentValidation;
 using LanguageExt;
@@ -39,6 +40,11 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
     }
 
     public Task<bool> DeleteLicenseAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Either<DiscordCode, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license)
     {
         throw new NotImplementedException();
     }

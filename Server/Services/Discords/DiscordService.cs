@@ -1,5 +1,8 @@
+using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities.Discord;
+using Authentication.Services.CodeService;
+using Authentication.Services.Licenses;
 using Authentication.Validators;
 using Dapper;
 using FluentValidation;
@@ -7,33 +10,81 @@ using LanguageExt;
 
 namespace Authentication.Services.Discords;
 
-public class DiscordService(IValidator<DiscordCode> validator, IDbConnectionFactory connectionFactory) : IDiscordService
+public class DiscordService(
+    IValidator<RedeemDiscordCodeDto> validator,
+    IDbConnectionFactory connectionFactory,
+    ICodeStorageService codeStorageService) : IDiscordService
 {
     public async Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task<bool> UpdateLicenseOwnershipAsync(long oldId, long newId)
+    public async Task<bool> UpdateLicenseOwnershipAsync(ulong oldId, ulong newId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
     }
 
-    public async Task<bool> DeleteDiscordUserAsync(long id)
+    public async Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var addDiscordIdQuery = @"INSERT INTO discords(discord_id) VALUES (@discordId);";
+        var affectedRows1 =
+            await connection.ExecuteAsync(addDiscordIdQuery, new { discordUserId }, transaction);
+
+        return affectedRows1 > 0;
+    }
+
+    public async Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
     }
 
-    public async Task<Either<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
+    public async Task<DiscordUser?> GetByIdAsync(ulong id)
     {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM discords WHERE discord_id = @discordId;";
+
+        var discordUser =
+            connection.QueryFirst<DiscordUser>(getDiscordIdQuery, new { Id = id });
+        return discordUser;
+    }
+
+    public async Task<Either<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
+        RedeemDiscordCodeDto discordCode,
+        ILicenseService licenseService)
+    {
+        // validate object sent by the user
         var validationResult = await validator.ValidateAsync(discordCode);
-
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
+        // get license from code
+        var discordCodeResult = codeStorageService.GetUserByCode(discordCode.code);
+        if (discordCodeResult is null) return false;
+
+        // create Connection
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var result = await connection.ExecuteAsync("query");
+        // start the transaction
+        using var transaction = connection.BeginTransaction();
 
-        return result is not 0;
+        var existingDiscordUser = await GetByIdAsync(discordCode.discordId);
+
+        if (existingDiscordUser is null)
+            // add discord to database
+            await CreateUserAsync(discordCode.discordId, transaction);
+
+        // update redeemed license
+        var redeemedLicense = discordCodeResult.UserLicense;
+        redeemedLicense.Discord = discordCode.discordId;
+
+        // persist changes
+        await licenseService.UpdateLicenseAsync(redeemedLicense, transaction);
+
+        // commit transaction
+        transaction.Commit();
+        return true;
     }
 }

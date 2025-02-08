@@ -1,22 +1,16 @@
-using Authentication.Models;
+using Authentication.Models.Entities.Discord;
 using FluentValidation;
 
 namespace Authentication.Validators.Discord;
 
-public class DiscordCodeValidator : AbstractValidator<DiscordCode>
+public class DiscordCodeValidator : AbstractValidator<RedeemDiscordCodeDto>
 {
     public DiscordCodeValidator()
     {
-        RuleFor(x => x.License.DiscordUser)
-            .Null().WithMessage("This License already has a Discord user assigned to it.");
+        RuleFor(x => x.discordId)
+            .Null().WithMessage("Discord id is required.");
 
-        RuleFor(x => x.CreationTime)
-            .Must(x => BeValid(x, 30))
-            .WithMessage("This code is expired");
-    }
-
-    private static bool BeValid(DateTime time, int minutesUntilExpire)
-    {
-        return time.AddMinutes(minutesUntilExpire).ToUniversalTime() <= DateTime.UtcNow;
+        RuleFor(x => x.code)
+            .Null().WithMessage("Code is required.");
     }
 }

@@ -1,4 +1,6 @@
+using System.Data;
 using Authentication.Models.Entities;
+using Authentication.Models.Entities.Discord;
 using Authentication.Validators;
 using LanguageExt;
 
@@ -13,4 +15,7 @@ public interface ILicenseService
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
     Task<bool> ResetLicenseHwidAsync(long id);
     Task<bool> DeleteLicenseAsync(long id);
+    Task<List<License>> GetAllLicensesAsync();
+    Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
+    Task<Either<DiscordCode, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license);
 }

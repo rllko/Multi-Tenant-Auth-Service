@@ -16,6 +16,8 @@ public class License
     [Column("creation_date", TypeName = "timestamp without time zone")]
     public required DateTime CreationDate { get; init; }
 
+    [Column("discord")] public ulong Discord { get; set; }
+
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
     public DiscordUser? DiscordUser { get; init; }
