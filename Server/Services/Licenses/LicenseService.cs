@@ -1,6 +1,8 @@
 using Authentication.Database;
 using Authentication.Models.Entities;
+using Authentication.Validators;
 using FluentValidation;
+using LanguageExt;
 
 namespace Authentication.Services.Licenses;
 
@@ -21,7 +23,7 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         throw new NotImplementedException();
     }
 
-    public Task<Models.Entities.SessionToken> GetSessionByLicenseAsync(License license)
+    public Task<Either<Models.Entities.SessionToken, ValidationFailed>> GetSessionByLicenseAsync(License license)
     {
         throw new NotImplementedException();
     }

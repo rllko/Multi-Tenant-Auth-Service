@@ -1,6 +1,8 @@
 using Authentication.Database;
 using Authentication.Models.Entities;
+using Authentication.Validators;
 using FluentValidation;
+using LanguageExt;
 
 namespace Authentication.Services.Hwids;
 
@@ -16,9 +18,13 @@ public class HwidService(IValidator<Hwid> validator, IDbConnectionFactory connec
         throw new NotImplementedException();
     }
 
-    public async Task<bool> AssignLicenseHwidAsync(string license, Hwid hwid)
+    public async Task<Either<bool, ValidationFailed>> AssignLicenseHwidAsync(string license, Hwid hwid)
     {
-        throw new NotImplementedException();
+        var validationResult = await validator.ValidateAsync(hwid);
+
+        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+
+        var connection = await connectionFactory.CreateConnectionAsync();
     }
 
     public async Task<bool> DeleteLicenseHwidAsync(string license)
@@ -26,9 +32,13 @@ public class HwidService(IValidator<Hwid> validator, IDbConnectionFactory connec
         throw new NotImplementedException();
     }
 
-    public Task<List<License>?> GetLicensesByHwidAsync(Hwid hwid)
+    public async Task<Either<List<License>?, ValidationFailed>> GetLicensesByHwidAsync(Hwid hwid)
     {
-        throw new NotImplementedException();
+        var validationResult = await validator.ValidateAsync(hwid);
+
+        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+
+        var connection = await connectionFactory.CreateConnectionAsync();
     }
 
     public async Task<List<License>> GetLicensesByHwid(string license)

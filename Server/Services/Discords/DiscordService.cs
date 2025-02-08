@@ -1,29 +1,39 @@
 using Authentication.Database;
-using Authentication.Models.Entities;
 using Authentication.Models.Entities.Discord;
+using Authentication.Validators;
+using Dapper;
 using FluentValidation;
+using LanguageExt;
 
 namespace Authentication.Services.Discords;
 
 public class DiscordService(IValidator<DiscordCode> validator, IDbConnectionFactory connectionFactory) : IDiscordService
 {
-    public Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId)
+    public async Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId)
     {
-        throw new NotImplementedException();
+        var connection = await connectionFactory.CreateConnectionAsync();
     }
 
-    public Task<bool> UpdateLicenseOwnershipAsync(long oldId, long newId)
+    public async Task<bool> UpdateLicenseOwnershipAsync(long oldId, long newId)
     {
-        throw new NotImplementedException();
+        var connection = await connectionFactory.CreateConnectionAsync();
     }
 
-    public Task<bool> DeleteDiscordUserAsync(long id)
+    public async Task<bool> DeleteDiscordUserAsync(long id)
     {
-        throw new NotImplementedException();
+        var connection = await connectionFactory.CreateConnectionAsync();
     }
 
-    public Task<bool> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
+    public async Task<Either<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(DiscordCode discordCode)
     {
-        throw new NotImplementedException();
+        var validationResult = await validator.ValidateAsync(discordCode);
+
+        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var result = await connection.ExecuteAsync("query");
+
+        return result is not 0;
     }
 }

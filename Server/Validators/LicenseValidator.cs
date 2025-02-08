@@ -1,5 +1,6 @@
 using Authentication.Models.Entities;
 using FluentValidation;
+using FluentValidation.Results;
 
 namespace Authentication.Validators;
 
@@ -16,4 +17,6 @@ public class LicenseValidator : AbstractValidator<License>
     {
         return license.Hw is null && license.DiscordUser is not null;
     }
+
+    public record ValidationFailed(IEnumerable<ValidationFailure> Errors);
 }

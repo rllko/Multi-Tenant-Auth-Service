@@ -10,6 +10,16 @@ public class SessionTokenService(IValidator<Models.Entities.SessionToken> valida
         throw new NotImplementedException();
     }
 
+    public async Task<Models.Entities.SessionToken> GetSessionByLicenseAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Models.Entities.SessionToken> CreateLicenseSession(string license)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<Models.Entities.SessionToken> CreateLicenseToken(string license)
     {
         throw new NotImplementedException();
@@ -20,13 +30,11 @@ public class SessionTokenService(IValidator<Models.Entities.SessionToken> valida
         throw new NotImplementedException();
     }
 
-    public Task<License?> GetLicenseBySessionTokenAsync(Models.Entities.SessionToken token)
+    public Task<License?> GetLicenseBySessionTokenAsync(long SessionId)
     {
-        throw new NotImplementedException();
     }
 
     public Task<bool> DeleteLicenseTokenAsync(string license)
     {
         throw new NotImplementedException();
     }
-}
