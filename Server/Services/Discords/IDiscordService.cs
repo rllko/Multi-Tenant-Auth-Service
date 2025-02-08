@@ -9,7 +9,7 @@ namespace Authentication.Services.Discords;
 public interface IDiscordService
 {
     Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId);
-    Task<bool> UpdateLicenseOwnershipAsync(ulong oldId, ulong newId);
+
     Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null);
     Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null);
     Task<DiscordUser?> GetByIdAsync(ulong Id);

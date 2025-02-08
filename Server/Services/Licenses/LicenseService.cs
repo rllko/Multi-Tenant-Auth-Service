@@ -1,3 +1,4 @@
+using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities;
 using Authentication.Models.Entities.Discord;
@@ -40,6 +41,21 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
     }
 
     public Task<bool> DeleteLicenseAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<License>> GetAllLicensesAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<bool> UpdateUserLicenseListAsync(ulong oldDiscordId, ulong newDiscordId, List<License> licenses)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license, IDbTransaction? transaction = null)
     {
         throw new NotImplementedException();
     }

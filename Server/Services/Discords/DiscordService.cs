@@ -20,11 +20,6 @@ public class DiscordService(
         throw new NotImplementedException();
     }
 
-    public async Task<bool> UpdateLicenseOwnershipAsync(ulong oldId, ulong newId)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-    }
-
     public async Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -39,6 +34,12 @@ public class DiscordService(
     public async Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
+
+        var addDiscordIdQuery = @"DELETE FROM discords WHERE discord_id = @discordId;";
+        var affectedRows1 =
+            await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
+
+        return affectedRows1 > 0;
     }
 
     public async Task<DiscordUser?> GetByIdAsync(ulong id)

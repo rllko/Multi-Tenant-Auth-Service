@@ -16,6 +16,7 @@ public interface ILicenseService
     Task<bool> ResetLicenseHwidAsync(long id);
     Task<bool> DeleteLicenseAsync(long id);
     Task<List<License>> GetAllLicensesAsync();
+    Task<bool> UpdateUserLicenseListAsync(ulong oldDiscordId, ulong newDiscordId, List<License> licenses);
     Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
     Task<Either<DiscordCode, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license);
 }
