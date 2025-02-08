@@ -7,8 +7,7 @@ namespace Authentication.Services.Hwids;
 
 public interface IHwidService
 {
-    Task<Either<Hwid, ValidationFailed>> CreateHwidAsync(HwidDto hwidDto, IDbTransaction? transaction = null);
-
-    Task<bool> DeleteLicenseHwidAsync(long id, IDbTransaction? transaction = null);
-
+    Task<Either<Hwid?, ValidationFailed>> CreateHwidAsync(HwidDto hwidDto, IDbTransaction? transaction = null);
+    Task<Either<List<Hwid>, ValidationFailed>> GetHwidByDtoAsync(HwidDto hwidDto);
+    Task<bool> DeleteHwidAsync(long id, IDbTransaction? transaction = null);
 }

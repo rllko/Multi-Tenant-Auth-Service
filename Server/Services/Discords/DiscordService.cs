@@ -15,15 +15,15 @@ public class DiscordService(
     IDbConnectionFactory connectionFactory,
     ICodeStorageService codeStorageService) : IDiscordService
 {
-    public async Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
+    public async Task<DiscordUser?> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var addDiscordIdQuery = @"INSERT INTO discords(discord_id) VALUES (@discordId);";
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { discordUserId }, transaction);
+        var addDiscordIdQuery = @"INSERT INTO discords(discord_id) VALUES (@discordId) RETURNING *;";
+        var newUser =
+            await connection.QuerySingleAsync<DiscordUser>(addDiscordIdQuery, new { discordUserId }, transaction);
 
-        return affectedRows1 > 0;
+        return newUser;
     }
 
     public async Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null)
@@ -44,7 +44,7 @@ public class DiscordService(
         var getDiscordIdQuery = @"SELECT * FROM discords WHERE discord_id = @discordId;";
 
         var discordUser =
-            connection.QueryFirst<DiscordUser>(getDiscordIdQuery, new { Id = id });
+            connection.QueryFirstOrDefault<DiscordUser>(getDiscordIdQuery, new { Id = id });
         return discordUser;
     }
 

@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Authentication.Validators;
 
-public class SessionTokenValidator : AbstractValidator<SessionToken>
+public class SessionTokenValidator : AbstractValidator<UserSession>
 {
     public SessionTokenValidator()
     {

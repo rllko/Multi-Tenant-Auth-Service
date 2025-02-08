@@ -3,24 +3,24 @@ using FluentValidation;
 
 namespace Authentication.Services.SessionToken;
 
-public class SessionTokenService(IValidator<Models.Entities.SessionToken> validator) : ISessionTokenService
+public class SessionTokenService(IValidator<UserSession> validator) : ISessionTokenService
 {
-    public Task<Models.Entities.SessionToken> GetSessionByIdAsync()
+    public Task<UserSession> GetSessionByIdAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Models.Entities.SessionToken> GetSessionByLicenseAsync()
+    public async Task<UserSession> GetSessionByLicenseAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Models.Entities.SessionToken> CreateLicenseSession(string license)
+    public async Task<UserSession> CreateLicenseSession(string license)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Models.Entities.SessionToken> CreateLicenseToken(string license)
+    public Task<UserSession> CreateLicenseToken(string license)
     {
         throw new NotImplementedException();
     }

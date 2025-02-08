@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Authentication.Models.Entities;
 
-[Table("session_tokens")]
-public record SessionToken(
+[Table("user_sessions")]
+public record UserSession(
     int SessionId,
     Guid AuthorizationToken,
     License License,

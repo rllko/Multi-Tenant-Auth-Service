@@ -8,7 +8,7 @@ namespace Authentication.Services.Discords;
 
 public interface IDiscordService
 {
-    Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null);
+    Task<DiscordUser?> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null);
     Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null);
     Task<DiscordUser?> GetByIdAsync(ulong Id);
 

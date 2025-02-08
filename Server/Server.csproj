@@ -52,7 +52,6 @@
         <None Remove="Database\Scripts\000003 - create_licenses_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000003 - create_licenses_table.up.sql"/>
         <None Remove="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
         <None Remove="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
