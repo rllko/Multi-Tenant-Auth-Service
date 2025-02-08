@@ -10,5 +10,5 @@ public interface IHwidService
     Task<Either<Hwid, ValidationFailed>> CreateHwidAsync(HwidDto hwidDto, IDbTransaction? transaction = null);
 
     Task<bool> DeleteLicenseHwidAsync(long id, IDbTransaction? transaction = null);
-    Task<Either<List<License>?, ValidationFailed>> GetLicensesByHwidAsync(long id);
+
 }
