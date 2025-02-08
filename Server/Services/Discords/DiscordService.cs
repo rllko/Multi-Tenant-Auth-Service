@@ -15,11 +15,6 @@ public class DiscordService(
     IDbConnectionFactory connectionFactory,
     ICodeStorageService codeStorageService) : IDiscordService
 {
-    public async Task<DiscordUser?> GetDiscordFromLicenseAsync(long licenceId)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<bool> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
