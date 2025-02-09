@@ -5,7 +5,6 @@ using Authentication.Common;
 using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.ActivityLogger;
-using Authentication.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints;
@@ -50,14 +49,8 @@ public static class CustomerController
             return Results.Json(response);
         }
 
-        var inputHwid = new Hwid
-        {
-            Cpu = filteredInput[0],
-            Bios = filteredInput[1],
-            Ram = filteredInput[2],
-            Disk = filteredInput[3],
-            Display = filteredInput[4]
-        };
+        var inputHwid = new Hwid(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
+            disk: filteredInput[3], display: filteredInput[4]);
 
         if (userKey.Hw!.EqualsCheck(inputHwid) is false)
         {
@@ -160,14 +153,8 @@ public static class CustomerController
                 return Results.Json(response);
             }
 
-        var newHwid = new Hwid
-        {
-            Cpu = filteredInput[0],
-            Bios = filteredInput[1],
-            Ram = filteredInput[2],
-            Disk = filteredInput[3],
-            Display = filteredInput[4]
-        };
+        var newHwid = new Hwid(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
+            disk: filteredInput[3], display: filteredInput[4]);
 
         await userManagerService.AssignLicenseHwidAsync(License.ToString(), newHwid);
 

@@ -17,7 +17,7 @@ public class OffsetsEndpoint
 
         if (string.IsNullOrEmpty(filename)) return Results.NotFound();
 
-        if (context.Items["user"] is not SessionToken loggedUser)
+        if (context.Items["user"] is not UserSession loggedUser)
         {
             response.Error = "Something went wrong.";
             return Results.Json(response);

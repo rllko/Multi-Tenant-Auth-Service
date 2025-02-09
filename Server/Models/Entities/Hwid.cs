@@ -12,6 +12,16 @@ namespace Authentication.Models.Entities;
 [Index("Ram", Name = "hwids_ram_key", IsUnique = true)]
 public class Hwid
 {
+    public Hwid(long id, string cpu, string bios, string ram, string disk, string display)
+    {
+        Id = id;
+        Cpu = cpu;
+        Bios = bios;
+        Ram = ram;
+        Disk = disk;
+        Display = display;
+    }
+
     [Key] [Column("id")] public long Id { get; set; }
 
     [Column("cpu")] [StringLength(64)] public string Cpu { get; set; } = null!;
@@ -25,4 +35,12 @@ public class Hwid
     [Column("display")] [StringLength(64)] public string Display { get; set; } = null!;
 
     [InverseProperty("Hw")] public virtual ICollection<License> Users { get; set; } = new List<License>();
+}
+
+public record HwidDto(string Cpu, string Bios, string Ram, string Disk, string Display)
+{
+    public Hwid ToHwid(long id)
+    {
+        return new Hwid(id, Cpu, Bios, Ram, Disk, Display);
+    }
 }

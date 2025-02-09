@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Models.Entities.Discord;
 
 namespace Authentication.Models.Entities;
 
@@ -15,6 +16,8 @@ public class License
     [Column("creation_date", TypeName = "timestamp without time zone")]
     public required DateTime CreationDate { get; init; }
 
+    [Column("discord")] public ulong Discord { get; set; }
+
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
     public DiscordUser? DiscordUser { get; init; }
@@ -26,3 +29,5 @@ public class License
     [InverseProperty("Target")]
     public ICollection<UserActivityLog> ActivityLogs { get; init; } = new List<UserActivityLog>();
 }
+
+public record LicenseDto(Guid Value, DateTime CreationDate, DiscordUser? DiscordUser);
