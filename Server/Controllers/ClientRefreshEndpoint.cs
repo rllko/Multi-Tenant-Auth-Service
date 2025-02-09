@@ -2,7 +2,6 @@
 using Authentication.Common;
 using Authentication.Models;
 using Authentication.Services;
-using Authentication.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
@@ -22,17 +21,17 @@ internal class ClientRefreshEndpoint
         if (!checkTokenResult.IsSuccess) return Results.BadRequest(checkTokenResult.ErrorDescription);
 
         var token = checkTokenResult.token;
-        if (token == null) return Results.BadRequest("Invalid Token");
+        if (token == null) return Results.BadRequest("Invalid AuthorizationToken");
         var userlicense = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti)?.Value;
 
-        if (string.IsNullOrEmpty(userlicense)) return Results.BadRequest("Invalid Token");
+        if (string.IsNullOrEmpty(userlicense)) return Results.BadRequest("Invalid AuthorizationToken");
 
         var externalUser = await userManagerService.GetLicenseByLicenseAsync(userlicense);
 
-        if (externalUser == null) return Results.BadRequest("Invalid User");
+        if (externalUser == null) return Results.BadRequest("Invalid License");
 
         if (checkTokenResult.token!.ValidTo < DateTime.Now)
-            return Results.BadRequest(new { Error = "Token Hasnt Expired yet" });
+            return Results.BadRequest(new { Error = "AuthorizationToken Hasnt Expired yet" });
 
         // check if the user has confirmed their discord account
         if (externalUser.DiscordUser == null)
@@ -74,7 +73,7 @@ internal class ClientRefreshEndpoint
             SecurityToken validatedToken;
             handler.ValidateToken(encryptedJwt, tokenValidationParameters, out validatedToken);
 
-            if (validatedToken == null) return new CheckTokenResult { ErrorDescription = "Invalid Token" };
+            if (validatedToken == null) return new CheckTokenResult { ErrorDescription = "Invalid AuthorizationToken" };
 
             // Access the claims and information
             return new CheckTokenResult { token = validatedToken as JwtSecurityToken, IsSuccess = true };

@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Add migration singleton
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
@@ -59,8 +62,8 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 //     {
 //         OnMessageReceived = context =>
 //         {
-//             if (context.Request.Headers.TryGetValue("Authorization", out var Token))
-//                 context.Token = Token;
+//             if (context.Request.Headers.TryGetValue("Authorization", out var AuthorizationToken))
+//                 context.AuthorizationToken = AuthorizationToken;
 //             return Task.CompletedTask;
 //         }
 //     };
@@ -165,7 +168,7 @@ var oauthEndpoints = app.MapGroup("authentication");
 // Entities Authorization Endpoint
 oauthEndpoints.MapGet("authorize", AuthorizationController.Handle);
 
-// Entities Token Endpoint
+// Entities AuthorizationToken Endpoint
 
 oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
 
@@ -175,10 +178,10 @@ oauthEndpoints.MapGet("create", CreateEndpoint.Handle).RequireAuthorization();
 // Create multiple Licenses
 oauthEndpoints.MapGet("create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
 
-// Reset User License
+// Reset License License
 oauthEndpoints.MapGet("reset-hwid/{discordId:long}/{license}", ResetHwidEndpoint.Handle).RequireAuthorization();
 
-// Get User Liceses
+// Get License Liceses
 oauthEndpoints.MapGet("get-licenses/{discordId:long}", LicenseEndpoint.Handle).RequireAuthorization();
 
 // Set Offsets
