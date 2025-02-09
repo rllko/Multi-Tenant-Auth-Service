@@ -5,15 +5,18 @@ using Authentication.Models.Entities.OAuth;
 using Authentication.OauthRequest;
 using Authentication.OauthResponse;
 using Authentication.Services.CodeService;
+using Authentication.Services.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
-namespace Authentication.Services.Interfaces;
+namespace Authentication.Services.Authentication.AuthorizeResult;
 
 public class AuthorizeResultService(
     ICodeStorageService codeStoreService,
-    IAcessTokenStorageService acessTokenStorageService
+    IAcessTokenStorageService acessTokenStorageService,
+    IClientService clientService
 ) : IAuthorizeResultService
 {
     private readonly IAcessTokenStorageService _acessTokenStorageService = acessTokenStorageService;
@@ -21,21 +24,22 @@ public class AuthorizeResultService(
     //private readonly InMemoryClientDatabase _clientStore = new();
     private readonly ICodeStorageService _codeStoreService = codeStoreService;
 
-    public AuthorizeResponse AuthorizeRequest(HttpContext httpContext, AuthorizationRequest authorizationRequest)
+    public async Task<AuthorizeResponse> AuthorizeRequest(HttpContext httpContext,
+        AuthorizationRequest authorizationRequest)
     {
         AuthorizeResponse response = new();
 
-        var clientResult = VerifyClientById(authorizationRequest.client_id);
+        var clientResult = await VerifyClientById(authorizationRequest.client_id);
 
         #region Domain Checking
 
-        if (clientResult.IsSuccess is false)
+        if (clientResult.Item2 is not null)
         {
-            response.Error = clientResult.ErrorDescription!;
+            response.Error = clientResult.Item2.GetEnumDescription();
             return response;
         }
 
-        if (clientResult.Client!.Scopes.Count == 0)
+        if (clientResult.Item1!.Scopes.Count == 0)
         {
             response.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
             response.ErrorDescription = "client has no scopes";
@@ -79,7 +83,7 @@ public class AuthorizeResultService(
             //return response;
             scopes = ["default"];
 
-        var clientScopes = scopes.Intersect(clientResult.Client.Scopes.Select(s => s.ScopeName));
+        var clientScopes = scopes.Intersect(clientResult.Item1.Scopes.Select(s => s.ScopeName));
 
         var authoCode = new AuthorizationCode
         {
@@ -90,7 +94,7 @@ public class AuthorizeResultService(
             CodeChallengeMethod = authorizationRequest.code_challenge_method,
             CreationTime = DateTime.UtcNow,
 
-            Subject = clientResult.Client.ClientIdentifier!
+            Subject = clientResult.Item1.ClientIdentifier!
         };
 
         // // var code = _codeStoreService.CreateAuthorizationCode(_dbContext, authorizationRequest.client_id, authoCode);
@@ -110,33 +114,38 @@ public class AuthorizeResultService(
     }
 
 
-    public TokenResponse GenerateToken(HttpContext httpContext, [FromServices] DevKeys devKeys)
+    public async Task<Tuple<TokenResponse?, ErrorTypeEnum?>> GenerateToken(HttpContext httpContext,
+        [FromServices] DevKeys devKeys,
+        IValidator<TokenRequest> validator)
     {
         var form = httpContext.Request.Form;
 
-        var request = new TokenRequest
-        {
-            ClientId = form["client_id"]!,
-            ClientSecret = form["client_secret"]!,
-            Code = form["code"]!,
-            GrantType = form["grant_type"]!
-        };
+        var request = new TokenRequest(
+            form["client_id"],
+            form["client_secret"],
+            form["code"],
+            form["grant_type"]);
 
-        var checkClientResult = VerifyClientById(request.ClientId, true, request.ClientSecret);
-        if (!checkClientResult.IsSuccess)
-            return new TokenResponse
-                { Error = checkClientResult.Error!, ErrorDescription = checkClientResult.ErrorDescription! };
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+            return new Tuple<TokenResponse?, ErrorTypeEnum?>(null, ErrorTypeEnum.InvalidClient);
+
+        var checkClientResult =
+            await VerifyClientById(request.ClientId,
+                true, request.ClientSecret);
+
+        if (checkClientResult.Item2 is not null)
+            return new Tuple<TokenResponse?, ErrorTypeEnum?>(null, checkClientResult.Item2);
 
         // check code from the Concurrent Dictionary
-        var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code);
+        var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code!);
         if (clientCodeChecker == null)
-            return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
+            return new Tuple<TokenResponse?, ErrorTypeEnum?>(null, ErrorTypeEnum.InvalidClient);
 
         // check if the current client who is one made this authentication request
 
         if (request.ClientId != clientCodeChecker.ClientIdentifier)
-            return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
-
+            return new Tuple<TokenResponse?, ErrorTypeEnum?>(null, ErrorTypeEnum.InvalidClient);
 
         // Now here I will Issue the Id_token
         var handler = new JwtSecurityTokenHandler();
@@ -149,7 +158,7 @@ public class AuthorizeResultService(
             {
                 Claims = new Dictionary<string, object>
                 {
-                    [JwtRegisteredClaimNames.Sub] = request.ClientId,
+                    [JwtRegisteredClaimNames.Sub] = request.ClientId!,
                     [JwtRegisteredClaimNames.Aud] = IdentityData.Audience,
                     [JwtRegisteredClaimNames.Iss] = IdentityData.Issuer,
                     [JwtRegisteredClaimNames.Iat] = DateTime.Now.Second,
@@ -179,60 +188,30 @@ public class AuthorizeResultService(
             Code = request.Code
         };
 
-        return tokenResponse;
+        return new Tuple<TokenResponse?, ErrorTypeEnum?>(tokenResponse, null);
     }
 
 
-    private CheckClientResult VerifyClientById(string? clientIdentifier, bool checkWithSecret = false,
+    private async Task<Tuple<Client?, ErrorTypeEnum?>> VerifyClientById(string? clientIdentifier,
+        bool checkWithSecret = false,
         string? clientSecret = null)
     {
-        var result = new CheckClientResult();
-
         if (string.IsNullOrWhiteSpace(clientIdentifier))
-        {
-            result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
-            return result;
-        }
+            return new Tuple<Client?, ErrorTypeEnum?>(null, ErrorTypeEnum.InvalidClient);
 
-        Client storedClient;
+        // check if client exists
+        var storedClient = await clientService.GetClientByIdentifierAsync(clientIdentifier);
 
-        try
-        {
-            // check if client exists
-            // storedClient = _dbContext.Clients.Include(x => x.Scopes)
-            // .First(x => x.ClientIdentifier!.Equals(clientIdentifier));
-        }
-        catch (Exception)
-        {
-            result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
-            return result;
-        }
+        if (storedClient == null) return new Tuple<Client?, ErrorTypeEnum?>(null, ErrorTypeEnum.AccessDenied);
 
-        /*
-        if (storedClient == null)
-        {
-            result.Error = ErrorTypeEnum.AccessDenied.GetEnumDescription();
-            return result;
-        }
-
-
-        if (checkWithSecret && !string.IsNullOrEmpty(clientSecret))
+        if (checkWithSecret is true && string.IsNullOrEmpty(clientSecret))
         {
             var hasSamesecretId =
                 storedClient.ClientSecret!.Equals(clientSecret, StringComparison.Ordinal);
-            if (!hasSamesecretId)
-            {
-                result.Error = ErrorTypeEnum.InvalidClient.GetEnumDescription();
-                return result;
-            }
+
+            if (!hasSamesecretId) return new Tuple<Client?, ErrorTypeEnum?>(null, ErrorTypeEnum.InvalidClient);
         }
 
-        //// check if client is enabled or not
-
-        result.IsSuccess = true;
-        result.Client = storedClient;
-        */
-
-        return result;
+        return new Tuple<Client?, ErrorTypeEnum?>(storedClient, null);
     }
 }

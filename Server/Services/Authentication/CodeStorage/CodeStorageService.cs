@@ -36,7 +36,7 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public string? CreateDiscordCode(string license)
+    public string? CreateDiscordCode(long license)
     {
         // var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
 

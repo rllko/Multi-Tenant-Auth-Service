@@ -9,7 +9,7 @@ public interface ICodeStorageService
     string? CreateAuthorizationCode(string? clientId,
         AuthorizationCode authorizationCode);
 
-    string? CreateDiscordCode(string license);
+    string? CreateDiscordCode(long license);
     AuthorizationCode? GetClientByCode(string key);
     DiscordCode? GetUserByCode(string code);
     bool RemoveClientByCode(Guid key);
