@@ -1,4 +1,5 @@
-﻿using Authentication.Services;
+﻿using Authentication.Common;
+using Authentication.Services;
 using Authentication.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,27 +8,26 @@ namespace Authentication.Endpoints.OAuth;
 internal static class TokenEndpoint
 {
     [HttpPost]
-    public static IResult Handle(
+    public static async Task<IResult> Handle(
         HttpContext httpContext,
         [FromServices] IAuthorizeResultService authorizeResultService,
         [FromServices] DevKeys devKeys)
     {
-        var result = authorizeResultService
+        var result = await authorizeResultService
             .GenerateToken(httpContext, devKeys);
 
-        if (result.HasError)
+        if (result.Item2 is not null)
             return Results.Json(new
             {
-                Error = "Something happened during token creation",
-                Debug = result.Error
+                Error = result.Item2.GetEnumDescription()
             });
 
         return Results.Ok(new
         {
-            result.AccessToken,
-            IdentityToken = result.IdToken,
-            result.TokenType,
-            Scope = result.RequestedScopes,
+            result.Item1!.AccessToken,
+            IdentityToken = result.Item1!.IdToken,
+            result.Item1!.TokenType,
+            Scope = result.Item1!.RequestedScopes,
             ExpiresIn = DateTime.UtcNow.AddMinutes(30)
         });
     }

@@ -10,7 +10,7 @@ public interface ISessionTokenService
     Task<UserSession?> GetSessionByIdAsync(long id);
     Task<UserSession?> GetSessionByLicenseAsync(string licenseId);
 
-    Task<UserSession> CreateLicenseSession(long licenseId, string ipAddress, long hwidId,
+    Task<UserSession> CreateLicenseSession(long licenseId, string? ipAddress, long hwidId,
         IDbTransaction? transaction = null);
 
     Task<Either<UserSession, ValidationFailed>> UpdateSessionTokenAsync(UserSession license,

@@ -32,7 +32,7 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         return license;
     }
 
-    public async Task<License?> GetLicenseByValueAsync(long licenseValue)
+    public async Task<License?> GetLicenseByValueAsync(Guid licenseValue)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 

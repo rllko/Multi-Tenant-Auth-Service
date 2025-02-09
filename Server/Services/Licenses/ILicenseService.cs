@@ -9,7 +9,7 @@ public interface ILicenseService
 {
     Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId);
     Task<License?> GetLicenseByIdAsync(long licenseId);
-    Task<License?> GetLicenseByValueAsync(long license);
+    Task<License?> GetLicenseByValueAsync(Guid license);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
     Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null);
     Task<IEnumerable<License>> GetAllLicensesAsync();

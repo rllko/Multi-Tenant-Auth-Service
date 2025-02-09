@@ -5,6 +5,8 @@ using Authentication.Common;
 using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.ActivityLogger;
+using Authentication.Services.Licenses;
+using Authentication.Services.SessionToken;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints;
@@ -13,7 +15,8 @@ public static class CustomerController
 {
     [HttpGet("{key:guid}")]
     public static async Task<IResult> HandleGet(HttpContext context,
-        ILicenseManagerService userManagerService,
+        ILicenseService userManagerService,
+        ISessionTokenService sessionTokenService,
         [FromServices] DevKeys _devKeys, IActivityLogger logger)
     {
         if (context.Request.Query.TryGetValue("3917505287", out var License) == false ||
@@ -24,7 +27,8 @@ public static class CustomerController
 
         var response = new DiscordResponse<List<string>>();
 
-        var userKey = await userManagerService.GetLicenseByLicenseAsync(License!);
+        var userKey = await userManagerService.GetLicenseByValueAsync(Guid.Parse(
+            License.ToString()));
 
         if (userKey == null)
         {
@@ -49,7 +53,7 @@ public static class CustomerController
             return Results.Json(response);
         }
 
-        var inputHwid = new Hwid(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
+        var inputHwid = new HwidDto(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
             disk: filteredInput[3], display: filteredInput[4]);
 
         if (userKey.Hw!.EqualsCheck(inputHwid) is false)
@@ -113,7 +117,8 @@ public static class CustomerController
     }
 
     [HttpPost]
-    public static async Task<IResult> HandlePost(HttpContext httpContext, ILicenseManagerService userManagerService)
+    public static async Task<IResult> HandlePost(HttpContext httpContext, ILicenseService userManagerService
+    ,ISessionTokenService sessionTokenService)
     {
         if (httpContext.Request.Form.TryGetValue("3391056346", out var hwid) == false ||
             httpContext.Request.Form.TryGetValue("3917505287", out var License) == false)
@@ -123,7 +128,7 @@ public static class CustomerController
 
         var response = new DiscordResponse<string>();
 
-        var user = await userManagerService.GetLicenseByLicenseAsync(License!);
+        var user = await userManagerService.GetLicenseByValueAsync(Guid.Parse(License!));
         if (user == null) return Results.BadRequest();
 
         if (user.DiscordUser == null)
@@ -153,10 +158,10 @@ public static class CustomerController
                 return Results.Json(response);
             }
 
-        var newHwid = new Hwid(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
+        var newHwid = new HwidDto(cpu: filteredInput[0], bios: filteredInput[1], ram: filteredInput[2],
             disk: filteredInput[3], display: filteredInput[4]);
 
-        await userManagerService.AssignLicenseHwidAsync(License.ToString(), newHwid);
+        await sessionTokenService.CreateLicenseSession(user.Id,null, 1);
 
         response.Result = "Success!";
         return Results.Json(response);

@@ -14,6 +14,7 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 namespace Authentication.Services.Authentication.AuthorizeResult;
 
 public class AuthorizeResultService(
+    IValidator<TokenRequest> validator,
     ICodeStorageService codeStoreService,
     IAcessTokenStorageService acessTokenStorageService,
     IClientService clientService
@@ -115,8 +116,8 @@ public class AuthorizeResultService(
 
 
     public async Task<Tuple<TokenResponse?, ErrorTypeEnum?>> GenerateToken(HttpContext httpContext,
-        [FromServices] DevKeys devKeys,
-        IValidator<TokenRequest> validator)
+        [FromServices] DevKeys devKeys
+    )
     {
         var form = httpContext.Request.Form;
 
