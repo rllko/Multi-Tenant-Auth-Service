@@ -116,25 +116,25 @@ public class AuthorizeResultService(
 
         var request = new TokenRequest
         {
-            client_id = form["client_id"]!,
-            client_secret = form["client_secret"]!,
-            code = form["code"]!,
-            grant_type = form["grant_type"]!
+            ClientId = form["client_id"]!,
+            ClientSecret = form["client_secret"]!,
+            Code = form["code"]!,
+            GrantType = form["grant_type"]!
         };
 
-        var checkClientResult = VerifyClientById(request.client_id, true, request.client_secret);
+        var checkClientResult = VerifyClientById(request.ClientId, true, request.ClientSecret);
         if (!checkClientResult.IsSuccess)
             return new TokenResponse
                 { Error = checkClientResult.Error!, ErrorDescription = checkClientResult.ErrorDescription! };
 
         // check code from the Concurrent Dictionary
-        var clientCodeChecker = _codeStoreService.GetClientByCode(request.code);
+        var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code);
         if (clientCodeChecker == null)
             return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
         // check if the current client who is one made this authentication request
 
-        if (request.client_id != clientCodeChecker.ClientIdentifier)
+        if (request.ClientId != clientCodeChecker.ClientIdentifier)
             return new TokenResponse { Error = ErrorTypeEnum.InvalidClient.GetEnumDescription() };
 
 
@@ -149,7 +149,7 @@ public class AuthorizeResultService(
             {
                 Claims = new Dictionary<string, object>
                 {
-                    [JwtRegisteredClaimNames.Sub] = request.client_id,
+                    [JwtRegisteredClaimNames.Sub] = request.ClientId,
                     [JwtRegisteredClaimNames.Aud] = IdentityData.Audience,
                     [JwtRegisteredClaimNames.Iss] = IdentityData.Issuer,
                     [JwtRegisteredClaimNames.Iat] = DateTime.Now.Second,
@@ -166,17 +166,17 @@ public class AuthorizeResultService(
             id_token = handler.WriteToken(token);
         }
 
-        var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.code));
+        var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.Code));
 
         // here remove the code from the Concurrent Dictionary
-        _codeStoreService.RemoveClientByCode(Guid.Parse(request.code));
+        _codeStoreService.RemoveClientByCode(Guid.Parse(request.Code));
 
         var tokenResponse = new TokenResponse
         {
             RequestedScopes = string.Join(" ", clientCodeChecker.RequestedScopes),
             AccessToken = access_token ?? null,
             IdToken = id_token ?? null,
-            Code = request.code
+            Code = request.Code
         };
 
         return tokenResponse;
