@@ -65,11 +65,27 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         return license;
     }
 
-    // genuinely i dont know why we would use this, the only thing that you can change is discord :shrug:
+    /// <summary>
+    ///     Update discord most likely
+    /// </summary>
+    /// <param name="license"></param>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
     public async Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license,
         IDbTransaction? transaction = null)
     {
-        throw new NotImplementedException();
+        var validationResult = await validator.ValidateAsync(license);
+        if (!validationResult.IsValid) return new ValidationFailed(validationResult.Errors);
+
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var addDiscordIdQuery =
+            @"UPDATE licenses
+	        SET discord = @Discord WHERE id = @SessionId returning *";
+
+        var updatedLicense =
+            await connection.QuerySingleAsync<License>(addDiscordIdQuery, new { license }, transaction);
+        return updatedLicense;
     }
 
     public async Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null)
@@ -83,20 +99,16 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         return affectedRows1 > 0;
     }
 
-    public async Task<bool> UpdateLicenseListAsync(
-        ulong oldDiscordId,
-        List<License> licenses,
-        ulong? newDiscordId = null,
+    public async Task<Either<bool, ValidationFailed>> UpdateLicenseListAsync(
+        IEnumerable<License> licenses,
         IDbTransaction? transaction = null)
     {
-#warning remember to finish this
-
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        const string addDiscordIdQuery = @"DELETE FROM public.licenses WHERE id = @id;";
-        // var affectedRows1 =
-        //   await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
+        var transactional = transaction ?? connection.BeginTransaction();
+        // yikes, improve later
+        foreach (var license in licenses) await UpdateLicenseAsync(license, transactional);
+
         return true;
-        //return affectedRows1 > 0;
     }
 }

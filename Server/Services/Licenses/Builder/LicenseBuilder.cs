@@ -1,7 +1,7 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Models;
 using Authentication.Models.Entities;
+using Authentication.Services.CodeService;
 using Authentication.Validators;
 using Dapper;
 using FluentValidation;
@@ -9,8 +9,43 @@ using LanguageExt;
 
 namespace Authentication.Services.Licenses.Builder;
 
-public class LicenseBuilder(IDbConnectionFactory connectionFactory, IValidator<License> validator) : ILicenseBuilder
+public class LicenseBuilder(
+    IDbConnectionFactory connectionFactory,
+    IValidator<License> validator,
+    ICodeStorageService codeStorageService) : ILicenseBuilder
 {
+    public async Task<IEnumerable<string>> CreateLicenseInBulk(int amount)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var transaction = connection.BeginTransaction();
+
+        var licenses = new string[amount];
+        for (var i = 0; i < amount; i++)
+        {
+            var license = await CreateLicenseAsync(transaction: transaction);
+            licenses[i] = license.Value.ToString();
+        }
+
+        transaction.Commit();
+
+        return licenses.AsEnumerable();
+    }
+
+    public async Task<Either<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(
+        License license)
+    {
+        // validate object sent by the user
+        var validationResult = await validator.ValidateAsync(license);
+        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+
+        // get license from code
+        var discordCodeResult = codeStorageService.CreateDiscordCode(license.Id);
+        if (discordCodeResult is null) return false;
+
+        return true;
+    }
+
     public async Task<License> CreateLicenseAsync(long? discordId = null, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -19,30 +54,5 @@ public class LicenseBuilder(IDbConnectionFactory connectionFactory, IValidator<L
         var newLicense = await connection.QueryFirstAsync<License>(query, transaction: transaction);
 
         return newLicense;
-    }
-
-    public async Task<List<License>> CreateLicenseInBulk(int amount)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var transaction = connection.BeginTransaction();
-
-        Span<License> licenses = stackalloc License[amount];
-        for (var i = 0; i < amount; i++)
-        {
-            var license = await CreateLicenseAsync(transaction: transaction);
-            licenses[i] = license;
-        }
-    }
-
-    public async Task<License?> ConfirmLicenseRegistrationAsync(string license, long discord, string? email = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<Either<DiscordCode, LicenseValidator.ValidationFailed>> CreateLicenseRegistrationCodeAsync(
-        License license)
-    {
-        throw new NotImplementedException();
     }
 }

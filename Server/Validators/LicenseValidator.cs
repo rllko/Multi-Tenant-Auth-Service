@@ -1,6 +1,5 @@
 using Authentication.Models.Entities;
 using FluentValidation;
-using FluentValidation.Results;
 
 namespace Authentication.Validators;
 
@@ -10,13 +9,11 @@ public class LicenseValidator : AbstractValidator<License>
     {
         RuleFor(x => x.DiscordUser)
             .NotNull()
-            .WithMessage("Please specify a valid license");
+            .WithMessage(x => $"License {x.Value} is not active");
     }
 
     private static bool BeValid(License license)
     {
         return license.Hw is null && license.DiscordUser is not null;
     }
-
-    public record ValidationFailed(IEnumerable<ValidationFailure> Errors);
 }

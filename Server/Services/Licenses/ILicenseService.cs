@@ -14,7 +14,8 @@ public interface ILicenseService
     Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null);
     Task<IEnumerable<License>> GetAllLicensesAsync();
 
-    Task<bool> UpdateLicenseListAsync(ulong oldDiscordId, List<License> licenses, ulong? newDiscordId = null,
+    Task<Either<bool, ValidationFailed>> UpdateLicenseListAsync(
+        IEnumerable<License> licenses,
         IDbTransaction? transaction = null);
 
     Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);

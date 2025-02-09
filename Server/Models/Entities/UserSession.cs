@@ -6,8 +6,11 @@ namespace Authentication.Models.Entities;
 public record UserSession(
     int SessionId,
     Guid AuthorizationToken,
+    Hwid Hwid,
+    long HwidId,
+    long LicenseId,
     License License,
     string IpAddress,
     DateTime Expiration,
-    DateTime IssuedAt,
+    DateTime CreatedAt,
     DateTime? RefreshedAt);

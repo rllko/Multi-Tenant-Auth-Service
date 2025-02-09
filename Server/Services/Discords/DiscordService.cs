@@ -68,8 +68,8 @@ public class DiscordService(
 
         var existingDiscordUser = await GetByIdAsync(discordCode.discordId);
 
+        // add discord to database
         if (existingDiscordUser is null)
-            // add discord to database
             await CreateUserAsync(discordCode.discordId, transaction);
 
         // update redeemed license

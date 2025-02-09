@@ -36,7 +36,7 @@ public class HwidService(IValidator<HwidDto> validator, IDbConnectionFactory con
     /// <param name="hwidDto">Hwid to check</param>
     /// <returns>a valid hwid</returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task<Either<List<Hwid>, ValidationFailed>> GetHwidByDtoAsync(HwidDto hwidDto)
+    public async Task<Either<IEnumerable<Hwid>, ValidationFailed>> GetHwidByDtoAsync(HwidDto hwidDto)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -47,7 +47,7 @@ public class HwidService(IValidator<HwidDto> validator, IDbConnectionFactory con
         const string query = @"SELECT * FROM hwids WHERE cpu = @cpu and bios = @bios;";
         var results = await connection.QueryMultipleAsync(query);
 
-        var hwids = await results.ReadAsync<Hwid>();
+        IEnumerable<Hwid> hwids = await results.ReadAsync<Hwid>();
         return hwids.ToList();
     }
 
