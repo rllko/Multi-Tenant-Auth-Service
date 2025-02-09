@@ -94,7 +94,7 @@ public class PersistenceMiddleware(RequestDelegate next, IHost host)
         // var identity = new ClaimsIdentity(claims, "PersistenceType");
         // var claimsPrincipal = new ClaimsPrincipal(identity);
         //
-        // context.User = claimsPrincipal;
+        // context.License = claimsPrincipal;
         // // context.Items["user"] = user;
         //
         // // Permission handling is taken care by each endpoint

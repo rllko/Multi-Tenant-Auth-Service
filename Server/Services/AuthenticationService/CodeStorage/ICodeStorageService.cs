@@ -1,4 +1,6 @@
 ﻿using Authentication.Models;
+using Authentication.Models.Entities.Discord;
+using DiscordCode = Authentication.Models.Entities.Discord.DiscordCode;
 
 namespace Authentication.Services.CodeService;
 

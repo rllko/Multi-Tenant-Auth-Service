@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using Authentication.Common;
 using Authentication.Models;
+using Authentication.Models.Entities.Discord;
+using DiscordCode = Authentication.Models.DiscordCode;
 
 namespace Authentication.Services.CodeService;
 
@@ -40,13 +42,13 @@ public class CodeStorageService : ICodeStorageService
 
         // if (ExistingUser is null) return null;
 
-        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.User.License == license);
+        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.License.License == license);
 
         // if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
         //
         // var tempClient = new DiscordCode
         // {
-        //     User = ExistingUser
+        //     License = ExistingUser
         // };
 
         var code = EncodingFunctions.GetUniqueKey(20);
@@ -57,16 +59,17 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public DiscordCode? GetUserByCode(string code)
+    public Models.Entities.Discord.DiscordCode? GetUserByCode(string code)
     {
+        /*
         Console.WriteLine(_discordCodeIssued.Select(x => $"{x.Key} -> {x.Value}"));
         if (_discordCodeIssued.TryGetValue(code, out var userCode))
         {
-            if (userCode.isExpired) return null;
+            if (userCode.IsExpired) return null;
 
             return userCode;
         }
-
+        */
         return null;
     }
 

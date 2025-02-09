@@ -31,6 +31,7 @@ public static class EncodingFunctions
         return result.ToString();
     }
 
+
     public static SecurityTokenDescriptor? GenerateSecurityTokenDescriptor(License user, DevKeys keys)
     {
         // const int ExpireDays = 7;

@@ -13,6 +13,8 @@
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.35"/>
         <PackageReference Include="dbup-postgresql" Version="6.0.0-beta.44"/>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0-preview1"/>
+        <PackageReference Include="LanguageExt.Core" Version="5.0.0-beta-46"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
@@ -50,7 +52,6 @@
         <None Remove="Database\Scripts\000003 - create_licenses_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000003 - create_licenses_table.up.sql"/>
         <None Remove="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
         <None Remove="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>

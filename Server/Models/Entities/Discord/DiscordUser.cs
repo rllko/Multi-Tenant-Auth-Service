@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Authentication.Models.Entities;
+namespace Authentication.Models.Entities.Discord;
 
 [Table("discords")]
 public class DiscordUser
@@ -14,5 +14,5 @@ public class DiscordUser
     public required DateTime DateLinked { get; set; }
 
     [InverseProperty("DiscordUserNavigation")]
-    public virtual ICollection<License> Users { get; set; } = new List<License>();
+    public virtual ICollection<License> Licenses { get; set; } = new List<License>();
 }
