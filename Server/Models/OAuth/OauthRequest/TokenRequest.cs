@@ -1,12 +1,5 @@
-﻿namespace Authentication.OauthRequest;
+﻿using Authentication.Validators.Authentication;
 
-public class TokenRequest
-{
-    public required string? client_id { get; set; }
-    public required string client_secret { get; set; }
-    public required string code { get; set; }
-    public required string grant_type { get; set; }
+namespace Authentication.OauthRequest;
 
-    public string? RedirectUri { get; set; } = null;
-    //public required string CodeVerifier { get; set; }
-}
+public record TokenRequest(string ClientId, string ClientSecret,string Code, string GrantType);

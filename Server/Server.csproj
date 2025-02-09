@@ -56,6 +56,14 @@
         <EmbeddedResource Include="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000007 - create_clients_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000007 - create_clients_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000008 - create_scopes_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000008 - create_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000010 - insert_auth_data.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000010 - insert_auth_data.sql" />
     </ItemGroup>
 
 </Project>
