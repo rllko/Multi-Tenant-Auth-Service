@@ -1,14 +1,12 @@
 ﻿using Authentication.Models;
-using DiscordCode = Authentication.Models.Entities.Discord.DiscordCode;
 
 namespace Authentication.Services.Authentication.CodeStorage;
 
 public interface ICodeStorageService
 {
-    string? CreateAuthorizationCode(AuthorizationCodeRequest authorizationCodeRequest);
+    Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest);
 
-    string? CreateDiscordCode(long license);
+    Task<string?> CreateDiscordCodeAsync(long license);
     AuthorizationCodeRequest? GetClientByCode(string key);
-    DiscordCode? GetUserByCode(string code);
-    bool RemoveClientByCode(Guid key);
+    DiscordCode? GetDiscordCode(string code);
 }

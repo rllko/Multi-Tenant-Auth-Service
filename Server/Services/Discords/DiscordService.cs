@@ -57,7 +57,7 @@ public class DiscordService(
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // get license from code
-        var discordCodeResult = codeStorageService.GetUserByCode(discordCode.code);
+        var discordCodeResult = codeStorageService.GetDiscordCode(discordCode.code);
         if (discordCodeResult is null) return false;
 
         // create Connection
@@ -73,7 +73,7 @@ public class DiscordService(
             await CreateUserAsync(discordCode.discordId, transaction);
 
         // update redeemed license
-        var redeemedLicense = discordCodeResult.UserLicense;
+        var redeemedLicense = discordCodeResult.License;
         redeemedLicense.Discord = discordCode.discordId;
 
         // persist changes

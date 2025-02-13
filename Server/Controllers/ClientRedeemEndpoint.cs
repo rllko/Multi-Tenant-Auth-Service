@@ -34,7 +34,7 @@ public class ClientRedeemEndpoint
 
         if (user.DiscordUser != null) return Results.Json(new { Error = "Key is already confirmed." });
 
-        // var discordCode = codeStorage.CreateDiscordCode(dbContext, License!);
+        // var discordCode = codeStorage.CreateDiscordCodeAsync(dbContext, License!);
 
         return Results.Json(new { Error = "none", Result = 0 });
     }

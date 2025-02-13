@@ -24,7 +24,7 @@ public class ConfirmDiscordEndpoint
             return Results.Json(response);
         }
 
-        var userFromCode = codeStorage.GetUserByCode(code.ToString());
+        var userFromCode = codeStorage.GetDiscordCode(code.ToString());
 
         if (userFromCode == null)
         {

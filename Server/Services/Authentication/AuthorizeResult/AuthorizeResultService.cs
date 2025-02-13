@@ -47,7 +47,7 @@ public class AuthorizeResultService(
             CodeChallengeMethod = authorizeRequest.CodeChallengeMethod
         };
 
-        var code = _codeStoreService.CreateAuthorizationCode(authoCode);
+        var code = await _codeStoreService.CreateAuthorizationCodeAsync(authoCode);
 
         if (code == null)
         {

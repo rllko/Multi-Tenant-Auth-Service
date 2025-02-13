@@ -26,23 +26,22 @@ public class AcessTokenStorageService : IAcessTokenStorageService
 
         if (client is null) return null;
 
-        var accessToken = new AccessToken
-        {
-            ClientIdentifier = client.ClientIdentifier,
-            ClientSecret = client.ClientSecret!,
-            CreationTime = DateTime.UtcNow,
-            RequestedScopes = client.RequestedScopes,
-            Subject = client.Subject,
-            CodeChallenge = client.CodeChallenge!,
-            CodeChallengeMethod = client.CodeChallengeMethod!
-        };
+        // var accessToken = new AccessToken
+        // {
+        //     ClientIdentifier = client.ClientIdentifier,
+        //     CreationTime = DateTime.UtcNow,
+        //     RequestedScopes = client.RequestedScopes,
+        //     Subject = client.Subject,
+        //     CodeChallenge = client.CodeChallenge!,
+        //     CodeChallengeMethod = client.CodeChallengeMethod!
+        // };
 
         var code = Guid.NewGuid();
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(30));
 
-        _tokenCache.Set(code, accessToken, cacheEntryOptions);
+        //_tokenCache.Set(code, accessToken, cacheEntryOptions);
 
         return code.ToString();
     }

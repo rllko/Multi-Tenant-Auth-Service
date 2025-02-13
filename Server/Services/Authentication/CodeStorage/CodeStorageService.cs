@@ -1,127 +1,86 @@
-﻿using System.Collections.Concurrent;
-using Authentication.Common;
+﻿using Authentication.Common;
 using Authentication.Models;
-using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.Discords;
+using Authentication.Services.Licenses;
 using Microsoft.Extensions.Caching.Memory;
 using DiscordCode = Authentication.Models.DiscordCode;
 
-namespace Authentication.Services.CodeService;
+namespace Authentication.Services.Authentication.CodeStorage;
 
-public class CodeStorageService(IDiscordService discordService) : ICodeStorageService
+public class CodeStorageService : ICodeStorageService
 {
     //private readonly MemoryCache  _authorizeCodeIssued;
     private readonly MemoryCache _authorizeCodeIssued;
-    private readonly ConcurrentDictionary<string, AuthorizationCodeRequest> _authorizeCodeIssued = new();
-    private readonly ConcurrentDictionary<string, DiscordCode> _discordCodeIssued = new();
+    private readonly IClientService _clientService;
+    private readonly MemoryCache _discordCodeIssued;
 
-    public CodeStorageService()
+    private readonly ILicenseService _licenseService;
+
+    public CodeStorageService(ILicenseService licenseService, IClientService clientService)
     {
+        _licenseService = licenseService;
+        _clientService = clientService;
         var cacheOptions = new MemoryCacheOptions
         {
-            ExpirationScanFrequency = TimeSpan.FromMinutes(10)
+            ExpirationScanFrequency = TimeSpan.FromMinutes(1)
         };
         _authorizeCodeIssued = new MemoryCache(cacheOptions);
+        _discordCodeIssued = new MemoryCache(cacheOptions);
     }
 
-    public string? CreateDiscordCode(long license)
+    public async Task<string?> CreateDiscordCodeAsync(long licenseId)
     {
-        var ExistingUser = discordService._dbContext.Users.Where(x => x.License == license).FirstOrDefault();
+        var targetLicense = await _licenseService.GetLicenseByIdAsync(licenseId);
 
-        // if (ExistingUser is null) return null;
+        if (targetLicense is null) return null;
 
-        // var ExistingCode = _discordCodeIssued.FirstOrDefault(x => x.Value.License.License == license);
-
-        // if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
-        //
         var tempClient = new DiscordCode
         {
-            License = ExistingUser
+            License = targetLicense
         };
 
+        var existingCode = (DiscordCode)_discordCodeIssued.Get(tempClient)!;
+
+        if (existingCode.ExpirationTime < DateTime.Now) return existingCode.Code;
+
         var code = EncodingFunctions.GetUniqueKey(20);
+        existingCode.Code = code;
+
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
 
         // then store the code is the Concurrent Dictionary
-        _discordCodeIssued[code] = tempClient;
-
+        _discordCodeIssued.Set(code, tempClient, cacheEntryOptions);
         return code;
     }
 
-    public Models.Entities.Discord.DiscordCode? GetUserByCode(string code)
+    public DiscordCode? GetDiscordCode(string code)
     {
-        if (_discordCodeIssued.TryGetValue(code, out var userCode))
-        {
-            if (userCode.IsExpired) return null;
-            return userCode;
-        }
-
-        return null;
+        _discordCodeIssued.TryGetValue(code, out DiscordCode? userCode);
+        _discordCodeIssued.Remove(code);
+        return userCode;
     }
 
     public AuthorizationCodeRequest? GetClientByCode(string key)
     {
-        if (_authorizeCodeIssued.TryGetValue(key, out var authorizationCode))
-        {
-            if (authorizationCode.IsExpired) return null;
-            return authorizationCode;
-        }
-
-        return null;
+        _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? authorizationCode);
+        _authorizeCodeIssued.Remove(key);
+        return authorizationCode;
     }
 
-    public bool RemoveClientByCode(Guid key)
+    public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
-        return _authorizeCodeIssued.TryRemove(key.ToString(), out _);
-    }
+        var client = await _clientService.GetClientByIdentifierAsync(authorizationCodeRequest.ClientIdentifier!);
 
-    public string? CreateAuthorizationCode(string? clientIdentifier,
-        AuthorizationCodeRequest authorizationCodeRequest)
-    {
-        // var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
-
-        // if (client is null) return null;
-
-        var ExistingCode = _authorizeCodeIssued.FirstOrDefault(x => x.Value.ClientIdentifier == clientIdentifier);
-
-        if (ExistingCode.Value != null) return ExistingCode.Key;
+        if (client is null) return null;
 
         var code = Guid.NewGuid().ToString();
 
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromSeconds(30));
+
         // then store the code is the Concurrent Dictionary
-        _authorizeCodeIssued[code] = authorizationCodeRequest;
+        _authorizeCodeIssued.Set(code, authorizationCodeRequest, cacheEntryOptions);
 
         return code;
     }
-
-
-    private void StartCleanupTask(TimeSpan cleanupInterval)
-    {
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                await Task.Delay(cleanupInterval);
-
-                if (_authorizeCodeIssued.Count > 0) // Only run if there are elements in the dictionary
-                    CleanupExpiredItems();
-            }
-        });
-    }
-
-    #region helper functions
-
-    private void CleanupExpiredItems()
-    {
-        if (_authorizeCodeIssued.IsEmpty) return; // No elements to clean up
-
-        foreach (var key in _authorizeCodeIssued.Keys)
-            if (_authorizeCodeIssued.TryGetValue(key, out var expiringValue) && expiringValue.IsExpired)
-                _authorizeCodeIssued.TryRemove(key, out _); // Remove expired items
-
-        foreach (var code in _discordCodeIssued.Keys)
-            if (_authorizeCodeIssued.TryGetValue(code, out var expiringValue) && expiringValue.IsExpired)
-                _authorizeCodeIssued.TryRemove(code, out _); // Remove expired items
-    }
-
-    #endregion
 }

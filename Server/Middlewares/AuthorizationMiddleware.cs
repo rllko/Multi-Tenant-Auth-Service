@@ -1,5 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using Authentication.Common;
 using Authentication.Endpoints;
 using Authentication.Services.CodeService;
 using Microsoft.IdentityModel.Tokens;
@@ -47,8 +46,6 @@ public class AuthorizationMiddleware
 
         var token2 = new SecurityTokenDescriptor
         {
-            Audience = IdentityData.Audience,
-            Issuer = IdentityData.Issuer,
             Expires = DateTime.Now.AddMinutes(30),
             NotBefore = DateTime.Now,
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),

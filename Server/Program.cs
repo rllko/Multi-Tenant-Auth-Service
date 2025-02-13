@@ -1,6 +1,6 @@
 using Authentication.Database;
 using Authentication.Endpoints;
-using FluentValidation;
+using FastEndpoints;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,8 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+builder.Services.AddFastEndpoints();
 
 // Add migration singleton
 builder.Services.AddSingleton(_ => new DatabaseInitializer(
@@ -135,9 +134,8 @@ app.UseWhen(
 
 //app.UseAuthentication();
 app.UseRateLimiter();
+app.UseFastEndpoints();
 //app.UseAuthorization();
-
-var oauthEndpoints = app.MapGroup("authentication");
 
 /*
 
