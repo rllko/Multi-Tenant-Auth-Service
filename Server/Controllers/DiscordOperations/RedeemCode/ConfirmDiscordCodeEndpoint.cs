@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
 
 [Authorize(Policy = "Special")]
-public class ConfirmDiscordEndpoint
+public class ConfirmDiscordCodeEndpoint
 {
     [HttpPost]
     public static async Task<IResult> Handle(HttpContext httpContext,

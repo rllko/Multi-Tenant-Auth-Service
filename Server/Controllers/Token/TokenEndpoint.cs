@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Controllers.Token;
 
-public class Token(IAuthorizeResultService authorizeService)
+public class TokenEndpoint(IAuthorizeResultService authorizeService)
     : Endpoint<TokenRequest, Results<Ok<TokenResponse>, BadRequest>>
 {
     public override void Configure()

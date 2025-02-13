@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Controllers.Authorization;
 
-public class Authorize(IAuthorizeResultService authorizeService)
+public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
     : Endpoint<AuthorizeRequest, Results<Ok<AuthorizeResponse>, BadRequest>>
 {
     public override void Configure()

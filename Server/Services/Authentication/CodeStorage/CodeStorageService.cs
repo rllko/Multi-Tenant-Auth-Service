@@ -1,5 +1,6 @@
 ﻿using Authentication.Common;
 using Authentication.Models;
+using Authentication.Models.Entities;
 using Authentication.Services.Licenses;
 using Microsoft.Extensions.Caching.Memory;
 using DiscordCode = Authentication.Models.DiscordCode;
@@ -27,23 +28,19 @@ public class CodeStorageService : ICodeStorageService
         _discordCodeIssued = new MemoryCache(cacheOptions);
     }
 
-    public async Task<string?> CreateDiscordCodeAsync(long licenseId)
+    public string CreateDiscordCodeAsync(License license)
     {
-        var targetLicense = await _licenseService.GetLicenseByIdAsync(licenseId);
-
-        if (targetLicense is null) return null;
-
         var tempClient = new DiscordCode
         {
-            License = targetLicense
+            License = license
         };
 
-        var existingCode = (DiscordCode)_discordCodeIssued.Get(tempClient)!;
+        var existingCode = _discordCodeIssued.Get<DiscordCode?>(tempClient)!;
 
-        if (existingCode.ExpirationTime < DateTime.Now) return existingCode.Code;
+        if (existingCode?.ExpirationTime < DateTime.Now) return existingCode.Code!;
 
         var code = EncodingFunctions.GetUniqueKey(20);
-        existingCode.Code = code;
+        tempClient.Code = code;
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromMinutes(30));

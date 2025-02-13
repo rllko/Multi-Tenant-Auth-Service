@@ -1,4 +1,5 @@
 ﻿using Authentication.Models;
+using Authentication.Models.Entities;
 
 namespace Authentication.Services.Authentication.CodeStorage;
 
@@ -6,7 +7,7 @@ public interface ICodeStorageService
 {
     Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest);
 
-    Task<string?> CreateDiscordCodeAsync(long license);
+    string CreateDiscordCodeAsync(License license);
     AuthorizationCodeRequest? GetClientByCode(string? key);
     DiscordCode? GetDiscordCode(string code);
 }

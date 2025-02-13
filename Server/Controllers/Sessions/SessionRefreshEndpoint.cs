@@ -5,7 +5,7 @@ using Authentication.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
-internal class ClientRefreshEndpoint
+internal class SessionRefreshEndpoint
 {
     [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys,

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
 
-public class DiscordOffsetEndpoint
+public class DiscordOffsetEndpoint_TODO
 {
     [Authorize(Policy = "Special")]
     public static async Task<IResult> HandleGet(HttpContext context, IActivityLogger logger, string filename)

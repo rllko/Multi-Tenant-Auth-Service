@@ -40,8 +40,7 @@ public class LicenseBuilder(
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // get license from code
-        var discordCodeResult = codeStorageService.CreateDiscordCodeAsync(license.Id);
-        if (discordCodeResult is null) return false;
+        var discordCodeResult = codeStorageService.CreateDiscordCodeAsync(license);
 
         return true;
     }

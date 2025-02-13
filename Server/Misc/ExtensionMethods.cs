@@ -16,23 +16,9 @@ public static class ExtensionMethods
         return description!;
     }
 
-
-    public static bool IsRedirectUriStartWithHttps(this string redirectUri)
-    {
-        if (redirectUri != null && redirectUri.StartsWith("https")) return true;
-        return false;
-    }
-
-
-    public static bool isNotUsed(this Hwid hwid)
-    {
-        return hwid.Cpu == null && hwid.Bios == null && hwid.Ram == null && hwid.Disk == null && hwid.Display == null;
-    }
-
-
     public static bool EqualsCheck(this Hwid hwid, Hwid otherHwid)
     {
-        if (hwid.isNotUsed()) return true;
+        //   if (hwid.isNotUsed()) return true;
 
         if (hwid.Bios != otherHwid.Bios || hwid.Cpu != otherHwid.Cpu) return false;
 

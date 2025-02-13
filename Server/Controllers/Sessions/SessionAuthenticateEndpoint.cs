@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints;
 
-public static class CustomerController
+public static class SessionAuthenticateEndpoint
 {
     [HttpGet("{key:guid}")]
     public static async Task<IResult> HandleGet(HttpContext context,

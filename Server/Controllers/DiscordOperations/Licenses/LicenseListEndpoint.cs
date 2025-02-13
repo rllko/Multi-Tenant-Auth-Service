@@ -2,7 +2,7 @@
 
 namespace Authentication.Endpoints.ProtectedResources.DiscordOperations;
 
-public class LicenseEndpoint
+public class LicenseListEndpoint
 {
     [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext context, ILicenseManagerService userManager, long discordId)

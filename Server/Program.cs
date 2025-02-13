@@ -153,32 +153,32 @@ oauthEndpoints.MapGet("create-bulk", CreateEndpoint.HandleBulk).RequireAuthoriza
 oauthEndpoints.MapGet("reset-hwid/{discordId:long}/{license}", ResetHwidEndpoint.Handle).RequireAuthorization();
 
 // Get License Liceses
-oauthEndpoints.MapGet("get-licenses/{discordId:long}", LicenseEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapGet("get-licenses/{discordId:long}", LicenseListEndpoint.Handle).RequireAuthorization();
 
 // Set Offsets
-oauthEndpoints.MapPost("cdn", DiscordOffsetEndpoint.HandlePost).RequireAuthorization();
+oauthEndpoints.MapPost("cdn", DiscordOffsetEndpoint_TODO.HandlePost).RequireAuthorization();
 
 // Set Offsets
-oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint.HandleGet).RequireAuthorization();
+oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint_TODO.HandleGet).RequireAuthorization();
 
 // Check Discord Code and get user info
-oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle).RequireAuthorization();
+oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordCodeEndpoint.Handle).RequireAuthorization();
 
 // Persistence Controllers
 var protectedRoutes = app.MapGroup("protected")
     .MapGet("2525546191/{filename}", OffsetsEndpoint_TODO.HandleGet); // Get Offsets
 
 // Login Sign In
-app.MapGet("1391220247", CustomerController.HandleGet);
+app.MapGet("1391220247", SessionAuthenticateEndpoint.HandleGet);
 
 // Add HWID to reset License
-app.MapPost("1391220247", CustomerController.HandlePost);
+app.MapPost("1391220247", SessionAuthenticateEndpoint.HandlePost);
 
 // Use License to obtain discord code
-app.MapPost("2198251026", ClientRedeemEndpoint.Handle);*/
+app.MapPost("2198251026", CreateDiscordCodeEndpoint.Handle);*/
 
 // Refresh user token and get offsets
-//app.MapPost("2283439600", ClientRefreshEndpoint.Handle).RequireAuthorization(); ;
+//app.MapPost("2283439600", SessionRefreshEndpoint.Handle).RequireAuthorization(); ;
 
 
 app.MapGet("/", ctx =>
