@@ -1,7 +1,6 @@
 using System.Data;
 using Authentication.Endpoints;
 using Authentication.Models.Entities;
-using LanguageExt;
 
 namespace Authentication.Services.Licenses.Builder;
 
@@ -11,5 +10,5 @@ public interface ILicenseBuilder
 
     Task<IEnumerable<License>> CreateLicenseInBulk(int amount, ulong? discordId = null);
 
-    Task<Either<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license);
+    Task<Result<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license);
 }

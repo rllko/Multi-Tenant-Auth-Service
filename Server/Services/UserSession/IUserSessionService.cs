@@ -5,7 +5,7 @@ using LanguageExt;
 
 namespace Authentication.Services.SessionToken;
 
-public interface ISessionTokenService
+public interface IUserSessionService
 {
     Task<UserSession?> GetSessionByIdAsync(long id);
     Task<UserSession?> GetSessionByLicenseAsync(string licenseId);

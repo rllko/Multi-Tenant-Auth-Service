@@ -8,8 +8,8 @@ using LanguageExt;
 
 namespace Authentication.Services.SessionToken;
 
-public class SessionTokenService(IDbConnectionFactory connectionFactory, IValidator<UserSession> validator)
-    : ISessionTokenService
+public class UserSessionService(IDbConnectionFactory connectionFactory, IValidator<UserSession> validator)
+    : IUserSessionService
 {
     public async Task<UserSession?> GetSessionByIdAsync(long id)
     {

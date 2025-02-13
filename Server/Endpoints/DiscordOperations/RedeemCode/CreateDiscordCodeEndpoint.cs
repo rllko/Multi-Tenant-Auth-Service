@@ -1,51 +1,61 @@
 ﻿using Authentication.Common;
-using Authentication.OauthResponse;
-using Authentication.Services.Authentication.CodeStorage;
+using Authentication.Services.Licenses;
+using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
-public class CreateDiscordCodeEndpoint : EndpointWithoutRequest
+public class CreateDiscordCodeEndpoint(ILicenseBuilder licenseBuilder, ILicenseService licenseService)
+    : Endpoint<Result<Ok, ValidationFailed>>
 {
     public override void Configure()
     {
-        base.Configure();
+#warning add authentication
+        AllowFormData();
+        Post("/protected/redeem-code");
     }
 
-    public override Task HandleAsync(CancellationToken ct)
+
+    public override async Task<Result<Ok, BadRequest<ValidationFailed>>> HandleAsync(Result<Ok, ValidationFailed> req,
+        CancellationToken ct)
     {
-        return base.HandleAsync(ct);
-    }
-
-    public static async Task<IResult> Handle(HttpContext httpContext,
-        [FromServices] ILicenseManagerService userManagerService,
-        ICodeStorageService codeStorage)
-    {
-        var Request = httpContext.Request;
-
-        Request.Form.TryGetValue("3917505287", out var License);
-
-        if (string.IsNullOrEmpty(License) || License.ToString().Length < 36)
+        if (HttpContext.Request.Form.TryGetValue("license", out var licenseValue) is false)
         {
-            await httpContext.Response.WriteAsJsonAsync(new
-                { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
-            return Results.NotFound();
+            await SendUnauthorizedAsync(ct);
+            var error = new ValidationFailure("error", "Invalid license ID");
+            return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
-        var user = await userManagerService.GetLicenseByLicenseAsync(License!);
+        var actualValue = Guider.ToGuidFromString(licenseValue.ToString());
+
+        var user = await licenseService.GetLicenseByValueAsync(actualValue);
 
         if (user == null)
         {
-            await httpContext.Response.WriteAsJsonAsync(new
-                { Error = ErrorTypeEnum.InvalidRequest.GetEnumDescription() });
-            return Results.BadRequest();
+            var error = new ValidationFailure("error", "Invalid license ID");
+            return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
-        if (user.DiscordUser != null) return Results.Json(new { Error = "Key is already confirmed." });
+        if (user.Discord != null)
+        {
+            var error = new ValidationFailure("error",
+                "Key is already confirmed.");
+            return TypedResults.BadRequest(new ValidationFailed(error));
+        }
 
-        var discordCode = codeStorage.CreateDiscordCodeAsync(License!);
+        var discordCode = await licenseBuilder.CreateLicenseRegistrationCodeAsync(user);
 
-        return Results.Json(new { Error = "none", Result = 0 });
+        var response = discordCode.Match<IResult>(
+            code => TypedResults.Ok(code),
+            fail => TypedResults.BadRequest(fail.Errors));
+
+        return response switch
+        {
+            Ok result => result,
+            BadRequest<ValidationFailed> badRequest => badRequest,
+            _ => throw new NotImplementedException()
+        };
     }
 }

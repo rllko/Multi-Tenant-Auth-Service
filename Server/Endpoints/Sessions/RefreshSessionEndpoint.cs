@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Authentication.Endpoints.Sessions;
 
-internal class SessionRefreshEndpoint
+internal class RefreshSessionEndpoint
 {
     [Authorize(Policy = "Special")]
     internal static async Task<IResult> Handle(HttpContext httpContext, DevKeys keys,

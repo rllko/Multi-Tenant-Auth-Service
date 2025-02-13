@@ -5,13 +5,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
-public record DiscordCodeRequest
-{
-    [FromBody] public string Code { get; set; }
-
-    [FromBody] public ulong DiscordId { get; set; }
-}
-
 [Authorize(Policy = "Special")]
 public class ConfirmDiscordCodeEndpoint(IDiscordService discordService)
     : Endpoint<RedeemDiscordCodeDto, Result<Ok, BadRequest>>
@@ -19,7 +12,7 @@ public class ConfirmDiscordCodeEndpoint(IDiscordService discordService)
     public override void Configure()
     {
         AllowFormData();
-        Post("/protected/redeem-code");
+        Put("/protected/redeem-code");
     }
 
     public override async Task<Result<Ok, BadRequest>> HandleAsync(RedeemDiscordCodeDto codeRequest,

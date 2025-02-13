@@ -5,7 +5,6 @@ using Authentication.Models.Entities;
 using Authentication.Services.Authentication.CodeStorage;
 using Dapper;
 using FluentValidation;
-using LanguageExt;
 
 namespace Authentication.Services.Licenses.Builder;
 
@@ -14,7 +13,7 @@ public class LicenseBuilder(
     IValidator<License> validator,
     ICodeStorageService codeStorageService) : ILicenseBuilder
 {
-    public async Task<Either<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(
+    public async Task<Result<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(
         License license)
     {
         // validate object sent by the user

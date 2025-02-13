@@ -47,9 +47,10 @@ public class HwidService(IValidator<HwidDto> validator, IDbConnectionFactory con
         const string query = @"SELECT * FROM hwids WHERE cpu = @cpu and bios = @bios;";
         var results = await connection.QueryMultipleAsync(query);
 
-        IEnumerable<Hwid> hwids = await results.ReadAsync<Hwid>();
+        var hwids = await results.ReadAsync<Hwid>();
         return hwids.ToList();
     }
+
 
     public async Task<bool> DeleteHwidAsync(long id, IDbTransaction? transaction = null)
     {
