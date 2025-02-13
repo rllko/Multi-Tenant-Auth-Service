@@ -1,7 +1,7 @@
 ﻿using Authentication.Common;
+using Authentication.Controllers.Authorization;
 using Authentication.Models;
-using Authentication.OauthRequest;
-using Authentication.Services.Interfaces;
+using Authentication.Services.Authentication.AuthorizeResult;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints.OAuth;
@@ -31,18 +31,18 @@ internal static class AuthorizationController
             return Results.Json(new ExceptionResponse("Invalid Fields given"));
 
 
-        var authorizationRequest = new AuthorizationRequest
+        var authorizationRequest = new AuthorizeRequest
         {
-            response_type = responseType!,
-            client_id = clientId!,
-            code_challenge = codeChallenge!,
-            code_challenge_method = codeChallengeMethod!,
+            ResponseType = responseType!,
+            ClientId = clientId!,
+            CodeChallenge = codeChallenge!,
+            CodeChallengeMethod = codeChallengeMethod!,
             scope = scope!,
-            state = state!
+            State = state!
         };
 
 
-        var result = authorizeResultService.AuthorizeRequest(httpContext, authorizationRequest);
+        var result = authorizeResultService.AuthorizeRequestAsync(httpContext, authorizationRequest);
 
         if (result.HasError)
         {

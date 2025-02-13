@@ -1,44 +1,32 @@
 ﻿using System.Collections.Concurrent;
 using Authentication.Common;
 using Authentication.Models;
-using Authentication.Models.Entities.Discord;
+using Authentication.Services.Authentication.CodeStorage;
+using Authentication.Services.Discords;
+using Microsoft.Extensions.Caching.Memory;
 using DiscordCode = Authentication.Models.DiscordCode;
 
 namespace Authentication.Services.CodeService;
 
-public class CodeStorageService : ICodeStorageService
+public class CodeStorageService(IDiscordService discordService) : ICodeStorageService
 {
     //private readonly MemoryCache  _authorizeCodeIssued;
-    private readonly ConcurrentDictionary<string, AuthorizationCode> _authorizeCodeIssued = new();
+    private readonly MemoryCache _authorizeCodeIssued;
+    private readonly ConcurrentDictionary<string, AuthorizationCodeRequest> _authorizeCodeIssued = new();
     private readonly ConcurrentDictionary<string, DiscordCode> _discordCodeIssued = new();
 
     public CodeStorageService()
     {
-        StartCleanupTask(TimeSpan.FromMinutes(5));
-    }
-
-    public string? CreateAuthorizationCode(string? clientIdentifier,
-        AuthorizationCode authorizationCode)
-    {
-        // var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
-
-        // if (client is null) return null;
-
-        var ExistingCode = _authorizeCodeIssued.FirstOrDefault(x => x.Value.ClientIdentifier == clientIdentifier);
-
-        if (ExistingCode.Value != null) return ExistingCode.Key;
-
-        var code = Guid.NewGuid().ToString();
-
-        // then store the code is the Concurrent Dictionary
-        _authorizeCodeIssued[code] = authorizationCode;
-
-        return code;
+        var cacheOptions = new MemoryCacheOptions
+        {
+            ExpirationScanFrequency = TimeSpan.FromMinutes(10)
+        };
+        _authorizeCodeIssued = new MemoryCache(cacheOptions);
     }
 
     public string? CreateDiscordCode(long license)
     {
-        // var ExistingUser = _dbContext.Users.Where(x => x.License == license).FirstOrDefault();
+        var ExistingUser = discordService._dbContext.Users.Where(x => x.License == license).FirstOrDefault();
 
         // if (ExistingUser is null) return null;
 
@@ -46,34 +34,31 @@ public class CodeStorageService : ICodeStorageService
 
         // if (ExistingCode.Key != null && !ExistingCode.Value.isExpired) return ExistingCode.Key;
         //
-        // var tempClient = new DiscordCode
-        // {
-        //     License = ExistingUser
-        // };
+        var tempClient = new DiscordCode
+        {
+            License = ExistingUser
+        };
 
         var code = EncodingFunctions.GetUniqueKey(20);
 
         // then store the code is the Concurrent Dictionary
-        // _discordCodeIssued[code] = tempClient;
+        _discordCodeIssued[code] = tempClient;
 
         return code;
     }
 
     public Models.Entities.Discord.DiscordCode? GetUserByCode(string code)
     {
-        /*
-        Console.WriteLine(_discordCodeIssued.Select(x => $"{x.Key} -> {x.Value}"));
         if (_discordCodeIssued.TryGetValue(code, out var userCode))
         {
             if (userCode.IsExpired) return null;
-
             return userCode;
         }
-        */
+
         return null;
     }
 
-    public AuthorizationCode? GetClientByCode(string key)
+    public AuthorizationCodeRequest? GetClientByCode(string key)
     {
         if (_authorizeCodeIssued.TryGetValue(key, out var authorizationCode))
         {
@@ -87,6 +72,25 @@ public class CodeStorageService : ICodeStorageService
     public bool RemoveClientByCode(Guid key)
     {
         return _authorizeCodeIssued.TryRemove(key.ToString(), out _);
+    }
+
+    public string? CreateAuthorizationCode(string? clientIdentifier,
+        AuthorizationCodeRequest authorizationCodeRequest)
+    {
+        // var client = _dbContext.Clients.Where(x => x.ClientIdentifier == clientIdentifier).FirstOrDefault();
+
+        // if (client is null) return null;
+
+        var ExistingCode = _authorizeCodeIssued.FirstOrDefault(x => x.Value.ClientIdentifier == clientIdentifier);
+
+        if (ExistingCode.Value != null) return ExistingCode.Key;
+
+        var code = Guid.NewGuid().ToString();
+
+        // then store the code is the Concurrent Dictionary
+        _authorizeCodeIssued[code] = authorizationCodeRequest;
+
+        return code;
     }
 
 

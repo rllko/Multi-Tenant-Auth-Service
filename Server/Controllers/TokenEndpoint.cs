@@ -1,6 +1,5 @@
-﻿using Authentication.Common;
-using Authentication.Services;
-using Authentication.Services.Interfaces;
+﻿using Authentication.Services;
+using Authentication.Services.Authentication.AuthorizeResult;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints.OAuth;

@@ -1,13 +1,12 @@
-﻿using Authentication.OauthRequest;
-using Authentication.OauthResponse;
-using Microsoft.AspNetCore.Mvc;
+﻿using Authentication.Controllers.Authorization;
+using Authentication.Validators;
 
-namespace Authentication.Services.Interfaces;
+namespace Authentication.Services.Authentication.AuthorizeResult;
 
 public interface IAuthorizeResultService
 {
-    Task<AuthorizeResponse> AuthorizeRequest(HttpContext httpContextAccessor,
-        AuthorizationRequest authorizationRequest);
+    Task<Result<AuthorizeResponse, ValidationFailed>> AuthorizeRequestAsync(HttpContext httpContextAccessor,
+        AuthorizeRequest authorizeRequest);
 
-    Task<Tuple<TokenResponse?, ErrorTypeEnum?>> GenerateToken(HttpContext context, [FromServices] DevKeys devKeys);
+    // Task<Result<TokenResponse?, ErrorTypeEnum?>> GenerateToken(TokenRequest tokenRequest);
 }

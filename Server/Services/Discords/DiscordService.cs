@@ -1,7 +1,7 @@
 using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities.Discord;
-using Authentication.Services.CodeService;
+using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Licenses;
 using Authentication.Validators;
 using Dapper;

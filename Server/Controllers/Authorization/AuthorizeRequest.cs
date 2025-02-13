@@ -1,0 +1,37 @@
+﻿using FastEndpoints;
+
+namespace Authentication.Controllers.Authorization;
+
+public class AuthorizeRequest
+{
+    /// <summary>
+    ///     Response Type, is required
+    /// </summary>
+    [BindFrom("response_type")]
+    public string? ResponseType { get; init; }
+
+    /// <summary>
+    ///     Client Id, is required
+    /// </summary>
+    [BindFrom("client_id")]
+    public string? ClientId { get; init; }
+
+    /// <summary>
+    ///     Return the State in the result
+    ///     if it was present in the client authorization request
+    /// </summary>
+    [BindFrom("state")]
+    public string? State { get; init; }
+
+    /// <summary>
+    ///     if is not null so the client use Pkce
+    /// </summary>
+    [BindFrom("code_challenge")]
+    public string? CodeChallenge { get; init; }
+
+    /// <summary>
+    ///     Hasher type for <see cref="CodeChallenge" />
+    /// </summary>
+    [BindFrom("code_challenge_method")]
+    public string? CodeChallengeMethod { get; init; }
+}

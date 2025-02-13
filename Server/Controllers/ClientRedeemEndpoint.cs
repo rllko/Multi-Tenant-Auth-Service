@@ -1,7 +1,6 @@
 ﻿using Authentication.Common;
 using Authentication.OauthResponse;
-using Authentication.Services.CodeService;
-using Authentication.Services.Users;
+using Authentication.Services.Authentication.CodeStorage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints;

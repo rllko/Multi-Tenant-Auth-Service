@@ -1,4 +1,4 @@
-﻿using Authentication.Services.CodeService;
+﻿using Authentication.Services.Authentication.CodeStorage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

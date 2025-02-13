@@ -1,7 +1,7 @@
 using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities;
-using Authentication.Services.CodeService;
+using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Validators;
 using Dapper;
 using FluentValidation;

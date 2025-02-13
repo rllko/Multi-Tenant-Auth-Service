@@ -1,17 +1,13 @@
-using System.Threading.RateLimiting;
-using Authentication.Common;
 using Authentication.Database;
 using Authentication.Endpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
@@ -70,26 +66,6 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 //
 //     x.MapInboundClaims = false;
 // });
-
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    options.AddFixedWindowLimiter("fixed", rateLimiterOptions =>
-    {
-        rateLimiterOptions.PermitLimit = 6;
-        rateLimiterOptions.Window = TimeSpan.FromSeconds(10);
-        rateLimiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        rateLimiterOptions.QueueLimit = 5;
-    });
-});
-
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("Special", policy =>
-        policy.RequireAssertion(context =>
-            context.User.HasClaim(c => c.Type == "Scope" &&
-                                       (c.Value == "admin" || c.Value == "license:write")
-                                       && c.Issuer == IdentityData.Issuer)));
 
 // var connectionString = builder.Configuration["BaseDBConnection"];
 // builder.Controllers.AddDbContext<AuthenticationDbContext>(options => { options.UseNpgsql(connectionString); },
@@ -160,13 +136,10 @@ app.UseWhen(
 //app.UseAuthentication();
 app.UseRateLimiter();
 //app.UseAuthorization();
-app.MapControllers();
 
 var oauthEndpoints = app.MapGroup("authentication");
 
 /*
-// Entities Authorization Endpoint
-oauthEndpoints.MapGet("authorize", AuthorizationController.Handle);
 
 // Entities AuthorizationToken Endpoint
 

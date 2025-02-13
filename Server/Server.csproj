@@ -13,7 +13,7 @@
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.35"/>
         <PackageReference Include="dbup-postgresql" Version="6.0.0-beta.44"/>
-        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0-preview1"/>
+        <PackageReference Include="FastEndpoints" Version="5.34.0"/>
         <PackageReference Include="LanguageExt.Core" Version="5.0.0-beta-46"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1"/>
@@ -42,6 +42,7 @@
 
     <ItemGroup>
         <Folder Include="Files\"/>
+        <Folder Include="keys\"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -56,14 +57,14 @@
         <EmbeddedResource Include="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
-        <None Remove="Database\Scripts\oauth\000007 - create_clients_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\oauth\000007 - create_clients_table.up.sql" />
-        <None Remove="Database\Scripts\oauth\000008 - create_scopes_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\oauth\000008 - create_scopes_table.up.sql" />
-        <None Remove="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql" />
-        <None Remove="Database\Scripts\oauth\000010 - insert_auth_data.sql" />
-        <EmbeddedResource Include="Database\Scripts\oauth\000010 - insert_auth_data.sql" />
+        <None Remove="Database\Scripts\oauth\000007 - create_clients_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\oauth\000007 - create_clients_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000008 - create_scopes_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\oauth\000008 - create_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000010 - insert_auth_data.sql"/>
+        <EmbeddedResource Include="Database\Scripts\oauth\000010 - insert_auth_data.sql"/>
     </ItemGroup>
 
 </Project>
