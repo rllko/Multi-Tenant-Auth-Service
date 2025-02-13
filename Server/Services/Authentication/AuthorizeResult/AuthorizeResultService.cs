@@ -1,5 +1,6 @@
 ﻿using Authentication.Common;
 using Authentication.Controllers.Authorization;
+using Authentication.Controllers.Token;
 using Authentication.Models;
 using Authentication.Models.Entities.OAuth;
 using Authentication.OauthResponse;
@@ -13,6 +14,7 @@ namespace Authentication.Services.Authentication.AuthorizeResult;
 
 public class AuthorizeResultService(
     IValidator<AuthorizeRequest> validator,
+    IValidator<TokenRequest> tokenRequestValidator,
     ICodeStorageService codeStoreService,
     IAcessTokenStorageService acessTokenStorageService,
     IClientService clientService,
@@ -65,72 +67,32 @@ public class AuthorizeResultService(
         };
     }
 
-    /*
-    public async Task<Result<TokenResponse?, ErrorTypeEnum?>> GenerateToken(
-        TokenRequest tokenRequest
-    )
+    public async Task<Result<TokenResponse, ValidationFailed>> GenerateToken(TokenRequest tokenRequest)
     {
-        // verify with the github, i dont know anymore
-        checkClientResult.Match(
-            r => { return r; },
-            s => { return s; });
-        if (checkClientResult.Item2 is not null)
-            return checkClientResult.Item2;
+        var validationResult = await tokenRequestValidator.ValidateAsync(tokenRequest);
+        if (!validationResult.IsValid)
+            return new ValidationFailed(validationResult.Errors);
 
+        // add validator here
         // check code from the Concurrent Dictionary
-        var clientCodeChecker = _codeStoreService.GetClientByCode(request.Code!);
+        var clientCodeChecker = _codeStoreService.GetClientByCode(tokenRequest.code.ToString());
         if (clientCodeChecker == null)
-            return ErrorTypeEnum.InvalidClient;
-
-        // check if the current client who is one made this authentication request
-
-        if (request.ClientId != clientCodeChecker.ClientIdentifier)
-            return ErrorTypeEnum.InvalidClient;
-
-        // Now here I will Issue the Id_token
-        var handler = new JwtSecurityTokenHandler();
-
-        string? id_token = null;
-        if (clientCodeChecker.IsOpenId)
         {
-            var key = new RsaSecurityKey(devKeys.RsaSignKey);
-            var token = handler.CreateJwtSecurityToken(new SecurityTokenDescriptor
-            {
-                Claims = new Dictionary<string, object>
-                {
-                    [JwtRegisteredClaimNames.Sub] = request.ClientId!,
-                    [JwtRegisteredClaimNames.Aud] = IdentityData.Audience,
-                    [JwtRegisteredClaimNames.Iss] = IdentityData.Issuer,
-                    [JwtRegisteredClaimNames.Iat] = DateTime.Now.Second,
-                    ["Scope"] = clientCodeChecker.RequestedScopes,
-                    [JwtRegisteredClaimNames.Exp] = DateTime.Now.AddMinutes(15) - DateTime.Now,
-                    [JwtRegisteredClaimNames.Nickname] = clientCodeChecker.Subject
-                },
-                Expires = DateTime.Now.AddMinutes(15),
-                IssuedAt = DateTime.Now,
-                TokenType = "JWT",
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
-            });
-
-            id_token = handler.WriteToken(token);
+            var error = new ValidationFailure(
+                ErrorTypeEnum.InvalidClient.GetEnumDescription(),
+                "Invalid client");
+            return new ValidationFailed(error);
         }
 
-        var access_token = _acessTokenStorageService.Generate(Guid.Parse(request.Code));
-
-        // here remove the code from the Concurrent Dictionary
-        _codeStoreService.RemoveClientByCode(Guid.Parse(request.Code));
+        var accessToken = _acessTokenStorageService.Generate(tokenRequest.code!);
 
         var tokenResponse = new TokenResponse
         {
-            RequestedScopes = string.Join(" ", clientCodeChecker.RequestedScopes),
-            AccessToken = access_token ?? null,
-            IdToken = id_token ?? null,
-            Code = request.Code
+            AccessToken = accessToken ?? null
         };
 
         return tokenResponse;
     }
-    */
 
     private async Task<Client?> VerifyClientById(string clientIdentifier,
         bool checkWithSecret = false,

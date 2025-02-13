@@ -1,3 +1,5 @@
+using Authentication.Common;
+using Authentication.OauthResponse;
 using FastEndpoints;
 using FluentValidation;
 
@@ -10,19 +12,19 @@ public class AuthorizeRequestValidation : Validator<AuthorizeRequest>
         RuleFor(x => x.ClientId)
             .NotEmpty()
             .WithName("error")
-            .WithMessage("some fields are required");
+            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
 
         RuleFor(x => x.ResponseType)
             .NotEmpty()
             .WithName("error")
-            .WithMessage("some fields are required")
+            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription())
             .Matches("/code/")
             .WithMessage("invalid response type");
 
         RuleFor(x => x.CodeChallenge)
             .NotEmpty()
             .WithName("error")
-            .WithMessage("some fields are required");
+            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
 
         RuleFor(x => x.State)
             .NotEmpty()
@@ -33,13 +35,11 @@ public class AuthorizeRequestValidation : Validator<AuthorizeRequest>
 
         RuleFor(x => x.CodeChallenge).NotEmpty()
             .WithName("error")
-            .WithMessage("some fields are required")
-            .WithMessage("invalid code challenge");
+            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
 
         RuleFor(x => x.CodeChallengeMethod)
             .NotEmpty()
             .WithName("error")
-            .WithMessage("some fields are required")
-            .WithMessage("invalid code challenge_method");
+            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
     }
 }

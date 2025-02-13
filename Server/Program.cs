@@ -134,7 +134,7 @@ app.UseWhen(
 
 //app.UseAuthentication();
 app.UseRateLimiter();
-app.UseFastEndpoints();
+app.UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
 //app.UseAuthorization();
 
 /*
@@ -166,7 +166,7 @@ oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordEndpoint.Handle)
 
 // Persistence Controllers
 var protectedRoutes = app.MapGroup("protected")
-    .MapGet("2525546191/{filename}", OffsetsEndpoint.HandleGet); // Get Offsets
+    .MapGet("2525546191/{filename}", OffsetsEndpoint_TODO.HandleGet); // Get Offsets
 
 // Login Sign In
 app.MapGet("1391220247", CustomerController.HandleGet);

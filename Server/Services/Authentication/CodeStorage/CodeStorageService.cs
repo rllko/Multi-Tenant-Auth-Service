@@ -53,18 +53,16 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
+    public AuthorizationCodeRequest? GetClientByCode(string? key)
+    {
+        throw new NotImplementedException();
+    }
+
     public DiscordCode? GetDiscordCode(string code)
     {
         _discordCodeIssued.TryGetValue(code, out DiscordCode? userCode);
         _discordCodeIssued.Remove(code);
         return userCode;
-    }
-
-    public AuthorizationCodeRequest? GetClientByCode(string key)
-    {
-        _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? authorizationCode);
-        _authorizeCodeIssued.Remove(key);
-        return authorizationCode;
     }
 
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
@@ -82,5 +80,12 @@ public class CodeStorageService : ICodeStorageService
         _authorizeCodeIssued.Set(code, authorizationCodeRequest, cacheEntryOptions);
 
         return code;
+    }
+
+    public AuthorizationCodeRequest? GetClientByCode(Guid key)
+    {
+        _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? authorizationCode);
+        _authorizeCodeIssued.Remove(key);
+        return authorizationCode;
     }
 }

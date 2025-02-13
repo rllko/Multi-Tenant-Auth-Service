@@ -1,8 +1,9 @@
 ﻿using Authentication.Models;
 using Authentication.Services.Authentication.CodeStorage;
+using Authentication.Services.CodeService;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Authentication.Services.CodeService;
+namespace Authentication.Services.Authentication.OAuthAccessToken;
 
 public class AcessTokenStorageService : IAcessTokenStorageService
 {

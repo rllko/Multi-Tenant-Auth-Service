@@ -7,7 +7,7 @@ using NSec.Cryptography;
 namespace Authentication.Endpoints.ProtectedResources.PersistenceOperations;
 
 [Authorize]
-public class OffsetsEndpoint
+public class OffsetsEndpoint_TODO
 {
     public static async Task<IResult> HandleGet(
         HttpContext context, IActivityLogger logger,

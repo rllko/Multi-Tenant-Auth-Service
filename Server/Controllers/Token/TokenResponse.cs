@@ -13,18 +13,11 @@ public class TokenResponse
     ///// <summary>
     ///// OpenId Connect
     ///// </summary>
-    public string? IdToken { get; set; } = null;
+    public DateTime? ExpiresIn { get; set; } = DateTime.Now.AddMinutes(30);
 
     /// <summary>
     ///     By default is Bearer
     /// </summary>
 
     public string TokenType { get; init; } = TokenTypeEnum.Bearer.GetEnumDescription();
-
-    /// <summary>
-    ///     Authorization Code. This is always returned when using the Hybrid Flow.
-    /// </summary>
-    public string? Code { get; set; }
-
-    public string? RequestedScopes { get; set; }
 }
