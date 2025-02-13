@@ -1,5 +1,4 @@
-using Authentication.Controllers.Authorization;
-using Authentication.Models.Entities.OAuth;
+using Authentication.Endpoints.Authorization;
 
 namespace Authentication.Services.Authentication;
 

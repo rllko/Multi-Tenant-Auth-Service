@@ -1,18 +1,19 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints;
+using Authentication.Endpoints.DiscordOperations.RedeemCode;
 using Authentication.Models.Entities.Discord;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Licenses;
-using Authentication.Validators;
 using Dapper;
 using FluentValidation;
-using LanguageExt;
 
 namespace Authentication.Services.Discords;
 
 public class DiscordService(
     IValidator<RedeemDiscordCodeDto> validator,
     IDbConnectionFactory connectionFactory,
+    ILicenseService licenseService,
     ICodeStorageService codeStorageService) : IDiscordService
 {
     public async Task<DiscordUser?> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
@@ -48,9 +49,8 @@ public class DiscordService(
         return discordUser;
     }
 
-    public async Task<Either<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
-        RedeemDiscordCodeDto discordCode,
-        ILicenseService licenseService)
+    public async Task<Result<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
+        RedeemDiscordCodeDto discordCode)
     {
         // validate object sent by the user
         var validationResult = await validator.ValidateAsync(discordCode);

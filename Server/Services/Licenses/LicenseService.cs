@@ -1,7 +1,7 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints;
 using Authentication.Models.Entities;
-using Authentication.Validators;
 using Dapper;
 using FluentValidation;
 using LanguageExt;
@@ -10,7 +10,7 @@ namespace Authentication.Services.Licenses;
 
 public class LicenseService(IValidator<License> validator, IDbConnectionFactory connectionFactory) : ILicenseService
 {
-    public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
+    public async Task<IEnumerable<License>> GetLicensesByDiscordId(ulong discordId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 

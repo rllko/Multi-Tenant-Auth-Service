@@ -1,4 +1,4 @@
-﻿using Authentication.Models;
+﻿using Authentication.Endpoints.Token;
 
 namespace Authentication.Services.CodeService;
 

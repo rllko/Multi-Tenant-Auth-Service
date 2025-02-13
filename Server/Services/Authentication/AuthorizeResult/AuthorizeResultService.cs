@@ -1,12 +1,11 @@
 ﻿using Authentication.Common;
-using Authentication.Controllers.Authorization;
-using Authentication.Controllers.Token;
+using Authentication.Endpoints;
+using Authentication.Endpoints.Authorization;
+using Authentication.Endpoints.Token;
 using Authentication.Models;
-using Authentication.Models.Entities.OAuth;
 using Authentication.OauthResponse;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.CodeService;
-using Authentication.Validators;
 using FluentValidation;
 using FluentValidation.Results;
 

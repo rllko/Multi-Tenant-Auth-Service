@@ -1,6 +1,6 @@
 using System.Data;
+using Authentication.Endpoints;
 using Authentication.Models.Entities;
-using Authentication.Validators;
 using LanguageExt;
 
 namespace Authentication.Services.SessionToken;

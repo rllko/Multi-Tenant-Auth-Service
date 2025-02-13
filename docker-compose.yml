@@ -10,7 +10,6 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - store_database_data:/var/lib/postgresql/data
-      - keys:/app/keys
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -24,6 +23,8 @@ services:
       - "8080:8080"
     env_file:
       - docker-compose.env
+    volumes:
+      - ./keys:/app/keys
     depends_on:
       - database
       

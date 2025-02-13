@@ -1,5 +1,11 @@
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Services.Authentication.AuthorizeResult;
+using Authentication.Services.Authentication.CodeStorage;
+using Authentication.Services.Authentication.OAuthAccessToken;
+using Authentication.Services.ClientComponents;
+using Authentication.Services.CodeService;
+using Authentication.Services.Licenses;
 using FastEndpoints;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -18,17 +24,16 @@ builder.Services.AddSingleton(_ => new DatabaseInitializer(
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
-// builder.Controllers.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
-// builder.Controllers.AddSingleton<ICodeStorageService, CodeStorageService>();
-//
-// builder.Controllers.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-//
-// builder.Controllers.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
-// builder.Controllers.AddScoped<ILicenseManagerService, UserManagerService>();
-// builder.Controllers.AddScoped<IOffsetService, OffsetService>();
-// builder.Controllers.AddScoped<IActivityLogger, ActivityLogger>();
+builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
+builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
+// builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
-// builder.Controllers.AddAuthentication(x =>
+builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
+builder.Services.AddScoped<ILicenseService, LicenseService>();
+builder.Services.AddScoped<IOffsetService, OffsetService>();
+//builder.Endpoints.AddScoped<IActivityLogger, ActivityLogger>();
+
+// builder.Endpoints.AddAuthentication(x =>
 // {
 //     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 //     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,11 +70,6 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 //
 //     x.MapInboundClaims = false;
 // });
-
-// var connectionString = builder.Configuration["BaseDBConnection"];
-// builder.Controllers.AddDbContext<AuthenticationDbContext>(options => { options.UseNpgsql(connectionString); },
-//     ServiceLifetime.Transient);
-
 
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -121,87 +121,32 @@ app.UseExceptionHandler(appError =>
     });
 });
 
-// Authorization Code to Brearer Middlewares
-/*app.UseWhen(
-    context => context.Request.Headers.Authorization.Count > 0,
-    applicationBuilder => applicationBuilder.UseMiddleware<AuthorizationMiddleware>()
-);
-
-app.UseWhen(
-    context => context.Request.Path.StartsWithSegments("/protected"),
-    applicationBuilder => applicationBuilder.UseMiddleware<PersistenceMiddleware>()
-);*/
-
 //app.UseAuthentication();
-app.UseRateLimiter();
 app.UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
 //app.UseAuthorization();
 
-/*
-
-// Entities AuthorizationToken Endpoint
-
-oauthEndpoints.MapPost("token", TokenEndpoint.Handle);
-
-// Create a new License
-oauthEndpoints.MapGet("create", CreateEndpoint.Handle).RequireAuthorization();
-
-// Create multiple Licenses
-oauthEndpoints.MapGet("create-bulk", CreateEndpoint.HandleBulk).RequireAuthorization();
-
-// Reset License License
-oauthEndpoints.MapGet("reset-hwid/{discordId:long}/{license}", ResetHwidEndpoint.Handle).RequireAuthorization();
-
-// Get License Liceses
-oauthEndpoints.MapGet("get-licenses/{discordId:long}", LicenseListEndpoint.Handle).RequireAuthorization();
-
-// Set Offsets
-oauthEndpoints.MapPost("cdn", DiscordOffsetEndpoint_TODO.HandlePost).RequireAuthorization();
-
-// Set Offsets
-oauthEndpoints.MapGet("cdn/{filename}", DiscordOffsetEndpoint_TODO.HandleGet).RequireAuthorization();
-
-// Check Discord Code and get user info
-oauthEndpoints.MapPost("confirm-discord-license", ConfirmDiscordCodeEndpoint.Handle).RequireAuthorization();
-
-// Persistence Controllers
-var protectedRoutes = app.MapGroup("protected")
-    .MapGet("2525546191/{filename}", OffsetsEndpoint_TODO.HandleGet); // Get Offsets
-
-// Login Sign In
-app.MapGet("1391220247", SessionAuthenticateEndpoint.HandleGet);
-
-// Add HWID to reset License
-app.MapPost("1391220247", SessionAuthenticateEndpoint.HandlePost);
-
-// Use License to obtain discord code
-app.MapPost("2198251026", CreateDiscordCodeEndpoint.Handle);*/
-
-// Refresh user token and get offsets
-//app.MapPost("2283439600", SessionRefreshEndpoint.Handle).RequireAuthorization(); ;
-
-
 app.MapGet("/", ctx =>
-    ctx.Response.WriteAsync("""
-                            <html>
-                                <head></head>
-                                <body style="background:black">
-                                <style>
-                                *{
-                                color:white;
-                                font-size:0.7em
-                                }
-                                    img {
-                                        display: block;
-                                        margin-left: auto;
-                                        margin-right: auto;
-                                        width: 50%;
-                                    }
-                                </style>
-                                Server v1.0
-                                <img style="margin:auto" draggable="false" src='https://http.cat/418' />
-                                </body>
-                            </html>
-                            """));
+    ctx.Response.WriteAsync(
+        """
+        <html>
+            <head></head>
+            <body style="background:black">
+            <style>
+            *{
+            color:white;
+            font-size:0.7em
+            }
+                img {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    width: 50%;
+                }
+            </style>
+            Server v1.0
+            <img style="margin:auto" draggable="false" src='https://http.cat/418' />
+            </body>
+        </html>
+        """));
 
 app.Run();

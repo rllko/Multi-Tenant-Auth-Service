@@ -1,4 +1,4 @@
-﻿using Authentication.Models;
+﻿using Authentication.Endpoints.Token;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.CodeService;
 using Microsoft.Extensions.Caching.Memory;

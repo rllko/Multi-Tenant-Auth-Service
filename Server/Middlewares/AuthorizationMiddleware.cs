@@ -1,5 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using Authentication.Endpoints;
+using Authentication.Endpoints.DiscordOperations;
 using Authentication.Services.CodeService;
 using Microsoft.IdentityModel.Tokens;
 

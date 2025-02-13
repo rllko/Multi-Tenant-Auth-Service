@@ -1,4 +1,4 @@
-﻿using Authentication.Endpoints;
+﻿using Authentication.Endpoints.DiscordOperations;
 
 // using Authentication.Models.Context;
 

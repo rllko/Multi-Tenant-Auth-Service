@@ -1,7 +1,6 @@
-﻿using Authentication.Controllers.Authorization;
-using Authentication.Controllers.Token;
-using Authentication.OauthResponse;
-using Authentication.Validators;
+﻿using Authentication.Endpoints;
+using Authentication.Endpoints.Authorization;
+using Authentication.Endpoints.Token;
 
 namespace Authentication.Services.Authentication.AuthorizeResult;
 

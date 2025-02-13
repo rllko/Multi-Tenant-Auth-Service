@@ -1,8 +1,8 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Validators;
 using Dapper;
 using FluentValidation;
 using LanguageExt;
@@ -14,24 +14,6 @@ public class LicenseBuilder(
     IValidator<License> validator,
     ICodeStorageService codeStorageService) : ILicenseBuilder
 {
-    public async Task<IEnumerable<string>> CreateLicenseInBulk(int amount)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var transaction = connection.BeginTransaction();
-
-        var licenses = new string[amount];
-        for (var i = 0; i < amount; i++)
-        {
-            var license = await CreateLicenseAsync(transaction: transaction);
-            licenses[i] = license.Value.ToString();
-        }
-
-        transaction.Commit();
-
-        return licenses.AsEnumerable();
-    }
-
     public async Task<Either<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(
         License license)
     {
@@ -45,13 +27,32 @@ public class LicenseBuilder(
         return true;
     }
 
-    public async Task<License> CreateLicenseAsync(long? discordId = null, IDbTransaction? transaction = null)
+    public async Task<License> CreateLicenseAsync(ulong? discordId = null, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var query = "INSERT INTO licenses default values returning *;";
+        var query =
+            $"INSERT INTO public.licenses {(discordId is null ? "(discord)" : "")} VALUES {discordId} RETURNING *;";
         var newLicense = await connection.QueryFirstAsync<License>(query, transaction: transaction);
 
         return newLicense;
+    }
+
+    public async Task<IEnumerable<License>> CreateLicenseInBulk(int amount, ulong? discordId = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var transaction = connection.BeginTransaction();
+
+        var licenses = new License[amount];
+        for (var i = 0; i < amount; i++)
+        {
+            var license = await CreateLicenseAsync(discordId, transaction);
+            licenses[i] = license;
+        }
+
+        transaction.Commit();
+
+        return licenses.AsEnumerable();
     }
 }
