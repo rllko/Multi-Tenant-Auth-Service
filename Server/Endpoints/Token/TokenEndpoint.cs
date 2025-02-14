@@ -13,7 +13,7 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
         AllowAnonymous();
     }
 
-    public override async Task<Results<Ok<TokenResponse>, BadRequest>> HandleAsync(TokenRequest req,
+    public override async Task<Results<Ok<TokenResponse>, BadRequest>> ExecuteAsync(TokenRequest req,
         CancellationToken ct)
     {
         var result = await authorizeService.GenerateToken(req);

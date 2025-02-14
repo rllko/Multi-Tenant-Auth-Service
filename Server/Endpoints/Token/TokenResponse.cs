@@ -7,12 +7,12 @@ public class TokenResponse
     /// <summary>
     ///     Oauth 2
     /// </summary>
-    public string? AccessToken { get; set; } = null;
+    public required string AccessToken { get; set; }
 
     ///// <summary>
     ///// OpenId Connect
     ///// </summary>
-    public DateTime? ExpiresIn { get; set; } = DateTime.Now.AddMinutes(30);
+    public DateTime ExpiresIn { get; set; } = DateTime.Now.AddMinutes(30);
 
     /// <summary>
     ///     By default is Bearer

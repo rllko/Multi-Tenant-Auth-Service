@@ -11,15 +11,16 @@ public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
     {
         Get("/auth/authorize");
         AllowAnonymous();
+        DontThrowIfValidationFails();
     }
 
-    public override async Task<Results<Ok<AuthorizeResponse>, BadRequest>> HandleAsync(AuthorizeRequest req,
+    public override async Task<Results<Ok<AuthorizeResponse>, BadRequest>> ExecuteAsync(AuthorizeRequest req,
         CancellationToken ct)
     {
         var result = await authorizeService.AuthorizeRequestAsync(HttpContext, req);
         var response = result.Match<IResult>(
             authResponse => TypedResults.Ok(authResponse),
-            failed => TypedResults.BadRequest(failed.Errors));
+            failed => TypedResults.BadRequest());
 
         return response switch
         {

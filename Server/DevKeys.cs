@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using NSec.Cryptography;
 
-namespace Authentication.Services;
+namespace Authentication;
 
 public class DevKeys
 {
@@ -18,9 +18,9 @@ public class DevKeys
         }
         else
         {
-            var privatekey = RsaSignKey.ExportRSAPrivateKey();
+            var rsaPrivateKey = RsaSignKey.ExportRSAPrivateKey();
             File.WriteAllText(SignKeyName + ".pem", RsaSignKey.ExportRSAPublicKeyPem());
-            File.WriteAllBytes(SignKeyName, privatekey);
+            File.WriteAllBytes(SignKeyName, rsaPrivateKey);
         }
 
         var alg = AeadAlgorithm.ChaCha20Poly1305;

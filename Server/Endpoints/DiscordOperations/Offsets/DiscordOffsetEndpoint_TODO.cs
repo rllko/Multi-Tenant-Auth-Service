@@ -1,5 +1,5 @@
 using Authentication.Services.ActivityLogger;
-using Authentication.Services.ClientComponents;
+using Authentication.Services.Offsets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

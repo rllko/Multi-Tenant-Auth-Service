@@ -1,9 +1,7 @@
 ﻿using Authentication.Common;
 using Authentication.Models;
 using Authentication.Models.Entities;
-using Authentication.Services.Licenses;
 using Microsoft.Extensions.Caching.Memory;
-using DiscordCode = Authentication.Models.DiscordCode;
 
 namespace Authentication.Services.Authentication.CodeStorage;
 
@@ -11,15 +9,10 @@ public class CodeStorageService : ICodeStorageService
 {
     //private readonly MemoryCache  _authorizeCodeIssued;
     private readonly MemoryCache _authorizeCodeIssued;
-    private readonly IClientService _clientService;
     private readonly MemoryCache _discordCodeIssued;
 
-    private readonly ILicenseService _licenseService;
-
-    public CodeStorageService(ILicenseService licenseService, IClientService clientService)
+    public CodeStorageService()
     {
-        _licenseService = licenseService;
-        _clientService = clientService;
         var cacheOptions = new MemoryCacheOptions
         {
             ExpirationScanFrequency = TimeSpan.FromMinutes(1)
@@ -50,23 +43,25 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public AuthorizationCodeRequest? GetClientByCode(string? key)
+    public AuthorizationCodeRequest? GetClientCode(string key)
     {
-        throw new NotImplementedException();
+        _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? userCode);
+
+        return userCode;
     }
 
     public DiscordCode? GetDiscordCode(string code)
     {
         _discordCodeIssued.TryGetValue(code, out DiscordCode? userCode);
-        _discordCodeIssued.Remove(code);
         return userCode;
     }
 
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
-        var client = await _clientService.GetClientByIdentifierAsync(authorizationCodeRequest.ClientIdentifier!);
-
-        if (client is null) return null;
+#warning
+        // var client = await _clientService.GetClientByIdentifierAsync(authorizationCodeRequest.ClientIdentifier!);
+        //
+        // if (client is null) return null;
 
         var code = Guid.NewGuid().ToString();
 
@@ -75,11 +70,20 @@ public class CodeStorageService : ICodeStorageService
 
         // then store the code is the Concurrent Dictionary
         _authorizeCodeIssued.Set(code, authorizationCodeRequest, cacheEntryOptions);
-
         return code;
     }
 
-    public AuthorizationCodeRequest? GetClientByCode(Guid key)
+    public void RemoveClientCode(string key)
+    {
+        _authorizeCodeIssued.Remove(key);
+    }
+
+    public void RemoveDiscordCode(string code)
+    {
+        _discordCodeIssued.Remove(code);
+    }
+
+    public AuthorizationCodeRequest? GetClientCode(Guid key)
     {
         _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? authorizationCode);
         _authorizeCodeIssued.Remove(key);

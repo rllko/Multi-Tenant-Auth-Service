@@ -4,21 +4,20 @@ using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using Authentication.Services.Authentication.CodeStorage;
 using Dapper;
-using FluentValidation;
 
 namespace Authentication.Services.Licenses.Builder;
 
 public class LicenseBuilder(
     IDbConnectionFactory connectionFactory,
-    IValidator<License> validator,
     ICodeStorageService codeStorageService) : ILicenseBuilder
 {
     public async Task<Result<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(
         License license)
     {
+#warning this uwu, also create dto for this bruv
         // validate object sent by the user
-        var validationResult = await validator.ValidateAsync(license);
-        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+        //var validationResult = await validator.ValidateAsync(license);     IValidator<License> validator,
+        //if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // get license from code
         var discordCodeResult = codeStorageService.CreateDiscordCodeAsync(license);

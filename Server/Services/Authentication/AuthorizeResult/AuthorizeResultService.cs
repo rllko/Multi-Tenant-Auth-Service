@@ -5,7 +5,7 @@ using Authentication.Endpoints.Token;
 using Authentication.Models;
 using Authentication.OauthResponse;
 using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.CodeService;
+using Authentication.Services.Authentication.OAuthAccessToken;
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -15,13 +15,12 @@ public class AuthorizeResultService(
     IValidator<AuthorizeRequest> validator,
     IValidator<TokenRequest> tokenRequestValidator,
     ICodeStorageService codeStoreService,
-    IAcessTokenStorageService acessTokenStorageService,
-    IClientService clientService,
-    DevKeys devKeys
+    IAccessTokenStorageService accessTokenStorageService,
+    IClientService clientService
 ) : IAuthorizeResultService
 {
     // used to generate token
-    private readonly IAcessTokenStorageService _acessTokenStorageService = acessTokenStorageService;
+    private readonly IAccessTokenStorageService _accessTokenStorageService = accessTokenStorageService;
     private readonly ICodeStorageService _codeStoreService = codeStoreService;
 
     public async Task<Result<AuthorizeResponse, ValidationFailed>> AuthorizeRequestAsync(HttpContext httpContext,
@@ -29,7 +28,7 @@ public class AuthorizeResultService(
     {
         var validationResult = await validator.ValidateAsync(authorizeRequest);
         if (!validationResult.IsValid)
-            return new ValidationFailed(validationResult.Errors);
+            return new ValidationFailed(new ValidationFailure("error", "one or more fields empty"));
 
         var clientResult = await VerifyClientById(authorizeRequest.ClientId!);
 
@@ -74,7 +73,7 @@ public class AuthorizeResultService(
 
         // add validator here
         // check code from the Concurrent Dictionary
-        var clientCodeChecker = _codeStoreService.GetClientByCode(tokenRequest.code.ToString());
+        var clientCodeChecker = _codeStoreService.GetClientCode(tokenRequest.code.ToString());
         if (clientCodeChecker == null)
         {
             var error = new ValidationFailure(
@@ -83,11 +82,9 @@ public class AuthorizeResultService(
             return new ValidationFailed(error);
         }
 
-        var accessToken = _acessTokenStorageService.Generate(tokenRequest.code!);
-
         var tokenResponse = new TokenResponse
         {
-            AccessToken = accessToken ?? null
+            AccessToken = _accessTokenStorageService.Generate(tokenRequest.code!)
         };
 
         return tokenResponse;

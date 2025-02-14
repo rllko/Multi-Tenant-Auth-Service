@@ -8,6 +8,8 @@ public interface ICodeStorageService
     Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest);
 
     string CreateDiscordCodeAsync(License license);
-    AuthorizationCodeRequest? GetClientByCode(string? key);
+    AuthorizationCodeRequest? GetClientCode(string key);
+    void RemoveClientCode(string key);
     DiscordCode? GetDiscordCode(string code);
+    void RemoveDiscordCode(string code);
 }

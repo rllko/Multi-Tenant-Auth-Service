@@ -3,7 +3,7 @@ using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using LanguageExt;
 
-namespace Authentication.Services.SessionToken;
+namespace Authentication.Services.UserSessions;
 
 public interface IUserSessionService
 {

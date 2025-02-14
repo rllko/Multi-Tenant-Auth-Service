@@ -1,5 +1,3 @@
-using Authentication.Common;
-using Authentication.OauthResponse;
 using FastEndpoints;
 using FluentValidation;
 
@@ -10,36 +8,24 @@ public class AuthorizeRequestValidation : Validator<AuthorizeRequest>
     public AuthorizeRequestValidation()
     {
         RuleFor(x => x.ClientId)
-            .NotEmpty()
-            .WithName("error")
-            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
+            .NotEmpty();
 
         RuleFor(x => x.ResponseType)
             .NotEmpty()
-            .WithName("error")
-            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription())
-            .Matches("/code/")
-            .WithMessage("invalid response type");
+            .Matches("code");
 
         RuleFor(x => x.CodeChallenge)
             .NotEmpty()
-            .WithName("error")
-            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
+            .WithName("error");
 
         RuleFor(x => x.State)
             .NotEmpty()
-            .WithName("error")
-            .WithMessage("some fields are required")
-            .Matches("123456789")
-            .WithMessage("invalid client");
+            .Matches("123456789");
 
-        RuleFor(x => x.CodeChallenge).NotEmpty()
-            .WithName("error")
-            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
+        RuleFor(x => x.CodeChallenge)
+            .NotEmpty();
 
         RuleFor(x => x.CodeChallengeMethod)
-            .NotEmpty()
-            .WithName("error")
-            .WithMessage(ErrorTypeEnum.InvalidRequest.GetEnumDescription());
+            .NotEmpty();
     }
 }

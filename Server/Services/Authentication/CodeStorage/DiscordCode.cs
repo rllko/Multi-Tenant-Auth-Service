@@ -1,6 +1,6 @@
 ﻿using Authentication.Models.Entities;
 
-namespace Authentication.Models;
+namespace Authentication.Services.Authentication.CodeStorage;
 
 public class DiscordCode
 {

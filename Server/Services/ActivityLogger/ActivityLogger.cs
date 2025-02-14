@@ -8,10 +8,10 @@ public class ActivityLogger : IActivityLogger
     {
         var activityLog = new UserActivityLog
         {
-            Targetid = targetId,
+            TargetId = targetId,
             Activitytype = activityType.ToString(),
-            Ipaddress = ipAddress,
-            Interactiontime = DateTime.Now
+            IpAddress = ipAddress,
+            InteractionTime = DateTime.Now
         };
 
         // await dbContext.Useractivitylogs.AddAsync(activityLog);

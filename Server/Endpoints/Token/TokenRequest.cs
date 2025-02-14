@@ -1,10 +1,9 @@
-﻿using FastEndpoints;
-
-namespace Authentication.Endpoints.Token;
+﻿namespace Authentication.Endpoints.Token;
 
 public class TokenRequest
 {
-    [FromBody] public required Guid code { get; set; }
+    public required string client_id { get; set; }
+    public required Guid code { get; set; }
 
-    [FromBody] public required string grant_type { get; set; }
+    public required string grant_type { get; set; }
 }

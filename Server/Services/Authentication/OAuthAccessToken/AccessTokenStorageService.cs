@@ -1,16 +1,15 @@
 ﻿using Authentication.Endpoints.Token;
 using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.CodeService;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Authentication.Services.Authentication.OAuthAccessToken;
 
-public class AcessTokenStorageService : IAcessTokenStorageService
+public class AccessTokenStorageService : IAccessTokenStorageService
 {
     private readonly ICodeStorageService _codeStorageService;
     private readonly MemoryCache _tokenCache;
 
-    public AcessTokenStorageService(ICodeStorageService codeStorageService)
+    public AccessTokenStorageService(ICodeStorageService codeStorageService)
     {
         _codeStorageService = codeStorageService;
 
@@ -21,28 +20,27 @@ public class AcessTokenStorageService : IAcessTokenStorageService
         _tokenCache = new MemoryCache(cacheOptions);
     }
 
-    public string? Generate(Guid accessCode)
+    public string Generate(Guid accessCode)
     {
-        var client = _codeStorageService.GetClientByCode(accessCode.ToString());
+        var client = _codeStorageService.GetClientCode(accessCode.ToString());
 
-        if (client is null) return null;
+        if (client is null)
+            return string.Empty;
 
-        // var accessToken = new AccessToken
-        // {
-        //     ClientIdentifier = client.ClientIdentifier,
-        //     CreationTime = DateTime.UtcNow,
-        //     RequestedScopes = client.RequestedScopes,
-        //     Subject = client.Subject,
-        //     CodeChallenge = client.CodeChallenge!,
-        //     CodeChallengeMethod = client.CodeChallengeMethod!
-        // };
+        var accessToken = new AccessToken
+        {
+            ClientIdentifier = client.ClientIdentifier,
+            CreationTime = DateTime.UtcNow
+        };
+
+        _codeStorageService.RemoveClientCode(accessCode.ToString());
 
         var code = Guid.NewGuid();
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(30));
 
-        //_tokenCache.Set(code, accessToken, cacheEntryOptions);
+        _tokenCache.Set(code, accessToken, cacheEntryOptions);
 
         return code.ToString();
     }

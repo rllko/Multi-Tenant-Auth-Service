@@ -1,19 +1,20 @@
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Services;
+using Authentication.Services.Authentication;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
-using Authentication.Services.ClientComponents;
-using Authentication.Services.CodeService;
+using Authentication.Services.Discords;
 using Authentication.Services.Licenses;
+using Authentication.Services.Licenses.Builder;
+using Authentication.Services.Offsets;
 using FastEndpoints;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddSwaggerGen();
 builder.Services.AddFastEndpoints();
 
 // Add migration singleton
@@ -24,12 +25,15 @@ builder.Services.AddSingleton(_ => new DatabaseInitializer(
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
-builder.Services.AddSingleton<IAcessTokenStorageService, AcessTokenStorageService>();
-builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
-// builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 
+builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageService>();
+builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<ILicenseService, LicenseService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDiscordService, DiscordService>();
+builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
 //builder.Endpoints.AddScoped<IActivityLogger, ActivityLogger>();
 
@@ -90,11 +94,11 @@ var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>()
 await databaseInitializer.InitializeAsync();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
 
 app.UseCors(myAllowSpecificOrigins);
 

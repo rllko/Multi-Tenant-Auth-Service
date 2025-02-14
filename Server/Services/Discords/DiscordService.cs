@@ -66,11 +66,9 @@ public class DiscordService(
         // start the transaction
         using var transaction = connection.BeginTransaction();
 
-        var existingDiscordUser = await GetByIdAsync(discordCode.discordId);
-
         // add discord to database
-        if (existingDiscordUser is null)
-            await CreateUserAsync(discordCode.discordId, transaction);
+        var existingDiscordUser = await GetByIdAsync(discordCode.discordId) ??
+                                  await CreateUserAsync(discordCode!.discordId, transaction);
 
         // update redeemed license
         var redeemedLicense = discordCodeResult.License;
@@ -78,6 +76,8 @@ public class DiscordService(
 
         // persist changes
         await licenseService.UpdateLicenseAsync(redeemedLicense, transaction);
+
+        codeStorageService.RemoveClientCode(discordCode.ToString());
 
         // commit transaction
         transaction.Commit();

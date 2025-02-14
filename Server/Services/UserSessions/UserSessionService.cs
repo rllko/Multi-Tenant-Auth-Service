@@ -6,7 +6,7 @@ using Dapper;
 using FluentValidation;
 using LanguageExt;
 
-namespace Authentication.Services.SessionToken;
+namespace Authentication.Services.UserSessions;
 
 public class UserSessionService(IDbConnectionFactory connectionFactory, IValidator<UserSession> validator)
     : IUserSessionService

@@ -60,6 +60,6 @@ public class OffsetsEndpoint_TODO
             loggedUser.License.Id);
 
         // return Results.File(signature, fileDownloadName: filename);
-        return null;
+        return Results.Ok();
     }
 }
