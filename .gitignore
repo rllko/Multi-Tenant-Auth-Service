@@ -8,3 +8,4 @@
 docker-compose.env
 *.user
 Server/Database/Scripts/oauth/000010 - insert_auth_data.sql
+.env
