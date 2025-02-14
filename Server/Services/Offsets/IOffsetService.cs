@@ -1,4 +1,4 @@
-﻿namespace Authentication.Services.ClientComponents;
+﻿namespace Authentication.Services.Offsets;
 
 public interface IOffsetService
 {

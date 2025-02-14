@@ -6,7 +6,7 @@ namespace Authentication.Models.Entities.Discord;
 [Table("discords")]
 public class DiscordUser
 {
-    [Key] [Column("discord_id")] public long DiscordId { get; set; }
+    [Key] [Column("discord_id")] public ulong DiscordId { get; set; }
 
     [Column("email")] public string? Email { get; set; }
 

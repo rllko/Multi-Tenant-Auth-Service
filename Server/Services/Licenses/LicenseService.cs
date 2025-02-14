@@ -1,16 +1,15 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints;
 using Authentication.Models.Entities;
-using Authentication.Validators;
 using Dapper;
-using FluentValidation;
 using LanguageExt;
 
 namespace Authentication.Services.Licenses;
 
-public class LicenseService(IValidator<License> validator, IDbConnectionFactory connectionFactory) : ILicenseService
+public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseService
 {
-    public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
+    public async Task<IEnumerable<License>> GetLicensesByDiscordId(ulong discordId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -32,7 +31,7 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
         return license;
     }
 
-    public async Task<License?> GetLicenseByValueAsync(long licenseValue)
+    public async Task<License?> GetLicenseByValueAsync(Guid licenseValue)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -74,8 +73,9 @@ public class LicenseService(IValidator<License> validator, IDbConnectionFactory 
     public async Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license,
         IDbTransaction? transaction = null)
     {
-        var validationResult = await validator.ValidateAsync(license);
-        if (!validationResult.IsValid) return new ValidationFailed(validationResult.Errors);
+#warning here
+        //var validationResult = await validator.ValidateAsync(license);
+        //if (!validationResult.IsValid) return new ValidationFailed(validationResult.Errors);
 
         var connection = await connectionFactory.CreateConnectionAsync();
 
