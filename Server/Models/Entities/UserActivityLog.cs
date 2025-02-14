@@ -8,20 +8,20 @@ public record UserActivityLog
 {
     [Key] [Column("useractivitylogid")] public long Useractivitylogid { get; set; }
 
-    [Column("targetid")] public long? Targetid { get; set; }
+    [Column("targetid")] public long? TargetId { get; set; }
 
     [Column("ipaddress")]
     [StringLength(50)]
-    public string Ipaddress { get; set; } = null!;
+    public string IpAddress { get; set; } = null!;
 
     [Column("activitytype")]
     [StringLength(100)]
     public string Activitytype { get; set; } = null!;
 
     [Column("interactiontime", TypeName = "timestamp without time zone")]
-    public DateTime? Interactiontime { get; set; }
+    public DateTime? InteractionTime { get; set; }
 
-    [ForeignKey("Targetid")]
+    [ForeignKey("TargetId")]
     [InverseProperty("Useractivitylogs")]
     public License? Target { get; set; }
 }

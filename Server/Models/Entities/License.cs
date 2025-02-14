@@ -16,7 +16,7 @@ public class License
     [Column("creation_date", TypeName = "timestamp without time zone")]
     public required DateTime CreationDate { get; init; }
 
-    [Column("discord")] public ulong Discord { get; set; }
+    [Column("discord")] public ulong? Discord { get; set; }
 
     [ForeignKey("DiscordUser")]
     [InverseProperty("Users")]
@@ -30,4 +30,4 @@ public class License
     public ICollection<UserActivityLog> ActivityLogs { get; init; } = new List<UserActivityLog>();
 }
 
-public record LicenseDto(Guid Value, DateTime CreationDate, DiscordUser? DiscordUser);
+public record LicenseDto(string Value, DateTime CreationDate, DiscordUser? DiscordUser);

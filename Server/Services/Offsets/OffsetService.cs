@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace Authentication.Services.ClientComponents;
+namespace Authentication.Services.Offsets;
 
 public class OffsetService : IOffsetService
 {

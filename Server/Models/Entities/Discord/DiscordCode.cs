@@ -6,5 +6,3 @@ public record DiscordCode
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public bool IsExpired => DateTime.UtcNow > CreationTime.AddMinutes(30);
 }
-
-public record RedeemDiscordCodeDto(string code, ulong discordId);

@@ -23,6 +23,8 @@ services:
       - "8080:8080"
     env_file:
       - docker-compose.env
+    volumes:
+      - ./keys:/app/keys
     depends_on:
       - database
       

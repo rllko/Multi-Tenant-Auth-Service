@@ -37,10 +37,10 @@ public class Hwid
     [InverseProperty("Hw")] public virtual ICollection<License> Users { get; set; } = new List<License>();
 }
 
-public record HwidDto(string Cpu, string Bios, string Ram, string Disk, string Display)
+public record HwidDto(string cpu, string bios, string ram, string disk, string display)
 {
     public Hwid ToHwid(long id)
     {
-        return new Hwid(id, Cpu, Bios, Ram, Disk, Display);
+        return new Hwid(id, cpu, bios, ram, disk, display);
     }
 }

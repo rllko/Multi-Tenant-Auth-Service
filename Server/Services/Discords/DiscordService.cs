@@ -1,18 +1,19 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints;
+using Authentication.Endpoints.DiscordOperations.RedeemCode;
 using Authentication.Models.Entities.Discord;
-using Authentication.Services.CodeService;
+using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Licenses;
-using Authentication.Validators;
 using Dapper;
 using FluentValidation;
-using LanguageExt;
 
 namespace Authentication.Services.Discords;
 
 public class DiscordService(
     IValidator<RedeemDiscordCodeDto> validator,
     IDbConnectionFactory connectionFactory,
+    ILicenseService licenseService,
     ICodeStorageService codeStorageService) : IDiscordService
 {
     public async Task<DiscordUser?> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null)
@@ -48,16 +49,15 @@ public class DiscordService(
         return discordUser;
     }
 
-    public async Task<Either<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
-        RedeemDiscordCodeDto discordCode,
-        ILicenseService licenseService)
+    public async Task<Result<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
+        RedeemDiscordCodeDto discordCode)
     {
         // validate object sent by the user
         var validationResult = await validator.ValidateAsync(discordCode);
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // get license from code
-        var discordCodeResult = codeStorageService.GetUserByCode(discordCode.code);
+        var discordCodeResult = codeStorageService.GetDiscordCode(discordCode.code);
         if (discordCodeResult is null) return false;
 
         // create Connection
@@ -66,18 +66,18 @@ public class DiscordService(
         // start the transaction
         using var transaction = connection.BeginTransaction();
 
-        var existingDiscordUser = await GetByIdAsync(discordCode.discordId);
-
         // add discord to database
-        if (existingDiscordUser is null)
-            await CreateUserAsync(discordCode.discordId, transaction);
+        var existingDiscordUser = await GetByIdAsync(discordCode.discordId) ??
+                                  await CreateUserAsync(discordCode!.discordId, transaction);
 
         // update redeemed license
-        var redeemedLicense = discordCodeResult.UserLicense;
+        var redeemedLicense = discordCodeResult.License;
         redeemedLicense.Discord = discordCode.discordId;
 
         // persist changes
         await licenseService.UpdateLicenseAsync(redeemedLicense, transaction);
+
+        codeStorageService.RemoveClientCode(discordCode.ToString());
 
         // commit transaction
         transaction.Commit();
