@@ -3,7 +3,7 @@ using Authentication.Endpoints.Authorization;
 using Authentication.Services.Authentication;
 using Dapper;
 
-namespace Authentication.Services;
+namespace Authentication.Services.Clients;
 
 public class ClientService(IDbConnectionFactory connectionFactory) : IClientService
 {

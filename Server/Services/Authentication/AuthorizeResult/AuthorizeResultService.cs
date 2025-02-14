@@ -6,6 +6,7 @@ using Authentication.Models;
 using Authentication.OauthResponse;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
+using Authentication.Services.Clients;
 using FluentValidation;
 using FluentValidation.Results;
 

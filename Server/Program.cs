@@ -5,6 +5,7 @@ using Authentication.Services.Authentication;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
+using Authentication.Services.Clients;
 using Authentication.Services.Discords;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Builder;
