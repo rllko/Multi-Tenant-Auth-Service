@@ -16,19 +16,29 @@ services:
       timeout: 5s
       retries: 5
 
+  keygen:
+    build: ./Keygen
+    container_name: keygen_c
+    volumes:
+      - secrets:/secrets
+    restart: no
+
   server:
     build: ./Server
     container_name: auth_server_c
     ports:
       - "8080:8080"
     env_file:
-      - docker-compose.env
+      - .env
     volumes:
-      - ./keys:/app/keys
+      - secrets:/app/secrets
     depends_on:
       - database
+      - keygen
+    restart: unless-stopped
       
 volumes:
   store_database_data:
+  secrets:
 
 

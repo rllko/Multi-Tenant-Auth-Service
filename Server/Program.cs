@@ -1,7 +1,4 @@
 using Authentication.Database;
-using Authentication.Endpoints;
-using Authentication.Services;
-using Authentication.Services.Authentication;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
@@ -11,8 +8,9 @@ using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Offsets;
 using FastEndpoints;
+using FastEndpoints.Security;
 using FluentValidation;
-using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddSwaggerGen();
@@ -38,43 +36,19 @@ builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
 //builder.Endpoints.AddScoped<IActivityLogger, ActivityLogger>();
 
-// builder.Endpoints.AddAuthentication(x =>
-// {
-//     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//     x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-// }).AddJwtBearer(x =>
-// {
-//     var devKeys = new DevKeys();
-//     x.Configuration = new OpenIdConnectConfiguration
-//     {
-//         SigningKeys = { new RsaSecurityKey(devKeys.RsaSignKey) }
-//     };
-//
-//     x.TokenValidationParameters = new TokenValidationParameters
-//     {
-//         ValidateIssuerSigningKey = true,
-//         ValidateAudience = true,
-//         ValidAudience = IdentityData.Audience,
-//         ValidIssuer = IdentityData.Issuer,
-//         ValidateIssuer = true,
-//         IssuerSigningKey = new RsaSecurityKey(devKeys.RsaSignKey),
-//
-//         ValidateLifetime = true
-//     };
-//
-//     x.Events = new JwtBearerEvents
-//     {
-//         OnMessageReceived = context =>
-//         {
-//             if (context.Request.Headers.TryGetValue("Authorization", out var AuthorizationToken))
-//                 context.AuthorizationToken = AuthorizationToken;
-//             return Task.CompletedTask;
-//         }
-//     };
-//
-//     x.MapInboundClaims = false;
-// });
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+});
+
+//sets secrets, will throw if not found 
+var symmetricKey = File.ReadAllText(@"/app/secrets/symmetricKey");
+
+Environment.SetEnvironmentVariable("SYM_KEY", symmetricKey);
+Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Chacha20"));
+
+builder.Services.AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; });
 
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -91,6 +65,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseCors(myAllowSpecificOrigins);
+
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
 
@@ -101,34 +77,9 @@ await databaseInitializer.InitializeAsync();
 //     app.UseSwaggerUI();
 // }
 
-app.UseCors(myAllowSpecificOrigins);
-
-app.UseExceptionHandler(appError =>
-{
-    appError.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-
-        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-        if (contextFeature is not null)
-        {
-            Console.WriteLine($"Error: {contextFeature.Error}");
-
-            if (context.Request.Path.StartsWithSegments("/skibidiAuth"))
-                await context.Response.WriteAsJsonAsync(
-                    new ExceptionResponse
-                    (contextFeature.Error.Message,
-                        contextFeature.Error.StackTrace));
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        }
-    });
-});
-
-//app.UseAuthentication();
+app.UseAuthentication();
 app.UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
-//app.UseAuthorization();
+app.UseAuthorization();
 
 app.MapGet("/", ctx =>
     ctx.Response.WriteAsync(
