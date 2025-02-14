@@ -18,6 +18,7 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+ENV SECRET_TOKEN=/secrets/token
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Server.dll"]

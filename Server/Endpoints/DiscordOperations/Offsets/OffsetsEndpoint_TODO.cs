@@ -1,5 +1,4 @@
 ﻿using Authentication.Models.Entities;
-using Authentication.Services;
 using Authentication.Services.ActivityLogger;
 using Microsoft.AspNetCore.Authorization;
 using NSec.Cryptography;
@@ -11,7 +10,7 @@ public class OffsetsEndpoint_TODO
 {
     public static async Task<IResult> HandleGet(
         HttpContext context, IActivityLogger logger,
-        DevKeys devKeys, string filename)
+        string filename)
     {
         var response = new DiscordResponse<string>();
 
@@ -51,7 +50,6 @@ public class OffsetsEndpoint_TODO
         var data = await File.ReadAllBytesAsync(path);
 
         var alg = AeadAlgorithm.ChaCha20Poly1305;
-        var key = devKeys.ChaChaKey;
 
         // sign the data using the private key
         // var signature = alg.Encrypt(key, nonce, aad, data);
