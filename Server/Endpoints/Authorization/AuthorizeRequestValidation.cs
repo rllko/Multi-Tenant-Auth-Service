@@ -14,18 +14,8 @@ public class AuthorizeRequestValidation : Validator<AuthorizeRequest>
             .NotEmpty()
             .Matches("code");
 
-        RuleFor(x => x.CodeChallenge)
-            .NotEmpty()
-            .WithName("error");
-
         RuleFor(x => x.State)
             .NotEmpty()
             .Matches("123456789");
-
-        RuleFor(x => x.CodeChallenge)
-            .NotEmpty();
-
-        RuleFor(x => x.CodeChallengeMethod)
-            .NotEmpty();
     }
 }

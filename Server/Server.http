@@ -1,6 +1,0 @@
-# @Authentication_HostAddress = http://localhost:80
-
-# GET {{Authentication_HostAddress}}/
-# Accept: application/json
-
-# ###

@@ -1,4 +1,3 @@
-using Authentication.Models.Entities.Discord;
 using FluentValidation;
 
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
@@ -11,6 +10,6 @@ public class DiscordCodeValidator : AbstractValidator<RedeemDiscordCodeDto>
             .Null().WithMessage("Discord id is required.");
 
         RuleFor(x => x.code)
-            .Null().WithMessage("Code is required.");
+            .Null().WithMessage("AccessToken is required.");
     }
 }

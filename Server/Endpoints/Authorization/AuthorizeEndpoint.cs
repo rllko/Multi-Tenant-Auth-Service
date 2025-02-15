@@ -10,7 +10,7 @@ public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
     public override void Configure()
     {
         Get("/auth/authorize");
-        AllowAnonymous();
+        Policy(x => x.AddAuthenticationSchemes("Jwt_Or_Cookie"));
         DontThrowIfValidationFails();
     }
 

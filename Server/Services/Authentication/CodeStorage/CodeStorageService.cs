@@ -1,4 +1,5 @@
-﻿using Authentication.Common;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,7 +33,7 @@ public class CodeStorageService : ICodeStorageService
 
         if (existingCode?.ExpirationTime < DateTime.Now) return existingCode.Code!;
 
-        var code = EncodingFunctions.GetUniqueKey(20);
+        var code = GetUniqueKey(20);
         tempClient.Code = code;
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
@@ -88,5 +89,28 @@ public class CodeStorageService : ICodeStorageService
         _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? authorizationCode);
         _authorizeCodeIssued.Remove(key);
         return authorizationCode;
+    }
+
+    public static string GetUniqueKey(int size)
+    {
+        var chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+
+        var data = new byte[4 * size];
+        using (var crypto = RandomNumberGenerator.Create())
+        {
+            crypto.GetBytes(data);
+        }
+
+        var result = new StringBuilder(size);
+        for (var i = 0; i < size; i++)
+        {
+            var rnd = BitConverter.ToUInt32(data, i * 4);
+            var idx = rnd % chars.Length;
+
+            result.Append(chars[idx]);
+        }
+
+        return result.ToString();
     }
 }

@@ -20,7 +20,7 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
 
         var response = result.Match<IResult>(
             token => TypedResults.Ok(token),
-            failed => TypedResults.BadRequest(failed.Errors));
+            failed => TypedResults.BadRequest());
 
         return response switch
         {

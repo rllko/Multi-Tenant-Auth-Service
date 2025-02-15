@@ -8,3 +8,5 @@ CREATE TABLE user_sessions
     created_at          TIMESTAMP   DEFAULT NOW(),
     refreshed_at        TIMESTAMP   DEFAULT NULL -- for when people do a PUT to the /licenses/uuid with the current token
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS access_token_index on user_sessions (authorization_token);

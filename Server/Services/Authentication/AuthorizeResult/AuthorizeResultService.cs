@@ -43,9 +43,7 @@ public class AuthorizeResultService(
 
         var authoCode = new AuthorizationCodeRequest
         {
-            ClientIdentifier = clientResult.ClientIdentifier,
-            CodeChallenge = authorizeRequest.CodeChallenge,
-            CodeChallengeMethod = authorizeRequest.CodeChallengeMethod
+            ClientIdentifier = clientResult.ClientIdentifier
         };
 
         var code = await _codeStoreService.CreateAuthorizationCodeAsync(authoCode);
@@ -60,7 +58,7 @@ public class AuthorizeResultService(
 
         return new AuthorizeResponse
         {
-            Code = code,
+            AccessToken = code,
             Issuer = "rikko",
             State = authorizeRequest.State
         };
