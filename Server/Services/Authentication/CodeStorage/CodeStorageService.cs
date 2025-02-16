@@ -1,7 +1,10 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Authentication.Database;
+using Authentication.Endpoints.Authorization;
 using Authentication.Models;
 using Authentication.Models.Entities;
+using Dapper;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Authentication.Services.Authentication.CodeStorage;
@@ -10,10 +13,12 @@ public class CodeStorageService : ICodeStorageService
 {
     //private readonly MemoryCache  _authorizeCodeIssued;
     private readonly MemoryCache _authorizeCodeIssued;
+    private readonly IDbConnectionFactory _connectionFactory;
     private readonly MemoryCache _discordCodeIssued;
 
-    public CodeStorageService()
+    public CodeStorageService(IDbConnectionFactory connectionFactory)
     {
+        _connectionFactory = connectionFactory;
         var cacheOptions = new MemoryCacheOptions
         {
             ExpirationScanFrequency = TimeSpan.FromMinutes(1)
@@ -44,13 +49,6 @@ public class CodeStorageService : ICodeStorageService
         return code;
     }
 
-    public AuthorizationCodeRequest? GetClientCode(string key)
-    {
-        _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? userCode);
-
-        return userCode;
-    }
-
     public DiscordCode? GetDiscordCode(string code)
     {
         _discordCodeIssued.TryGetValue(code, out DiscordCode? userCode);
@@ -60,9 +58,14 @@ public class CodeStorageService : ICodeStorageService
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
 #warning
-        // var client = await _clientService.GetClientByIdentifierAsync(authorizationCodeRequest.ClientIdentifier!);
-        //
-        // if (client is null) return null;
+
+        var connection = await _connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM clients WHERE client_identifier = @identifier;";
+
+        var client = await
+            connection.QuerySingleAsync<Client>(getDiscordIdQuery,
+                new { identifier = authorizationCodeRequest.ClientIdentifier });
 
         var code = Guid.NewGuid().ToString();
 
@@ -82,6 +85,13 @@ public class CodeStorageService : ICodeStorageService
     public void RemoveDiscordCode(string code)
     {
         _discordCodeIssued.Remove(code);
+    }
+
+    public bool GetClientCode(string key, out AuthorizationCodeRequest? clientCode)
+    {
+        var found = _authorizeCodeIssued.TryGetValue(key, out AuthorizationCodeRequest? userCode);
+        clientCode = userCode;
+        return found;
     }
 
     public AuthorizationCodeRequest? GetClientCode(Guid key)

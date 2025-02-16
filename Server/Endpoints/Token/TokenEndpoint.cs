@@ -11,6 +11,7 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
     {
         Post("auth/token");
         AllowAnonymous();
+        EnableAntiforgery();
     }
 
     public override async Task<Results<Ok<TokenResponse>, BadRequest>> ExecuteAsync(TokenRequest req,

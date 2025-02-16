@@ -10,8 +10,9 @@ public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
     public override void Configure()
     {
         Get("/auth/authorize");
-        Policy(x => x.AddAuthenticationSchemes("Jwt_Or_Cookie"));
         DontThrowIfValidationFails();
+        AllowAnonymous();
+        EnableAntiforgery();
     }
 
     public override async Task<Results<Ok<AuthorizeResponse>, BadRequest>> ExecuteAsync(AuthorizeRequest req,
