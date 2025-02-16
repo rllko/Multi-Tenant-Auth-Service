@@ -7,11 +7,9 @@ namespace Authentication.Services.Discords;
 
 public interface IDiscordService
 {
-    Task<DiscordUser?> CreateUserAsync(ulong discordUserId, IDbTransaction? transaction = null);
+    Task<DiscordUser> CreateUserAsync(long discordUserId, IDbTransaction? transaction = null);
     Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null);
-    Task<DiscordUser?> GetByIdAsync(ulong Id);
+    Task<DiscordUser?> GetByIdAsync(long id);
 
-    Task<Result<bool, ValidationFailed>> ConfirmLicenseRegistrationAsync(
-        RedeemDiscordCodeDto discordCode
-    );
+    Task<Result<string, ValidationFailed>> ConfirmLicenseRegistrationAsync(RedeemDiscordCodeDto discordCode);
 }

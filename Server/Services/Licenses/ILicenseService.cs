@@ -7,7 +7,7 @@ namespace Authentication.Services.Licenses;
 
 public interface ILicenseService
 {
-    Task<IEnumerable<License>> GetLicensesByDiscordId(ulong discordId);
+    Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId);
     Task<License?> GetLicenseByIdAsync(long licenseId);
     Task<License?> GetLicenseByValueAsync(Guid license);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
@@ -18,5 +18,5 @@ public interface ILicenseService
         IEnumerable<License> licenses,
         IDbTransaction? transaction = null);
 
-    Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
+    Task<License?> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
 }

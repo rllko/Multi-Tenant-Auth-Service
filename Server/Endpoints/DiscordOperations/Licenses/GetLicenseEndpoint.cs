@@ -9,13 +9,13 @@ public class GetLicenseEndpoint(ILicenseService licenseService) : EndpointWithou
 {
     public override void Configure()
     {
-#warning add authentication bruh
+        AuthSchemes(DiscordBasicAuth.SchemeName);
         Get("/protected/licenses/{discordId}");
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var discordId = Route<ulong>("discordId");
+        var discordId = Route<long>("discordId");
         var response = new DiscordResponse<List<string>>();
 
         var userLicenses = await licenseService.GetLicensesByDiscordId(discordId);

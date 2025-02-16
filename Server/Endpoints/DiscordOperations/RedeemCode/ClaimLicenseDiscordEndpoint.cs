@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Http.HttpResults;
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
 [Authorize(Policy = "Special")]
-public class ConfirmDiscordCodeEndpoint(IDiscordService discordService)
+public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)
     : Endpoint<RedeemDiscordCodeDto, Result<Ok, BadRequest>>
 {
     public override void Configure()
     {
+        AuthSchemes(DiscordBasicAuth.SchemeName);
         AllowFormData();
         Put("/protected/redeem-code");
     }
