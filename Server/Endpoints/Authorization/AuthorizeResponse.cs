@@ -2,7 +2,7 @@
 
 public class AuthorizeResponse
 {
-    public string? Code { get; set; } = null;
+    public string? AccessToken { get; set; } = null;
     public string? State { get; set; }
 
     //public string GrantType { get; set; }

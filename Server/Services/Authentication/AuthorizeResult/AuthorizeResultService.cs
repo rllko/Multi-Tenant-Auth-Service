@@ -6,6 +6,7 @@ using Authentication.Models;
 using Authentication.OauthResponse;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
+using Authentication.Services.Clients;
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -42,9 +43,7 @@ public class AuthorizeResultService(
 
         var authoCode = new AuthorizationCodeRequest
         {
-            ClientIdentifier = clientResult.ClientIdentifier,
-            CodeChallenge = authorizeRequest.CodeChallenge,
-            CodeChallengeMethod = authorizeRequest.CodeChallengeMethod
+            ClientIdentifier = clientResult.ClientIdentifier
         };
 
         var code = await _codeStoreService.CreateAuthorizationCodeAsync(authoCode);
@@ -59,7 +58,7 @@ public class AuthorizeResultService(
 
         return new AuthorizeResponse
         {
-            Code = code,
+            AccessToken = code,
             Issuer = "rikko",
             State = authorizeRequest.State
         };
@@ -73,8 +72,8 @@ public class AuthorizeResultService(
 
         // add validator here
         // check code from the Concurrent Dictionary
-        var clientCodeChecker = _codeStoreService.GetClientCode(tokenRequest.code.ToString());
-        if (clientCodeChecker == null)
+
+        if (_codeStoreService.GetClientCode(tokenRequest.code.ToString(), out var clientCode) is false)
         {
             var error = new ValidationFailure(
                 ErrorTypeEnum.InvalidClient.GetEnumDescription(),

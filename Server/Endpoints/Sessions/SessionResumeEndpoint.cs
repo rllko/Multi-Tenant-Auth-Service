@@ -72,7 +72,7 @@
 //             return Results.BadRequest(response);
 //         }
 //
-//         // Create Handler for JWT
+//         // Create TestHandler for JWT
 //         var handler = new JwtSecurityTokenHandler();
 //
 //         // Create token to send to the user

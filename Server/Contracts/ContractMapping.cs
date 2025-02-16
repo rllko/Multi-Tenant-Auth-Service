@@ -12,10 +12,12 @@ public static class ContractMapping
 
     public static LicenseDto MapToDto(this License license)
     {
-        return new LicenseDto(
-            CreationDate: license.CreationDate,
-            DiscordUser: license.DiscordUser,
-            Value: Guider.ToStringFromGuid(license.Value)
-        );
+        return new LicenseDto
+        {
+            Email = license.Email,
+            CreationDate = license.CreationDate,
+            Discord = license.Discord,
+            Value = Guider.ToStringFromGuid(license.Value)
+        };
     }
 }

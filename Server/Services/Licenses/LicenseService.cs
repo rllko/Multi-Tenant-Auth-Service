@@ -9,14 +9,14 @@ namespace Authentication.Services.Licenses;
 
 public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseService
 {
-    public async Task<IEnumerable<License>> GetLicensesByDiscordId(ulong discordId)
+    public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE discord = @discordId;";
 
         var licenseList = await
-            connection.QueryAsync<License>(getDiscordIdQuery, new { Id = discordId });
+            connection.QueryAsync<License>(getDiscordIdQuery, new { discordId });
         return licenseList;
     }
 
@@ -70,12 +70,12 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
     /// <param name="license"></param>
     /// <param name="transaction"></param>
     /// <returns></returns>
-    public async Task<Either<License, ValidationFailed>> UpdateLicenseAsync(License license,
+    public async Task<License?> UpdateLicenseAsync(License license,
         IDbTransaction? transaction = null)
     {
-#warning here
-        //var validationResult = await validator.ValidateAsync(license);
-        //if (!validationResult.IsValid) return new ValidationFailed(validationResult.Errors);
+// #warning here, add license validator
+//         var validationResult = await validator.ValidateAsync(license);
+//         if (!validationResult.IsValid) return null;
 
         var connection = await connectionFactory.CreateConnectionAsync();
 

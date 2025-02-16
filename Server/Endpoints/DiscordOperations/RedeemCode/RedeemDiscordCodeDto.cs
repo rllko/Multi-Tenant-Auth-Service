@@ -1,9 +1,9 @@
-using FastEndpoints;
-
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
 public record RedeemDiscordCodeDto
 {
-    [FromBody] public string code { get; set; }
-    [FromBody] public ulong discordId { get; set; }
+    public string License { get; set; }
+    public long DiscordId { get; set; }
+    public string Email { get; set; }
+    public string Username { get; set; }
 }

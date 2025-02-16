@@ -8,7 +8,7 @@ public class AuthorizeRequest
     ///     Response Type, is required
     /// </summary>
     [BindFrom("response_type")]
-    public string? ResponseType { get; init; }
+    public string? ResponseType { get; init; } = "token";
 
     /// <summary>
     ///     Client Id, is required
@@ -22,16 +22,4 @@ public class AuthorizeRequest
     /// </summary>
     [BindFrom("state")]
     public string? State { get; init; }
-
-    /// <summary>
-    ///     if is not null so the client use Pkce
-    /// </summary>
-    [BindFrom("code_challenge")]
-    public string? CodeChallenge { get; init; }
-
-    /// <summary>
-    ///     Hasher type for <see cref="CodeChallenge" />
-    /// </summary>
-    [BindFrom("code_challenge_method")]
-    public string? CodeChallengeMethod { get; init; }
 }

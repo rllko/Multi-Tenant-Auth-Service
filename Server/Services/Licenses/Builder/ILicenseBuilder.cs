@@ -6,9 +6,9 @@ namespace Authentication.Services.Licenses.Builder;
 
 public interface ILicenseBuilder
 {
-    Task<License> CreateLicenseAsync(ulong? discordId = null, IDbTransaction? transaction = null);
+    Task<Result<License, ValidationFailed>> CreateLicenseAsync(long? discordId = null, string? email = null,
+        IDbTransaction? transaction = null);
 
-    Task<IEnumerable<License>> CreateLicenseInBulk(int amount, ulong? discordId = null);
-
-    Task<Result<bool, ValidationFailed>> CreateLicenseRegistrationCodeAsync(License license);
+    Task<IEnumerable<LicenseDto>> CreateLicenseInBulk(int amount, long? discordId = null,
+        IDbTransaction? transaction = null);
 }

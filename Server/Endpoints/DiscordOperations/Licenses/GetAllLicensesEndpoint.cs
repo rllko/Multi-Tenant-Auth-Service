@@ -9,7 +9,7 @@ public class GetAllLicensesEndpoint(ILicenseService licenseService) : EndpointWi
 {
     public override void Configure()
     {
-#warning add authentication bruh
+        AuthSchemes(DiscordBasicAuth.SchemeName);
         Get("/protected/licenses");
     }
 
