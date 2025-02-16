@@ -6,13 +6,8 @@ namespace Authentication.Models.Entities.Discord;
 [Table("discords")]
 public class DiscordUser
 {
-    [Key] [Column("discord_id")] public ulong DiscordId { get; set; }
-
-    [Column("email")] public string? Email { get; set; }
+    [Key] [Column("discord_id")] public long DiscordId { get; set; }
 
     [Column("date_linked", TypeName = "timestamp without time zone")]
     public required DateTime DateLinked { get; set; }
-
-    [InverseProperty("DiscordUserNavigation")]
-    public virtual ICollection<License> Licenses { get; set; } = new List<License>();
 }

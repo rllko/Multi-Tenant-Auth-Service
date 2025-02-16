@@ -1,5 +1,6 @@
 ﻿using Authentication.Endpoints.Token;
 using Authentication.Services.Authentication.CodeStorage;
+using LanguageExt.Common;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Authentication.Services.Authentication.OAuthAccessToken;
@@ -22,10 +23,8 @@ public class AccessTokenStorageService : IAccessTokenStorageService
 
     public string Generate(Guid accessCode)
     {
-        var client = _codeStorageService.GetClientCode(accessCode.ToString());
-
-        if (client is null)
-            return string.Empty;
+        if (_codeStorageService.GetClientCode(accessCode.ToString(), out var client) is false)
+            throw Exceptions.None;
 
         var accessToken = new AccessToken
         {
@@ -45,11 +44,11 @@ public class AccessTokenStorageService : IAccessTokenStorageService
         return code.ToString();
     }
 
-    public AccessToken? GetByCode(Guid code)
+    public bool GetByCode(Guid code, out AccessToken? authCode)
     {
-        return _tokenCache
-            .TryGetValue(code, out AccessToken? authorizationCode)
-            ? authorizationCode
-            : null;
+        var result = _tokenCache
+            .TryGetValue(code, out AccessToken? authorizationCode);
+        authCode = authorizationCode;
+        return result;
     }
 }

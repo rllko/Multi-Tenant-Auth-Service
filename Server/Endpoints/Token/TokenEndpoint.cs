@@ -11,6 +11,7 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
     {
         Post("auth/token");
         AllowAnonymous();
+        EnableAntiforgery();
     }
 
     public override async Task<Results<Ok<TokenResponse>, BadRequest>> ExecuteAsync(TokenRequest req,
@@ -20,7 +21,7 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
 
         var response = result.Match<IResult>(
             token => TypedResults.Ok(token),
-            failed => TypedResults.BadRequest(failed.Errors));
+            failed => TypedResults.BadRequest());
 
         return response switch
         {

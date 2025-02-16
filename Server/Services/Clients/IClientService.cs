@@ -1,6 +1,6 @@
 using Authentication.Endpoints.Authorization;
 
-namespace Authentication.Services.Authentication;
+namespace Authentication.Services.Clients;
 
 public interface IClientService
 {

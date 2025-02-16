@@ -7,3 +7,4 @@ RUN chmod +x /entrypoint.sh
 
 # Set the entrypoint and command
 ENTRYPOINT ["/entrypoint.sh"]
+    

@@ -78,6 +78,17 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
         return newUser;
     }
 
+    public async Task<UserSession?> GetSessionByAccessTokenAsync(string licenseId)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE authorization_token = @licenseId;";
+
+        var session =
+            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { licenseId });
+        return session;
+    }
+
     public async Task<LicenseDto?> GetLicenseBySessionTokenAsync(long sessionId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();

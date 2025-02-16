@@ -9,11 +9,7 @@ public class DiscordUserValidator : AbstractValidator<DiscordUser>
     {
         RuleFor(x => x.DiscordId)
             .NotNull().WithMessage("DiscordId cannot be null.")
-            .GreaterThan<DiscordUser, ulong>(100000000000000000)
+            .GreaterThan<DiscordUser, long>(100000000000000000)
             .WithMessage("Please specify a valid Discord Id");
-
-        RuleFor(x => x.Email)
-            .EmailAddress()
-            .WithMessage("Please specify a valid email address");
     }
 }

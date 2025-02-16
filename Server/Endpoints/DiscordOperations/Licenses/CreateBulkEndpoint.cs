@@ -1,5 +1,3 @@
-using Authentication.Contracts;
-using Authentication.Models.Entities;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
 
@@ -18,11 +16,11 @@ public class CreateBulkEndpoint(ILicenseBuilder licenseService) : EndpointWithou
         var amount = Query<int>("amount");
 
         var userList = await licenseService.CreateLicenseInBulk(amount);
-        var enumerable = userList as License[] ?? userList.ToArray();
-
-        await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
-        {
-            Result = enumerable.Select(x => x.MapToDto())
-        }, ct);
+        // var enumerable = userList as License[] ?? userList.ToArray();
+        //
+        // await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
+        // {
+        //     Result = enumerable.Select(x => x.MapToDto())
+        // }, ct);
     }
 }

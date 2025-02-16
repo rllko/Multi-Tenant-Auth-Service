@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="Dapper" Version="2.1.66"/>
         <PackageReference Include="dbup-postgresql" Version="6.0.0-beta.44"/>
         <PackageReference Include="FastEndpoints" Version="5.34.0.2-beta"/>
@@ -40,10 +41,6 @@
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.4.0"/>
 
         <PackageReference Include="System.Net.Http" Version="4.3.4"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="keys\"/>
     </ItemGroup>
 
     <ItemGroup>
