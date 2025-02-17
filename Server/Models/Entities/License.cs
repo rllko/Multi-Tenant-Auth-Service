@@ -11,6 +11,7 @@ public class License
     [Column("license")]
     [StringLength(150)]
     public required Guid Value { get; init; }
+
     public string? Password { get; set; }
     public string? Username { get; set; }
 
@@ -27,7 +28,7 @@ public class License
 
 public class LicenseDto
 {
-    public string Value { get; init; }
+    public required string Value { get; init; }
     public DateTime CreationDate { get; init; }
     public string? Email { get; init; }
     public long? Discord { get; init; }

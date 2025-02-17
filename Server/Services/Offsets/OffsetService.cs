@@ -19,7 +19,6 @@ public class OffsetService : IOffsetService
 
     public bool SetOffsets(string offsets)
     {
-#warning remember me to set offsets for the software components
         if (string.IsNullOrEmpty(offsets)) return false;
 
         return true;

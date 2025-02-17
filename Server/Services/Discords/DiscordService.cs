@@ -4,7 +4,6 @@ using Authentication.Database;
 using Authentication.Endpoints;
 using Authentication.Endpoints.DiscordOperations.RedeemCode;
 using Authentication.Models.Entities.Discord;
-using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Licenses;
 using Dapper;
 using FluentValidation;
@@ -13,10 +12,9 @@ using FluentValidation.Results;
 namespace Authentication.Services.Discords;
 
 public class DiscordService(
-    IValidator<RedeemDiscordCodeDto> validator,
+    IValidator<RedeemLicenseRequestDto> validator,
     IDbConnectionFactory connectionFactory,
-    ILicenseService licenseService,
-    ICodeStorageService codeStorageService) : IDiscordService
+    ILicenseService licenseService) : IDiscordService
 {
     public async Task<DiscordUser> CreateUserAsync(long discordUserId, IDbTransaction? transaction = null)
     {
@@ -65,10 +63,10 @@ public class DiscordService(
     }
 
     public async Task<Result<string, ValidationFailed>> ConfirmLicenseRegistrationAsync(
-        RedeemDiscordCodeDto discordCode)
+        RedeemLicenseRequestDto licenseRequest)
     {
         // validate object sent by the user
-        var validationResult = await validator.ValidateAsync(discordCode);
+        var validationResult = await validator.ValidateAsync(licenseRequest);
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // create Connection
@@ -78,11 +76,11 @@ public class DiscordService(
         using var transaction = connection.BeginTransaction();
 
         // add discord to database
-        var existingDiscordUser = await GetByIdAsync(discordCode.DiscordId) ??
-                                  await CreateUserAsync(discordCode!.DiscordId, transaction);
+        var existingDiscordUser = await GetByIdAsync(licenseRequest.DiscordId) ??
+                                  await CreateUserAsync(licenseRequest.DiscordId, transaction);
 
         // update redeemed license
-        var parsedLicense = Guider.ToGuidFromString(discordCode.License);
+        var parsedLicense = Guider.ToGuidFromString(licenseRequest.License);
         var redeemedLicense = await licenseService.GetLicenseByValueAsync(parsedLicense);
 
         if (redeemedLicense is null)
@@ -92,9 +90,9 @@ public class DiscordService(
             return new ValidationFailed(error);
         }
 
-        redeemedLicense.Discord = discordCode.DiscordId;
-        redeemedLicense.Email = discordCode.Email;
-        redeemedLicense.Username = discordCode.Username;
+        redeemedLicense.Discord = existingDiscordUser.DiscordId;
+        redeemedLicense.Email = licenseRequest.Email;
+        redeemedLicense.Username = licenseRequest.Username;
 
         var newPassword = PasswordHashing.GenerateRandomPassword();
         redeemedLicense.Password = PasswordHashing.HashPassword(newPassword);

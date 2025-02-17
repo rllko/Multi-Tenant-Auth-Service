@@ -7,7 +7,7 @@ namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
 [Authorize(Policy = "Special")]
 public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)
-    : Endpoint<RedeemDiscordCodeDto, Result<Ok, BadRequest>>
+    : Endpoint<RedeemLicenseRequestDto, Result<Ok, BadRequest>>
 {
     public override void Configure()
     {
@@ -16,7 +16,7 @@ public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)
         Put("/protected/redeem-code");
     }
 
-    public override async Task<Result<Ok, BadRequest>> HandleAsync(RedeemDiscordCodeDto codeRequest,
+    public override async Task<Result<Ok, BadRequest>> HandleAsync(RedeemLicenseRequestDto codeRequest,
         CancellationToken ct)
     {
         var userFromCode = await discordService.ConfirmLicenseRegistrationAsync(codeRequest);

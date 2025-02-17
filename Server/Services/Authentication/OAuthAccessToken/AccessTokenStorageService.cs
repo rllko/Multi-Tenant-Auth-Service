@@ -1,6 +1,5 @@
 ﻿using Authentication.Endpoints.Token;
 using Authentication.Services.Authentication.CodeStorage;
-using LanguageExt.Common;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Authentication.Services.Authentication.OAuthAccessToken;
@@ -24,11 +23,11 @@ public class AccessTokenStorageService : IAccessTokenStorageService
     public string Generate(Guid accessCode)
     {
         if (_codeStorageService.GetClientCode(accessCode.ToString(), out var client) is false)
-            throw Exceptions.None;
+            throw new Exception("Invalid client code");
 
         var accessToken = new AccessToken
         {
-            ClientIdentifier = client.ClientIdentifier,
+            ClientIdentifier = client!.ClientIdentifier,
             CreationTime = DateTime.UtcNow
         };
 

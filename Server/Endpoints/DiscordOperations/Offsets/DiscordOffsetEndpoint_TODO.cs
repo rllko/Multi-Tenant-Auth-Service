@@ -1,14 +1,13 @@
-using Authentication.Services.ActivityLogger;
 using Authentication.Services.Offsets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Endpoints.DiscordOperations.Offsets;
 
-public class DiscordOffsetEndpoint_TODO
+public class DiscordOffsetEndpointTodo
 {
     [Authorize(Policy = "Special")]
-    public static async Task<IResult> HandleGet(HttpContext context, IActivityLogger logger, string filename)
+    public static async Task<IResult> HandleGet(HttpContext context, string filename)
     {
         var response = new DiscordResponse<string>();
 
@@ -38,8 +37,7 @@ public class DiscordOffsetEndpoint_TODO
     [Authorize(Policy = "Special")]
     public static async Task<IResult> HandlePost(
         HttpContext context,
-        IOffsetService offsetService,
-        IActivityLogger logger)
+        IOffsetService offsetService)
     {
         var form = context.Request.Form;
         var response = new DiscordResponse<bool>();
@@ -63,10 +61,7 @@ public class DiscordOffsetEndpoint_TODO
             return Results.Json(response);
         }
 
-        var id = long.Parse(discordId!);
-
-        await logger.LogActivityAsync(ActivityType.FileUpload,
-            $" {context.Request.Headers["cf-connecting-ip"]!} and id {id}");
+        //   var id = long.Parse(discordId!);
 
         // Create a new local file and copy contents of the uploaded file
         await using var localFile = File.Create(path);

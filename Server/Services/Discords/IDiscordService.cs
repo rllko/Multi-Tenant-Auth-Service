@@ -11,5 +11,5 @@ public interface IDiscordService
     Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null);
     Task<DiscordUser?> GetByIdAsync(long id);
 
-    Task<Result<string, ValidationFailed>> ConfirmLicenseRegistrationAsync(RedeemDiscordCodeDto discordCode);
+    Task<Result<string, ValidationFailed>> ConfirmLicenseRegistrationAsync(RedeemLicenseRequestDto licenseRequest);
 }

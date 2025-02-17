@@ -9,7 +9,6 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
     public override void Configure()
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
-#warning AUTHORIZATION HERE
         Delete("/protected/{discordId}/{license}");
     }
 

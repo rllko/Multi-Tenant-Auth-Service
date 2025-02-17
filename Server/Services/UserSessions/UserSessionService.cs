@@ -64,7 +64,7 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
         return affectedRows1 > 0;
     }
 
-    public async Task<UserSession> CreateLicenseSession(long licenseId, string ipAddress, long hwidId,
+    public async Task<UserSession> CreateLicenseSession(long licenseId, string? ipAddress, long hwidId,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
