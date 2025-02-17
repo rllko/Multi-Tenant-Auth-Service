@@ -1,31 +1,26 @@
-﻿// using Authentication.Endpoints.DiscordOperations;
-// using Authentication.Models.Entities;
+﻿// using Authentication.Models.Entities;
 // using Authentication.Services.Licenses;
-// using Authentication.Services.SessionToken;
+// using Authentication.Services.UserSessions;
 // using FastEndpoints;
 //
 // namespace Authentication.Endpoints.Sessions;
 //
-// public class CreateSessionEndpoint(ILicenseService userManagerService, IUserSessionService userSessionService)
-//     : Endpoint<HwidDto,Result<>
+
+//
+// public class CreateSessionEndpoint(
+//     ILicenseService licenseService,
+//     IUserSessionService sessionService)
+//     : Endpoint<CreateSessionRequest, Result<string, ValidationFailed>>
 // {
 //     public override void Configure()
 //     {
 //         AllowFormData();
-//         Post("signin");
+//         Post("/sessions");
 //     }
 //
-//     public override Task HandleAsync(CancellationToken ct)
+//     public override Task HandleAsync(CreateSessionRequest req, CancellationToken ct)
 //     {
-//         if (httpContext.Request.Form.TryGetValue("3391056346", out var hwid) == false ||
-//             httpContext.Request.Form.TryGetValue("3917505287", out var License) == false)
-//             return Results.NotFound();
-//
-//         if (string.IsNullOrEmpty(License)) return Results.NotFound();
-//
-//         var response = new DiscordResponse<string>();
-//
-//         var user = await userManagerService.GetLicenseByValueAsync(Guid.Parse(License!));
+//         var user = await licenseService.GetLicenseByValueAsync(Guid.Parse(License!));
 //         if (user == null) return Results.BadRequest();
 //
 //         if (user.DiscordUser == null)

@@ -1,4 +1,5 @@
 // using FastEndpoints;
+// using Microsoft.AspNetCore.Authentication.JwtBearer;
 //
 // namespace Authentication.Endpoints.Sessions;
 //
@@ -7,6 +8,8 @@
 // {
 //     public override void Configure()
 //     {
+//         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+//         
 //         base.Configure();
 //     }
 //

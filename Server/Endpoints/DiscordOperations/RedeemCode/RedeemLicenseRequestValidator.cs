@@ -13,6 +13,6 @@ public class RedeemLicenseRequestValidator : AbstractValidator<RedeemLicenseRequ
         RuleFor(x => x.Username)
             .Null().WithMessage("Username is required.");
         RuleFor(x => x.DiscordId)
-            .Null().WithMessage("Discord Id required.");
+            .Null().WithMessage("DiscordId Id required.");
     }
 }

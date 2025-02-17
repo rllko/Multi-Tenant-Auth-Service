@@ -90,7 +90,7 @@ public class DiscordService(
             return new ValidationFailed(error);
         }
 
-        redeemedLicense.Discord = existingDiscordUser.DiscordId;
+        redeemedLicense.DiscordId = existingDiscordUser.DiscordId;
         redeemedLicense.Email = licenseRequest.Email;
         redeemedLicense.Username = licenseRequest.Username;
 

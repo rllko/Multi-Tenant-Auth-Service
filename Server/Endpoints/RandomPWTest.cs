@@ -1,9 +1,10 @@
-using Authentication.Services;
+using Authentication.Models.Entities;
+using Authentication.Services.Licenses;
 using FastEndpoints;
 
 namespace Authentication.Endpoints;
 
-public class RandomPWTest : EndpointWithoutRequest<string>
+public class RandomPWTest(ILicenseService licenseService) : EndpointWithoutRequest<License>
 {
     public override void Configure()
     {
@@ -11,8 +12,9 @@ public class RandomPWTest : EndpointWithoutRequest<string>
         AllowAnonymous();
     }
 
-    public override Task<string> ExecuteAsync(CancellationToken ct)
+    public override Task<License> ExecuteAsync(CancellationToken ct)
     {
-        return Task.FromResult(PasswordHashing.GenerateRandomPassword());
+        var discord = licenseService.GetLicenseByUsernameWithDiscordAsync(Route<string>("username"));
+        return discord;
     }
 }

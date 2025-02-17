@@ -8,6 +8,7 @@ namespace Authentication.Services.Licenses;
 public interface ILicenseService
 {
     Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId);
+    public Task<License?> GetLicenseByUsernameWithDiscordAsync(string username);
     Task<License?> GetLicenseByIdAsync(long licenseId);
     Task<License?> GetLicenseByValueAsync(Guid license);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
@@ -19,4 +20,7 @@ public interface ILicenseService
         IDbTransaction? transaction = null);
 
     Task<License?> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
+    Task<long> GetRemainingTime(string username);
+    Task ResumeLicense(string username);
+    Task PauseLicense(Guid username);
 }

@@ -13,10 +13,26 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE discord = @discordId;";
+        var getDiscordIdQuery =
+            @"SELECT l.*,d.*,l.max_sessions as MaxSessions FROM licenses l 
+            inner join public.discords d 
+            on d.discord_id = l.discordid 
+            WHERE discordid = @discordId;";
 
         var licenseList = await
-            connection.QueryAsync<License>(getDiscordIdQuery, new { discordId });
+            connection.QueryAsync<dynamic, dynamic, License>(getDiscordIdQuery, (x, user) =>
+                new License
+                {
+                    Value = x.value,
+                    DiscordId = x.discordid,
+                    MaxSessions = x.max_sessions,
+                    Email = x.email,
+                    Username = x.username,
+                    CreationDate = x.creation_date,
+                    Password = x.password,
+                    ExpirationDate = x.expiration_date,
+                    Activated = x.activated
+                }, discordId, splitOn: "discord_id");
         return licenseList;
     }
 
@@ -59,9 +75,23 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var getDiscordIdQuery = @"SELECT * FROM licenses;";
 
-        var license = await
-            connection.QueryAsync<License>(getDiscordIdQuery);
-        return license;
+        await using var multi = await connection.QueryMultipleAsync(getDiscordIdQuery);
+
+        // Custom mapping
+        var licenses = (await multi.ReadAsync<dynamic>()).Select(x => new License
+        {
+            Id = x.id,
+            Value = x.value,
+            DiscordId = x.discordid,
+            MaxSessions = x.max_sessions,
+            Email = x.email,
+            Username = x.username,
+            CreationDate = x.creation_date,
+            Password = x.password,
+            ExpirationDate = x.expiration_date,
+            Activated = x.activated
+        }).ToList();
+        return licenses;
     }
 
     /// <summary>
@@ -81,7 +111,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var addDiscordIdQuery =
             @"UPDATE licenses
-	        SET discord = @Discord WHERE id = @SessionId returning *";
+	        SET discordid = @DiscordId WHERE id = @SessionId returning *";
 
         var updatedLicense =
             await connection.QuerySingleAsync<License>(addDiscordIdQuery, new { license }, transaction);
@@ -110,5 +140,63 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         foreach (var license in licenses) await UpdateLicenseAsync(license, transactional);
 
         return true;
+    }
+
+    public async Task<License?> GetLicenseByUsernameWithDiscordAsync(string username)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
+
+        var license = await
+            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue = username });
+        return license;
+    }
+
+    public async Task<long> GetRemainingTime(string username)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        const string query = @"
+            SELECT 
+                CASE 
+                    WHEN activated THEN RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)) 
+                    ELSE RemainingSeconds 
+                END AS TimeLeft
+            FROM Licenses
+            WHERE username = @username;
+        ";
+
+        return await connection.ExecuteScalarAsync<long>(query, new { username });
+    }
+
+    // Start/resume license
+    public async Task ResumeLicense(string username)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        const string query = @"
+            UPDATE Licenses
+            SET LastStartedAt = NOW(), activated = TRUE
+            WHERE username = @username;
+        ";
+
+        await connection.ExecuteAsync(query, new { username });
+    }
+
+    // Pause license and update remaining time
+    public async Task PauseLicense(Guid username)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        const string query = @"
+            UPDATE Licenses
+            SET RemainingSeconds = RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
+                LastStartedAt = NULL,
+                activated = FALSE
+            WHERE username = @username AND activated = TRUE;
+        ";
+
+        await connection.ExecuteAsync(query, new { username });
     }
 }

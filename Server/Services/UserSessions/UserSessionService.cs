@@ -1,6 +1,7 @@
 using System.Data;
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
 using Dapper;
 using FluentValidation;
@@ -33,6 +34,26 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
         return session;
     }
 
+    public async Task<UserSession?> GetSessionByTokenAsync(Guid token)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery =
+            @"SELECT us.*,l.* FROM user_sessions us
+         inner join public.licenses l on l.id = us.license_id
+         WHERE session_token = @token;";
+
+        var session =
+            await connection.QueryAsync<UserSession, License, UserSession>(getDiscordIdQuery,
+                (session, license) =>
+                {
+                    session.License = license;
+                    return session;
+                }, new { token });
+
+        return session.FirstOrDefault();
+    }
+
     public async Task<Either<UserSession, ValidationFailed>> UpdateSessionTokenAsync(UserSession session,
         IDbTransaction? transaction = null)
     {
@@ -43,7 +64,7 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
 
         var addDiscordIdQuery =
             @"UPDATE user_sessions
-	        SET authorization_token = @SessionId, hwid = @HwidId,
+	        SET session_token = @SessionId, hwid = @HwidId,
                 license_id = @LicenseId, ip_address = @IpAddress,
                 created_at = @CreatedAt, refreshed_at = @RefreshedAt
 	        WHERE id = @SessionId returning *";
@@ -78,14 +99,19 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
         return newUser;
     }
 
-    public async Task<UserSession?> GetSessionByAccessTokenAsync(string licenseId)
+    public async Task<Result<UserSession, ValidationFailed>> SignInUserAsync(CreateSessionRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE authorization_token = @licenseId;";
+        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE session_token = @sessionToken;";
 
         var session =
-            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { licenseId });
+            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { licenseId = sessionToken });
         return session;
     }
 

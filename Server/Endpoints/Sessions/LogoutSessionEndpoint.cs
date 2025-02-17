@@ -1,6 +1,5 @@
 namespace Authentication.Endpoints.Sessions;
 
-public class RefreshSessionResponse
+public class LogoutSessionEndpoint
 {
-    
 }

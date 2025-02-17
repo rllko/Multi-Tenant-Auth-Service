@@ -14,10 +14,10 @@ public static class ContractMapping
     {
         return new LicenseDto
         {
+            Value = Guider.ToStringFromGuid(license.Value),
             Email = license.Email,
             CreationDate = license.CreationDate,
-            Discord = license.Discord,
-            Value = Guider.ToStringFromGuid(license.Value)
+            Discord = license.DiscordId
         };
     }
 }

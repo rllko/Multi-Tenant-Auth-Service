@@ -1,5 +1,4 @@
-﻿using Authentication.Contracts;
-using Authentication.Models.Entities;
+﻿using Authentication.Models.Entities;
 using Authentication.Services.Licenses;
 using FastEndpoints;
 
@@ -21,9 +20,6 @@ public class GetLicenseEndpoint(ILicenseService licenseService) : EndpointWithou
         var userLicenses = await licenseService.GetLicensesByDiscordId(discordId);
         var enumerable = userLicenses as License[] ?? userLicenses.ToArray();
 
-        await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
-        {
-            Result = enumerable.Select(x => x.MapToDto())
-        }, ct);
+        await SendOkAsync(enumerable.Select(x => x).ToList(), ct);
     }
 }

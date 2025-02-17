@@ -35,11 +35,11 @@ public class OffsetsEndpoint_TODO
             return Results.Json(response);
         }
 
-        if (loggedUser.License.Hw is { Bios: null, Cpu: null })
-        {
-            response.Error = "There isnt an hwid associated to this user.";
-            return Results.Json(response);
-        }
+        // if (loggedUser.License.Hw is { Bios: null, Cpu: null })
+        // {
+        //     response.Error = "There isnt an hwid associated to this user.";
+        //     return Results.Json(response);
+        // }
 
         //var firstChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Bios!).Chunk(6).First();
         //var secondChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Cpu!).Chunk(6).First();
