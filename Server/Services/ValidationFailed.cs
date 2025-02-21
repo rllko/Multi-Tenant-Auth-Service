@@ -1,6 +1,6 @@
 using FluentValidation.Results;
 
-namespace Authentication.Endpoints;
+namespace Authentication.Services;
 
 public record ValidationFailed(IEnumerable<ValidationFailure> Errors)
 {
