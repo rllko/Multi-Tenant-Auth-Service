@@ -153,50 +153,9 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         return license;
     }
 
-    public async Task<long> GetRemainingTime(string username)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        const string query = @"
-            SELECT 
-                CASE 
-                    WHEN activated THEN RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)) 
-                    ELSE RemainingSeconds 
-                END AS TimeLeft
-            FROM Licenses
-            WHERE username = @username;
-        ";
-
-        return await connection.ExecuteScalarAsync<long>(query, new { username });
-    }
 
     // Start/resume license
-    public async Task ResumeLicense(string username)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
 
-        const string query = @"
-            UPDATE Licenses
-            SET LastStartedAt = NOW(), activated = TRUE
-            WHERE username = @username;
-        ";
-
-        await connection.ExecuteAsync(query, new { username });
-    }
 
     // Pause license and update remaining time
-    public async Task PauseLicense(Guid username)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        const string query = @"
-            UPDATE Licenses
-            SET RemainingSeconds = RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
-                LastStartedAt = NULL,
-                activated = FALSE
-            WHERE username = @username AND activated = TRUE;
-        ";
-
-        await connection.ExecuteAsync(query, new { username });
-    }
 }

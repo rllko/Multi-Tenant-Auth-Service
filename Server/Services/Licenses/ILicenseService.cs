@@ -20,7 +20,4 @@ public interface ILicenseService
         IDbTransaction? transaction = null);
 
     Task<License?> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
-    Task<long> GetRemainingTime(string username);
-    Task ResumeLicense(string username);
-    Task PauseLicense(Guid username);
 }
