@@ -7,11 +7,12 @@ namespace Authentication.Services.UserSessions;
 public interface IUserSessionService
 {
     Task<UserSession?> GetSessionByIdAsync(Guid id);
-    Task<UserSession?> GetSessionByLicenseAsync(string licenseId);
+    Task<IEnumerable<UserSession>> GetSessionsByLicenseAsync(long licenseId);
     Task<UserSession?> GetSessionByTokenAsync(Guid token);
-    Task<Result<UserSession, ValidationFailed>> SignInUserAsync(CreateSessionRequest request);
+    Task<UserSession?> GetSessionByHwidAsync(long hwid);
+    Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(CreateSessionRequest request);
 
-    Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress, long hwidId,
+    Task<UserSession> CreateLicenseSessionAsync(long licenseId, long hwidId, string? ipAddress = null,
         IDbTransaction? transaction = null);
 
     Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken);

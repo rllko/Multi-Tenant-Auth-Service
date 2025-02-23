@@ -1,7 +1,6 @@
 using System.Data;
 using Authentication.Contracts;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using Dapper;
 using FluentValidation.Results;
@@ -26,7 +25,7 @@ public class LicenseBuilder(
         var expiration = DateTime.Now.AddDays(licenseExpirationInDays);
 
         var query =
-            @"INSERT INTO public.licenses (discordId,email,username,expiration_date,password) VALUES (@discord,@email,@username,@expiration,@password) RETURNING *;";
+            @"INSERT INTO public.licenses (discordId,email,username,remaining_seconds,password) VALUES (@discord,@email,@username,@expiration,@password) RETURNING *;";
 #warning dont forget to do turn into seconds the days picked for the license
         var ye = new object[] { discordId, email, password, username }.Count(x => x == null) is not 0 or 4;
         if (ye)

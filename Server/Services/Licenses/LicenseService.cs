@@ -141,7 +141,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         return true;
     }
 
-    public async Task<License?> GetLicenseByUsernameWithDiscordAsync(string username)
+    public async Task<License?> GetLicenseByUsername(string username)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 

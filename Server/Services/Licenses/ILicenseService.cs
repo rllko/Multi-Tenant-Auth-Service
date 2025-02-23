@@ -1,5 +1,4 @@
 using System.Data;
-using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using LanguageExt;
 
@@ -8,7 +7,7 @@ namespace Authentication.Services.Licenses;
 public interface ILicenseService
 {
     Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId);
-    public Task<License?> GetLicenseByUsernameWithDiscordAsync(string username);
+    Task<License?> GetLicenseByUsername(string username);
     Task<License?> GetLicenseByIdAsync(long licenseId);
     Task<License?> GetLicenseByValueAsync(Guid license);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);

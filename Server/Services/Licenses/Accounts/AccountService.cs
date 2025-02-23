@@ -1,10 +1,14 @@
 using Authentication.Database;
+using Authentication.Services.UserSessions;
 using Dapper;
 using FluentValidation.Results;
 
 namespace Authentication.Services.Licenses.Accounts;
 
-public class AccountService(IDbConnectionFactory connectionFactory) : IAccountService
+public class AccountService(
+    IDbConnectionFactory connectionFactory,
+    ILicenseService licenseService,
+    IUserSessionService sessionService) : IAccountService
 {
     public async Task<bool> PauseAllSubscriptions()
     {
@@ -12,7 +16,7 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
 
         const string query = @"
             UPDATE Licenses
-            SET RemainingSeconds = RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
+            SET remaining_seconds = remaining_seconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
                 LastStartedAt = NULL,
                 activated = FALSE
             WHERE LastStartedAt > now() - interval '30 day' AND activated = TRUE;
@@ -42,7 +46,7 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
         const string query = @"
          UPDATE Licenses
          SET LastStartedAt = NOW(), activated = TRUE
-         WHERE RemainingSeconds > 0 AND activated = FALSE;
+         WHERE remaining_seconds > 0 AND activated = FALSE;
         ";
 
         var affected = await connection.ExecuteAsync(query);
@@ -60,10 +64,7 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
 
         var isPasswordValid = await CheckLicensePassword(username, oldPassword);
 
-        // not my best work tbh.
-        var result = isPasswordValid.Match<ValidationFailed?>(_ => null, b => b);
-
-        if (result is not null) return result;
+        if (isPasswordValid is false) return false;
 
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -124,35 +125,6 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
         return affected > 0;
     }
 
-    public async Task<Result<bool, ValidationFailed>> CheckLicensePassword(string username, string password)
-    {
-        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-        {
-            var error = new ValidationFailure("error", "username and password are required");
-            return new ValidationFailed(error);
-        }
-
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var query = "SELECT password FROM Licenses WHERE username = @username AND activated = TRUE";
-        var result = await connection.QuerySingleOrDefaultAsync<string>(query, new { username, password });
-
-        if (result == null)
-        {
-            var error = new ValidationFailure("error", "username and password are invalid");
-            return new ValidationFailed(error);
-        }
-
-        var isPasswordValid = PasswordHashing.ValidatePassword(password, result);
-        if (isPasswordValid is false)
-        {
-            var error = new ValidationFailure("error", "invalid username or password");
-            return new ValidationFailed(error);
-        }
-
-        return true;
-    }
-
     public async Task<Result<long, ValidationFailed>> GetRemainingTime(string username)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -160,13 +132,30 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
         const string query = @"
             SELECT 
                 CASE 
-                    WHEN activated THEN RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)) 
-                    ELSE RemainingSeconds 
+                    WHEN activated THEN remaining_seconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)) 
+                    ELSE remaining_seconds 
                 END AS TimeLeft
             FROM Licenses
             WHERE username = @username;
         ";
 
         return await connection.ExecuteScalarAsync<long>(query, new { username });
+    }
+
+    public async Task<bool> CheckLicensePassword(string username, string password)
+    {
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return false;
+
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var query = "SELECT password FROM Licenses WHERE username = @username AND activated = TRUE";
+        var result = await connection.QuerySingleOrDefaultAsync<string>(query, new { username, password });
+
+        if (result == null) return false;
+
+        var isPasswordValid = PasswordHashing.ValidatePassword(password, result);
+        if (isPasswordValid is false) return false;
+
+        return true;
     }
 }

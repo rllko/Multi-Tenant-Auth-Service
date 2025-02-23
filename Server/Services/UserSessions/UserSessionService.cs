@@ -2,6 +2,8 @@ using System.Data;
 using Authentication.Database;
 using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
+using Authentication.Services.Hwids;
+using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Dapper;
 using FluentValidation;
@@ -12,7 +14,9 @@ namespace Authentication.Services.UserSessions;
 public class UserSessionService(
     IDbConnectionFactory connectionFactory,
     IValidator<UserSession> validator,
-    IAccountService accountService)
+    ILicenseService licenseService,
+    IAccountService accountService,
+    IHwidService hwidService)
     : IUserSessionService
 {
     public async Task<UserSession?> GetSessionByIdAsync(Guid id)
@@ -26,15 +30,16 @@ public class UserSessionService(
         return session;
     }
 
-    public async Task<UserSession?> GetSessionByLicenseAsync(string licenseId)
+    public async Task<IEnumerable<UserSession>> GetSessionsByLicenseAsync(long licenseId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE license_id = @licenseId;";
 
-        var session =
-            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { licenseId });
-        return session;
+        var results = await connection.QueryMultipleAsync(getDiscordIdQuery, new { licenseId });
+
+        var sessions = await results.ReadAsync<UserSession>();
+        return sessions;
     }
 
     public async Task<UserSession?> GetSessionByTokenAsync(Guid token)
@@ -55,6 +60,17 @@ public class UserSessionService(
                 }, new { token });
 
         return session.FirstOrDefault();
+    }
+
+    public async Task<UserSession?> GetSessionByHwidAsync(long id)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE hwid = @Id;";
+
+        var session =
+            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { hwid = id });
+        return session;
     }
 
     public async Task<bool> LogoutLicenseSessionAsync(Guid sessionToken)
@@ -101,44 +117,81 @@ public class UserSessionService(
         return affectedRows1 > 0;
     }
 
-    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress, long hwidId,
-        IDbTransaction? transaction = null)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var addDiscordIdQuery = @"INSERT INTO user_sessions (license_id, ip_address,hwid)
-        VALUES ( @licenseId, @ipAddress,@hwidId) RETURNING *;";
-        var newUser =
-            await connection.QuerySingleAsync<UserSession>(addDiscordIdQuery, new { licenseId, ipAddress, hwidId },
-                transaction);
-
-        return newUser;
-    }
-
-    public async Task<Result<UserSession, ValidationFailed>> SignInUserAsync(CreateSessionRequest request)
+    public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(CreateSessionRequest request)
     {
         // validate credentials
+        if (await accountService.CheckLicensePassword(request.Username, request.Password) is false)
+        {
+            var error = new ValidationFailure("error", "invalid username or password");
+            return new ValidationFailed(error);
+        }
 
         // check if license is valid -- TODO create checkValidLicense
+        var license = await licenseService.GetLicenseByUsername(request.Username);
+        if (license is null)
+        {
+            var error = new ValidationFailure("error", "something went wrong D:");
+            return new ValidationFailed(error);
+        }
 
         // check for existing sessions
+        var sessions = await GetSessionsByLicenseAsync(license.Id);
 
-        // check if existing session was created today
+        if (sessions.Count() >= license.MaxSessions && license.MaxSessions > 0)
+        {
+            var error = new ValidationFailure("error", "max sessions reached.");
+            return new ValidationFailed(error);
+        }
 
         // check if license has time left
+        if (license.ExpirationDate < DateTime.Now)
+        {
+            var error = new ValidationFailure("error", "license expired.");
+            return new ValidationFailed(error);
+        }
 
         // if limit is reached, check hwid 
+        var hwids = await hwidService.GetHwidByDtoAsync(request.Hwid);
+
+        Hwid? hwid = null;
+        // Filter out those HWID DTOs that match the CPU and BIOS, but only one other property is different.
+        foreach (var hwidDto in hwids)
+            // Check if CPU and BIOS are the same
+            if (hwidDto.Cpu == request.Hwid.cpu && hwidDto.Bios == request.Hwid.bios)
+            {
+                // Count how many properties differ
+                var differentPropertiesCount = 0;
+
+                if (hwidDto.Ram != request.Hwid.ram) differentPropertiesCount++;
+                if (hwidDto.Disk != request.Hwid.disk) differentPropertiesCount++;
+                if (hwidDto.Display != request.Hwid.display) differentPropertiesCount++;
+
+                // If only one property differs, it's a match
+                if (differentPropertiesCount == 1) hwid = hwidDto;
+            }
 
         // if hwid correct, give him current session
+        if (hwid is not null)
+        {
+            var session = await GetSessionByHwidAsync(hwid.Id);
 
-        // BadRequest if wrong
+            return await RefreshLicenseSession((Guid)session.AuthorizationToken);
+        }
 
         // if no, create hwid
+        var newHwid = await hwidService.CreateHwidAsync(request.Hwid);
 
+        if (newHwid is null)
+        {
+            var error = new ValidationFailure("error", "something wrong happened!");
+            return new ValidationFailed(error);
+        }
+#warning we need transaction here!
         // create session
+        var newSession = await CreateLicenseSessionAsync(license.Id, newHwid.Id);
 
         // send session
-        throw new NotImplementedException();
+        return newSession;
     }
 
     public async Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken)
@@ -172,6 +225,20 @@ public class UserSessionService(
         session.RefreshedAt = DateTime.Now;
         var result = await UpdateSessionAsync(session);
         return result;
+    }
+
+    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, long hwidId, string? ipAddress = null,
+        IDbTransaction? transaction = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var addDiscordIdQuery = @"INSERT INTO user_sessions (license_id, ip_address,hwid)
+        VALUES ( @licenseId, @ipAddress,@hwidId) RETURNING *;";
+        var newUser =
+            await connection.QuerySingleAsync<UserSession>(addDiscordIdQuery, new { licenseId, ipAddress, hwidId },
+                transaction);
+
+        return newUser;
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)

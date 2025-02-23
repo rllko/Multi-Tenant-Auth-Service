@@ -1,62 +1,65 @@
-﻿// using Authentication.Models.Entities;
-// using Authentication.Services.Licenses;
-// using Authentication.Services.UserSessions;
-// using FastEndpoints;
-//
-// namespace Authentication.Endpoints.Sessions;
-//
+﻿using Authentication.Contracts;
+using Authentication.Models.Entities;
+using Authentication.Services;
+using Authentication.Services.Licenses.Accounts;
+using Authentication.Services.UserSessions;
+using FastEndpoints;
+using FastEndpoints.Security;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 
-//
-// public class CreateSessionEndpoint(
-//     ILicenseService licenseService,
-//     IUserSessionService sessionService)
-//     : Endpoint<CreateSessionRequest, Result<string, ValidationFailed>>
-// {
-//     public override void Configure()
-//     {
-//         AllowFormData();
-//         Post("/sessions");
-//     }
-//
-//     public override Task HandleAsync(CreateSessionRequest req, CancellationToken ct)
-//     {
-//         var user = await licenseService.GetLicenseByValueAsync(Guid.Parse(License!));
-//         if (user == null) return Results.BadRequest();
-//
-//         if (user.DiscordUser == null)
-//         {
-//             response.Error = "No discord user assigned.";
-//             return Results.Json(response);
-//         }
-//
-//         if (user.Hw != null)
-//         {
-//             response.Error = "Key already assigned. Please reset it through the bot!";
-//             return Results.Json(response);
-//         }
-//
-//         var filteredInput = hwid.ToString().Split('+').ToList();
-//
-//         if (filteredInput.Count is not 5)
-//         {
-//             response.Error = "Invalid HWID Size";
-//             return Results.Json(response);
-//         }
-//
-//         foreach (var item in filteredInput)
-//             if (item!.Length is not 64)
-//             {
-//                 response.Error = "Invalid HWID Format";
-//                 return Results.Json(response);
-//             }
-//
-//         var newHwid = new HwidDto(filteredInput[0], filteredInput[1], filteredInput[2],
-//             filteredInput[3], filteredInput[4]);
-//
-//         await userSessionService.CreateLicenseSession(user.Id, null, 1);
-//
-//         response.Result = "Success!";
-//         return Results.Json(response);
-//     }
-// }
+namespace Authentication.Endpoints.Sessions;
 
+public class CreateSessionEndpoint(
+    IAccountService accountService,
+    IUserSessionService sessionService)
+    : Endpoint<CreateSessionRequest, Result<string, ValidationFailed>>
+{
+    public override void Configure()
+    {
+        AllowFormData();
+        Post("/sessions");
+    }
+
+    public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> HandleAsync(CreateSessionRequest req,
+        CancellationToken ct)
+    {
+        var filteredInput = req.HwidStr.Split('+').ToList();
+
+        if (filteredInput.Count is not 5)
+        {
+            var error = new ValidationFailure("error", "Invalid HWID Size");
+            return TypedResults.BadRequest(new ValidationFailed(error));
+        }
+
+        foreach (var item in filteredInput)
+            if (item!.Length is not 64)
+            {
+                var error = new ValidationFailure("error", "Invalid HWID Format");
+                return TypedResults.BadRequest(new ValidationFailed(error));
+            }
+
+        req.Hwid = new HwidDto(filteredInput[0], filteredInput[1], filteredInput[2],
+            filteredInput[3], filteredInput[4]);
+
+        var session = await sessionService.CreateSessionAsync(req);
+        var result = session.Match<IResult>(
+            se =>
+                TypedResults.Ok(JwtBearer.CreateToken(
+                    o =>
+                    {
+                        o.ExpireAt = DateTime.UtcNow.AddDays(1);
+                        o.User["session-token"] = se.AuthorizationToken.ToString()!;
+                        o.User["username"] = se.License.Username!;
+                        o.User["license-expiration"] = se.License.ExpirationDate.ToEpoch().ToString();
+                    })),
+            error => TypedResults.BadRequest(error));
+
+        return result switch
+        {
+            Ok<string> ok => ok,
+            BadRequest<ValidationFailed> fail => fail,
+            _ => throw new Exception("Impossible")
+        };
+    }
+}
