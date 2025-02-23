@@ -1,8 +1,6 @@
 using System.Data;
-using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
-using LanguageExt;
 
 namespace Authentication.Services.UserSessions;
 
@@ -16,7 +14,16 @@ public interface IUserSessionService
     Task<UserSession> CreateLicenseSession(long licenseId, string? ipAddress, long hwidId,
         IDbTransaction? transaction = null);
 
-    Task<Either<UserSession, ValidationFailed>> UpdateSessionTokenAsync(UserSession license,
+    Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken);
+
+    /// <summary>
+    ///     This will make it so the user cant refresh the session again. aka remove session token
+    /// </summary>
+    /// <param name="sessionToken"></param>
+    /// <returns></returns>
+    Task<bool> LogoutLicenseSession(Guid sessionToken);
+
+    Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession license,
         IDbTransaction? transaction = null);
 
     Task<bool> DeleteSessionTokenAsync(long id, IDbTransaction? transaction = null);

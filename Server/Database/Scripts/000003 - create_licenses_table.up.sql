@@ -1,4 +1,4 @@
-CREATE TABLE licenses
+CREATE TABLE IF NOT EXISTS licenses
 (
     id               BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 10 INCREMENT BY 69) PRIMARY KEY,
     value            UUID      DEFAULT gen_random_uuid(),
@@ -12,6 +12,20 @@ CREATE TABLE licenses
     LastStartedAt    TIMESTAMP NULL,
     activated        BOOL      default false
 );
+
+CREATE OR REPLACE FUNCTION subtract_hours()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.RemainingSeconds = -1 THEN
+        RETURN NEW;
+    END IF;
+
+    -- update RemainingSeconds based on the difference between the current time and LastStartedAt
+    NEW.RemainingSeconds := NEW.RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - NEW.LastStartedAt));
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE UNIQUE INDEX IF NOT EXISTS value_index on licenses (value);
 CREATE UNIQUE INDEX IF NOT EXISTS login_index on licenses (email, password);

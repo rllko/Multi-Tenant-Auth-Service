@@ -1,4 +1,4 @@
-CREATE TABLE user_sessions
+CREATE TABLE IF NOT EXISTS user_sessions
 (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     session_token UUID UNIQUE DEFAULT gen_random_uuid(),

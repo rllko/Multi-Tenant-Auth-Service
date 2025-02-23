@@ -11,18 +11,18 @@ public class UserSession(
     long licenseId,
     License license,
     string ipAddress,
-    DateTime expiration,
+    long expirationTime,
     DateTime createdAt,
     DateTime? refreshedAt)
 {
     public int SessionId { get; } = sessionId;
-    public Guid AuthorizationToken { get; } = authorizationToken;
+    public Guid? AuthorizationToken { get; set; } = authorizationToken;
     public Hwid Hwid { get; set; } = hwid;
     public long HwidId { get; set; } = hwidId;
     public long LicenseId { get; } = licenseId;
     public License License { get; set; } = license;
     public string IpAddress { get; } = ipAddress;
-    public DateTime Expiration { get; set; } = expiration;
+    public long ExpirationTime { get; set; } = expirationTime;
     public DateTime CreatedAt { get; } = createdAt;
     public DateTime? RefreshedAt { get; set; } = refreshedAt;
 }

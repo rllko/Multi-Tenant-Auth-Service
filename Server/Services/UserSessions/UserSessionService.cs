@@ -1,15 +1,18 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
+using Authentication.Services.Licenses.Accounts;
 using Dapper;
 using FluentValidation;
-using LanguageExt;
+using FluentValidation.Results;
 
 namespace Authentication.Services.UserSessions;
 
-public class UserSessionService(IDbConnectionFactory connectionFactory, IValidator<UserSession> validator)
+public class UserSessionService(
+    IDbConnectionFactory connectionFactory,
+    IValidator<UserSession> validator,
+    IAccountService accountService)
     : IUserSessionService
 {
     public async Task<UserSession?> GetSessionByIdAsync(long id)
@@ -54,7 +57,20 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
         return session.FirstOrDefault();
     }
 
-    public async Task<Either<UserSession, ValidationFailed>> UpdateSessionTokenAsync(UserSession session,
+    public async Task<bool> LogoutLicenseSession(Guid sessionToken)
+    {
+        // get session by session token
+        var session = await GetSessionByTokenAsync(sessionToken);
+
+        if (session is null) return false;
+
+        // remove session token
+        session.AuthorizationToken = null;
+        var _ = UpdateSessionAsync(session);
+        return true;
+    }
+
+    public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
         IDbTransaction? transaction = null)
     {
         var validationResult = await validator.ValidateAsync(session);
@@ -101,7 +117,61 @@ public class UserSessionService(IDbConnectionFactory connectionFactory, IValidat
 
     public async Task<Result<UserSession, ValidationFailed>> SignInUserAsync(CreateSessionRequest request)
     {
+        // validate credentials
+
+        // check if license is valid -- TODO create checkValidLicense
+
+        // check for existing sessions
+
+        // check if existing session was created today
+
+        // check if license has time left
+
+        // if limit is reached, check hwid 
+
+        // if hwid correct, give him current session
+
+        // BadRequest if wrong
+
+        // if no, create hwid
+
+        // create session
+
+        // send session
         throw new NotImplementedException();
+    }
+
+    public async Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken)
+    {
+        // get session by session token
+        var session = await GetSessionByTokenAsync(sessionToken);
+
+        // check if session is active
+        if (session is null)
+        {
+            var error = new ValidationFailure("error", "Session could not be found");
+            return new ValidationFailed(error);
+        }
+
+        // check if session has time left
+        if (session.ExpirationTime > 0)
+        {
+            var error = new ValidationFailure("error", "Session could not be created");
+            return new ValidationFailed(error); 
+        }
+
+        // if it was created more than one day ago, refresh
+        if (session.CreatedAt.Day != DateTime.Now.Day &&
+            session.RefreshedAt != null &&
+            session.RefreshedAt.Value.Day != DateTime.Now.Day)
+        {
+            var error = new ValidationFailure("error", "Session could not be created");
+            return new ValidationFailed(error);
+        }
+
+        session.RefreshedAt = DateTime.Now;
+        var result = await UpdateSessionAsync(session);
+        return result;
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)

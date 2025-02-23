@@ -1,5 +1,4 @@
 using Authentication.Database;
-using Authentication.Endpoints;
 using Dapper;
 using FluentValidation.Results;
 
@@ -21,7 +20,7 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
         var affected = await connection.ExecuteAsync(query);
         return affected > 0;
     }
-    
+
     public async Task<Result<bool, ValidationFailed>> ResumeLicense(string username)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -116,8 +115,7 @@ public class AccountService(IDbConnectionFactory connectionFactory) : IAccountSe
 
         const string query = @"
             UPDATE Licenses
-            SET RemainingSeconds = RemainingSeconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
-                LastStartedAt = NULL,
+            SET LastStartedAt = NULL,
                 activated = FALSE
             WHERE username = @username AND activated = TRUE;
         ";

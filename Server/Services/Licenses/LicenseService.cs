@@ -1,6 +1,5 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using Dapper;
 using LanguageExt;
@@ -12,7 +11,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
     public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
-
+#warning fix this
         var getDiscordIdQuery =
             @"SELECT l.*,d.*,l.max_sessions as MaxSessions FROM licenses l 
             inner join public.discords d 
