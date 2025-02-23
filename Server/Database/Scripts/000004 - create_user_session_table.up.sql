@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS user_sessions
 (
-    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id            UUID GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     session_token UUID UNIQUE DEFAULT gen_random_uuid(),
     hwid          BIGINT NOT NULL REFERENCES hwids (id) ON DELETE CASCADE,
     license_id    BIGINT NOT NULL REFERENCES licenses (id) ON DELETE CASCADE,

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Authentication.Contracts;
 using Authentication.Models.Entities;
 using Authentication.Services.UserSessions;
 using Microsoft.AspNetCore.Authentication;
@@ -15,7 +16,7 @@ public class SessionAuth(
     UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
-    private const string SchemeName = "Session";
+    public const string SchemeName = "Session";
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -34,10 +35,14 @@ public class SessionAuth(
             {
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Authentication, session.AuthorizationToken.ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, session.License.Username!),
-                    new Claim(ClaimTypes.Expiration, session.License.ExpirationDate.ToLongDateString()),
-                    new Claim(ClaimTypes.Role, session.CreatedAt.ToLongTimeString())
+                    new Claim(ClaimTypes.Authentication,
+                        session.AuthorizationToken!.ToString()!),
+                    new Claim(ClaimTypes.NameIdentifier,
+                        session.License.Username!),
+                    new Claim(ClaimTypes.Expiration,
+                        session.License.ExpirationDate.ToEpoch().ToString()),
+                    new Claim(ClaimTypes.Role,
+                        session.CreatedAt.ToLongTimeString())
                 };
                 var identity = new ClaimsIdentity(claims, SchemeName);
                 var principal = new ClaimsPrincipal(identity);

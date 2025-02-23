@@ -1,5 +1,34 @@
+using Authentication.Services.UserSessions;
+using FastEndpoints;
+
 namespace Authentication.Endpoints.Sessions;
 
-public class LogoutSessionEndpoint
+public class LogoutSessionEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
 {
+    public override void Configure()
+    {
+        AuthSchemes(SessionAuth.SchemeName);
+        Delete("/sessions/{id}");
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
+
+        if (string.IsNullOrWhiteSpace(tokenStr) || Guid.TryParse(tokenStr!, out var tokenGuid) is false)
+        {
+            await SendErrorsAsync(cancellation: ct);
+            return;
+        }
+
+        var result = await sessionService.LogoutLicenseSessionAsync(tokenGuid);
+
+        if (result)
+        {
+            await SendOkAsync(ct);
+            return;
+        }
+
+        await SendErrorsAsync(400, ct);
+    }
 }

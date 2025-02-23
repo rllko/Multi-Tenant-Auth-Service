@@ -6,12 +6,12 @@ namespace Authentication.Services.UserSessions;
 
 public interface IUserSessionService
 {
-    Task<UserSession?> GetSessionByIdAsync(long id);
+    Task<UserSession?> GetSessionByIdAsync(Guid id);
     Task<UserSession?> GetSessionByLicenseAsync(string licenseId);
     Task<UserSession?> GetSessionByTokenAsync(Guid token);
     Task<Result<UserSession, ValidationFailed>> SignInUserAsync(CreateSessionRequest request);
 
-    Task<UserSession> CreateLicenseSession(long licenseId, string? ipAddress, long hwidId,
+    Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress, long hwidId,
         IDbTransaction? transaction = null);
 
     Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken);
@@ -21,7 +21,7 @@ public interface IUserSessionService
     /// </summary>
     /// <param name="sessionToken"></param>
     /// <returns></returns>
-    Task<bool> LogoutLicenseSession(Guid sessionToken);
+    Task<bool> LogoutLicenseSessionAsync(Guid sessionToken);
 
     Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession license,
         IDbTransaction? transaction = null);

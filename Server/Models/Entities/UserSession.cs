@@ -4,7 +4,7 @@ namespace Authentication.Models.Entities;
 
 [Table("user_sessions")]
 public class UserSession(
-    int sessionId,
+    Guid sessionId,
     Guid authorizationToken,
     Hwid hwid,
     long hwidId,
@@ -15,7 +15,7 @@ public class UserSession(
     DateTime createdAt,
     DateTime? refreshedAt)
 {
-    public int SessionId { get; } = sessionId;
+    public Guid SessionId { get; } = sessionId;
     public Guid? AuthorizationToken { get; set; } = authorizationToken;
     public Hwid Hwid { get; set; } = hwid;
     public long HwidId { get; set; } = hwidId;

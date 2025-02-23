@@ -15,7 +15,7 @@ public class UserSessionService(
     IAccountService accountService)
     : IUserSessionService
 {
-    public async Task<UserSession?> GetSessionByIdAsync(long id)
+    public async Task<UserSession?> GetSessionByIdAsync(Guid id)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -57,7 +57,7 @@ public class UserSessionService(
         return session.FirstOrDefault();
     }
 
-    public async Task<bool> LogoutLicenseSession(Guid sessionToken)
+    public async Task<bool> LogoutLicenseSessionAsync(Guid sessionToken)
     {
         // get session by session token
         var session = await GetSessionByTokenAsync(sessionToken);
@@ -101,7 +101,7 @@ public class UserSessionService(
         return affectedRows1 > 0;
     }
 
-    public async Task<UserSession> CreateLicenseSession(long licenseId, string? ipAddress, long hwidId,
+    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress, long hwidId,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -157,7 +157,7 @@ public class UserSessionService(
         if (session.ExpirationTime > 0)
         {
             var error = new ValidationFailure("error", "Session could not be created");
-            return new ValidationFailed(error); 
+            return new ValidationFailed(error);
         }
 
         // if it was created more than one day ago, refresh

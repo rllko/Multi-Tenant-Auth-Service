@@ -5,6 +5,11 @@ namespace Authentication.Contracts;
 
 public static class ContractMapping
 {
+    public static long ToEpoch(this DateTime dateTime)
+    {
+        return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+    }
+
     public static string MapToString(this License license)
     {
         return Guider.ToStringFromGuid(license.Value);
