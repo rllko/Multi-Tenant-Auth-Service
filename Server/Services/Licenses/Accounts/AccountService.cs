@@ -1,5 +1,4 @@
 using Authentication.Database;
-using Authentication.Services.UserSessions;
 using Dapper;
 using FluentValidation.Results;
 
@@ -7,8 +6,8 @@ namespace Authentication.Services.Licenses.Accounts;
 
 public class AccountService(
     IDbConnectionFactory connectionFactory,
-    ILicenseService licenseService,
-    IUserSessionService sessionService) : IAccountService
+    ILicenseService licenseService
+) : IAccountService
 {
     public async Task<bool> PauseAllSubscriptions()
     {

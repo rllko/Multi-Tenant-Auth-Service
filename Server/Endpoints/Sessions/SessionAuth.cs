@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Authentication.Endpoints;
+namespace Authentication.Endpoints.Sessions;
 
 public class SessionAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,

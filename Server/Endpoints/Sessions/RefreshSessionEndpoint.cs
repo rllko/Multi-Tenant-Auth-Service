@@ -29,6 +29,7 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
             return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
+#warning change from session token to session id
         var session = await sessionService.RefreshLicenseSession(tokenGuid);
 
         var result = session.Match<IResult>(

@@ -18,6 +18,7 @@ public class CreateSessionEndpoint(
     public override void Configure()
     {
         AllowFormData();
+        AllowAnonymous();
         Post("/sessions");
     }
 

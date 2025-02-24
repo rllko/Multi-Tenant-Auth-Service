@@ -6,14 +6,12 @@ using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Dapper;
-using FluentValidation;
 using FluentValidation.Results;
 
 namespace Authentication.Services.UserSessions;
 
 public class UserSessionService(
     IDbConnectionFactory connectionFactory,
-    IValidator<UserSession> validator,
     ILicenseService licenseService,
     IAccountService accountService,
     IHwidService hwidService)
@@ -89,9 +87,7 @@ public class UserSessionService(
     public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
         IDbTransaction? transaction = null)
     {
-        var validationResult = await validator.ValidateAsync(session);
-        if (!validationResult.IsValid) return new ValidationFailed(validationResult.Errors);
-
+#warning check domain here
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var addDiscordIdQuery =

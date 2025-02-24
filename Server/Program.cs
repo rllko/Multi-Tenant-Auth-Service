@@ -1,13 +1,17 @@
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Endpoints.Sessions;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
 using Authentication.Services.Clients;
 using Authentication.Services.Discords;
+using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
+using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Offsets;
+using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
@@ -26,9 +30,11 @@ builder.Services
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
-    .AddAuthentication(DiscordBasicAuth.SchemeName)
+    .AddAuthentication(SessionAuth.SchemeName)
+    .AddScheme<AuthenticationSchemeOptions, SessionAuth>(SessionAuth.SchemeName, null);
+
+builder.Services.AddAuthentication(DiscordBasicAuth.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, DiscordBasicAuth>(DiscordBasicAuth.SchemeName, null);
-;
 
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -47,7 +53,10 @@ builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageServ
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<ILicenseService, LicenseService>();
+builder.Services.AddScoped<IHwidService, HwidService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
