@@ -1,5 +1,4 @@
 using System.Data;
-using Authentication.Contracts;
 using Authentication.Database;
 using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
@@ -85,7 +84,6 @@ public class UserSessionService(
     public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
         IDbTransaction? transaction = null)
     {
-#warning check domain here
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var addDiscordIdQuery =
@@ -102,6 +100,10 @@ public class UserSessionService(
 
     public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(CreateSessionRequest request)
     {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var transaction = connection.BeginTransaction();
+
         // validate credentials
         if (await accountService.CheckLicensePassword(request.Username, request.Password) is false)
         {
@@ -127,9 +129,15 @@ public class UserSessionService(
         }
 
         // check if license has time left
-        if (license.ExpirationDate < DateTime.Now.ToEpoch())
+        if (license.ExpirationDate < DateTimeOffset.Now)
         {
             var error = new ValidationFailure("error", "license expired.");
+            return new ValidationFailed(error);
+        }
+
+        if (request.Hwid is null)
+        {
+            var error = new ValidationFailure("error", "hwid is required.");
             return new ValidationFailed(error);
         }
 
@@ -158,21 +166,29 @@ public class UserSessionService(
         {
             var session = await GetSessionByHwidAsync(hwid.Id);
 
+            if (session?.AuthorizationToken is null || session.RefreshedAt?.Day == DateTimeOffset.Now.Day)
+            {
+                var error = new ValidationFailure("error", "A session already exists");
+                return new ValidationFailed(error);
+            }
+
             return await RefreshLicenseSession((Guid)session.AuthorizationToken);
         }
 
         // if no, create hwid
-        var newHwid = await hwidService.CreateHwidAsync(request.Hwid);
+        var newHwid = await hwidService.CreateHwidAsync(request.Hwid, transaction);
 
         if (newHwid is null)
         {
+            transaction.Rollback();
             var error = new ValidationFailure("error", "something wrong happened!");
             return new ValidationFailed(error);
         }
-#warning we need transaction here!
-        // create session
-        var newSession = await CreateLicenseSessionAsync(license.Id, newHwid.Id);
 
+        // create session
+        var newSession = await CreateLicenseSessionAsync(license.Id, newHwid.Id, transaction: transaction);
+
+        transaction.Commit();
         // send session
         return newSession;
     }

@@ -15,6 +15,10 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
     {
         Put("/session/{id}");
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Throttle(
+            20,
+            60
+        );
     }
 
     public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> ExecuteAsync(
@@ -28,7 +32,6 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
             return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
-#warning change from session token to session id
         var session = await sessionService.RefreshLicenseSession(tokenGuid);
 
         var result = session.Match<IResult>(

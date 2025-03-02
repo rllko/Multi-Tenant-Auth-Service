@@ -13,28 +13,31 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
     public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
-#warning fix this
+
         var getDiscordIdQuery =
-            @"SELECT l.*,d.*,l.max_sessions as MaxSessions FROM licenses l 
-            inner join public.discords d 
-            on d.discord_id = l.discordid 
+            @"SELECT l.* FROM licenses l 
             WHERE discordid = @discordId;";
 
         var licenseList = await
-            connection.QueryAsync<dynamic, dynamic, License>(getDiscordIdQuery, (x, user) =>
-                new License
-                {
-                    Value = x.value,
-                    DiscordId = x.discordid,
-                    MaxSessions = x.max_sessions,
-                    Email = x.email,
-                    Username = x.username,
-                    CreationDate = x.creation_date,
-                    Password = x.password,
-                    ExpirationDate = x.expiration_date,
-                    Activated = x.activated
-                }, discordId, splitOn: "discord_id");
-        return licenseList;
+            connection.QueryAsync<dynamic>(getDiscordIdQuery, new { discordId });
+
+        return licenseList.Select(x => new License
+        {
+            Id = x.id,
+            Value = x.value,
+            DiscordId = x.discordid,
+            MaxSessions = x.max_sessions,
+            Email = x.email,
+            Username = x.username,
+            CreationDate = x.creation_date is not null
+                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
+                : null,
+            ActivatedAt = x.activated_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.actvated_at) : null,
+            Password = x.password,
+            ExpirationDate = x.expires_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.expires_at) : null,
+            Paused = x.paused,
+            Activated = x.activated
+        }).ToList();
     }
 
     public async Task<License?> GetLicenseByIdAsync(long licenseId)
@@ -87,9 +90,13 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             MaxSessions = x.max_sessions,
             Email = x.email,
             Username = x.username,
-            CreationDate = x.creation_date,
+            CreationDate = x.creation_date is not null
+                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
+                : null,
+            ActivatedAt = x.activated_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.actvated_at) : null,
             Password = x.password,
-            ExpirationDate = x.expiration_date,
+            ExpirationDate = x.expires_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.expires_at) : null,
+            Paused = x.paused,
             Activated = x.activated
         }).ToList();
         return licenses;
@@ -128,16 +135,16 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         var updatedLicense =
             await connection.QuerySingleAsync<License>(query, new
             {
-                Password = license.Password,
-                Username = license.Username,
-                MaxSessions = license.MaxSessions,
-                CreationDate = license.CreationDate,
-                ExpirationDate = license.ExpirationDate,
-                DiscordId = license.DiscordId,
-                Email = license.Email,
-                Paused = license.Paused,
-                Activated = license.Activated,
-                Id = license.Id
+                license.Password,
+                license.Username,
+                license.MaxSessions,
+                license.CreationDate,
+                license.ExpirationDate,
+                license.DiscordId,
+                license.Email,
+                license.Paused,
+                license.Activated,
+                license.Id
             }, transaction);
         return updatedLicense;
     }

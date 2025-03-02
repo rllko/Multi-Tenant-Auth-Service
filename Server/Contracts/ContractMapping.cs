@@ -21,7 +21,8 @@ public static class ContractMapping
         {
             Value = Guider.ToStringFromGuid(license.Value),
             Email = license.Email,
-            CreationDate = license.CreationDate,
+            ExpirationDate = license.ExpirationDate.ToUnixTimeSeconds(),
+            CreationDate = license.CreationDate.ToUnixTimeSeconds(),
             Discord = license.DiscordId
         };
     }

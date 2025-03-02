@@ -1,4 +1,3 @@
-using Authentication.Contracts;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FluentValidation.Results;
@@ -13,6 +12,10 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
     {
         AuthSchemes(SessionAuth.SchemeName);
         Get("/sessions/{id}");
+        Throttle(
+            hitLimit: 20,
+            durationSeconds: 60
+        );
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -43,7 +46,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-        if (session.License.ExpirationDate > DateTime.Now.ToEpoch())
+        if (session.License.ExpirationDate.ToUnixTimeSeconds() > DateTimeOffset.Now.ToUnixTimeSeconds())
         {
             await SendErrorsAsync(cancellation: ct);
             return;

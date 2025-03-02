@@ -1,3 +1,4 @@
+using Authentication.Models.Entities;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
 
@@ -12,15 +13,17 @@ public class CreateBulkEndpoint(ILicenseBuilder licenseService) : EndpointWithou
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var discordId = Query<ulong>("discordId", false);
+        var discordId = Query<long>("discordId", false);
         var amount = Query<int>("amount");
+        var licenseExpirationInDays = Query<int>("licenseExpirationInDays");
 
-        var userList = await licenseService.CreateLicenseInBulk(amount);
-        // var enumerable = userList as License[] ?? userList.ToArray();
-        //
-        // await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
-        // {
-        //     Result = enumerable.Select(x => x.MapToDto())
-        // }, ct);
+        var userList = await licenseService.CreateLicenseInBulk(
+            amount,
+            licenseExpirationInDays);
+
+        await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
+        {
+            Result = userList.Select(x => x)
+        }, ct);
     }
 }

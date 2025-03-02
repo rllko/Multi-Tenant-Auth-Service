@@ -33,7 +33,7 @@ public class HwidService(IDbConnectionFactory connectionFactory) : IHwidService
     /// <param name="hwidDto">Hwid to check</param>
     /// <returns>a valid hwid</returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task<IEnumerable<Hwid>?> GetHwidByDtoAsync(HwidDto hwidDto)
+    public async Task<IEnumerable<Hwid>> GetHwidByDtoAsync(HwidDto hwidDto)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 

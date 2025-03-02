@@ -9,6 +9,10 @@ public class LogoutSessionEndpoint(IUserSessionService sessionService) : Endpoin
     {
         AuthSchemes(SessionAuth.SchemeName);
         Delete("/sessions/{id}");
+        Throttle(
+            hitLimit: 20,
+            durationSeconds: 60
+        );
     }
 
     public override async Task HandleAsync(CancellationToken ct)

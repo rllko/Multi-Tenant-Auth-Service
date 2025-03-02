@@ -1,6 +1,5 @@
 ﻿using Authentication.Models.Entities;
 using Authentication.Services;
-using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 namespace Authentication.Endpoints.Sessions;
 
 public class CreateSessionEndpoint(
-    IAccountService accountService,
     IUserSessionService sessionService)
     : Endpoint<CreateSessionRequest, Result<string, ValidationFailed>>
 {
@@ -18,6 +16,10 @@ public class CreateSessionEndpoint(
     {
         AllowFormData();
         AllowAnonymous();
+        Throttle(
+            20,
+            60
+        );
         Post("/sessions");
     }
 

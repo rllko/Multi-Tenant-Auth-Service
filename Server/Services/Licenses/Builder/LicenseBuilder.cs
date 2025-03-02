@@ -10,26 +10,20 @@ namespace Authentication.Services.Licenses.Builder;
 public class LicenseBuilder(
     IDbConnectionFactory connectionFactory) : ILicenseBuilder
 {
-    public async Task<IEnumerable<LicenseDto>> CreateLicenseInBulk(int amount, long? discordId = null,
-        IDbTransaction? transaction = null)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<Result<License, ValidationFailed>> CreateLicenseAsync(int licenseExpirationInDays,
         long? discordId = null, string? username = null,
         string? email = null, string? password = null,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
-        var creationDate = DateTime.Now;
-        var expiration = DateTime.Now.AddDays(licenseExpirationInDays).ToEpoch();
+        var creationDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var expiration = DateTimeOffset.Now.AddDays(licenseExpirationInDays).ToUnixTimeSeconds();
 
         var query =
             @"INSERT INTO public.licenses (discordId,email,username,creation_date,expires_at) VALUES (@discord,@email,@username,@creationDate,@expiration) RETURNING *;
         ";
-#warning dont forget to do turn into seconds the days picked for the license
-        var ye = new object[] { discordId, email, username }.Count(x => x == null) is 4;
+
+        var ye = new object?[] { discordId, email, username }.Count(x => x == null) is 4;
         if (ye)
         {
             var error = new ValidationFailure("error", "discordId, email and password must be provided");
@@ -50,10 +44,10 @@ public class LicenseBuilder(
 
         return new License
         {
-            CreationDate = newLicense.creation_date,
+            CreationDate = DateTimeOffset.FromUnixTimeSeconds(newLicense.creation_date),
             Value = newLicense.value,
             Id = newLicense.id,
-            ExpirationDate = newLicense.expires_at,
+            ExpirationDate = DateTimeOffset.FromUnixTimeSeconds(newLicense.expires_at),
             Email = newLicense.email ?? null,
             Discord = newLicense.discord ?? null
         };

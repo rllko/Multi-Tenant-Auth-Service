@@ -10,11 +10,10 @@ CREATE TABLE IF NOT EXISTS licenses
     password       text     DEFAULT NULL,
     activated_at   bigint,
     expires_at     BIGINT NOT NULL,
-    last_paused_at timestamp,
+    last_paused_at bigint,
     paused         BOOL,
     activated      BOOL     default false
 );
 CREATE UNIQUE INDEX IF NOT EXISTS value_index on licenses (value);
 CREATE UNIQUE INDEX IF NOT EXISTS login_index on licenses (email, password);
 CREATE UNIQUE INDEX IF NOT EXISTS login_index on licenses (username);
-

@@ -72,7 +72,6 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 
 var app = builder.Build();
-#warning RATE LIMITING LIL BRO
 app.UseCors(myAllowSpecificOrigins);
 
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();

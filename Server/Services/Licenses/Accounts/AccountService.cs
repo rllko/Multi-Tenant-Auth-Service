@@ -5,8 +5,7 @@ using FluentValidation.Results;
 namespace Authentication.Services.Licenses.Accounts;
 
 public class AccountService(
-    IDbConnectionFactory connectionFactory,
-    ILicenseService licenseService
+    IDbConnectionFactory connectionFactory
 ) : IAccountService
 {
     public async Task<bool> PauseAllSubscriptions()
