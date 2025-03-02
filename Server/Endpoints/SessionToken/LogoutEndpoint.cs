@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Authentication.Endpoints.Sessions;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
@@ -18,7 +19,7 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "authentication")?.Value;
+        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Authentication)?.Value;
 
         if (string.IsNullOrWhiteSpace(tokenStr) || Guid.TryParse(tokenStr!, out var tokenGuid) is false)
         {
