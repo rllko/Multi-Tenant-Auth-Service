@@ -1,23 +1,20 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.Models.Entities;
 using Dapper;
-using FluentValidation;
-using LanguageExt;
 
 namespace Authentication.Services.Hwids;
 
-public class HwidService(IValidator<HwidDto> validator, IDbConnectionFactory connectionFactory) : IHwidService
+public class HwidService(IDbConnectionFactory connectionFactory) : IHwidService
 {
-    public async Task<Either<Hwid?, ValidationFailed>> CreateHwidAsync(HwidDto hwidDto,
+    public async Task<Hwid?> CreateHwidAsync(HwidDto hwidDto,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var validationResult = await validator.ValidateAsync(hwidDto);
+        //var validationResult = await validator.ValidateAsync(hwidDto);
 
-        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+        //if (validationResult.IsValid is false) return null;
 
         var addDiscordIdQuery =
             @"INSERT INTO hwids(cpu,bios,ram,disk,display) VALUES (@cpu,@bios,@ram,@disk,@display) returning *;";
@@ -36,13 +33,13 @@ public class HwidService(IValidator<HwidDto> validator, IDbConnectionFactory con
     /// <param name="hwidDto">Hwid to check</param>
     /// <returns>a valid hwid</returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task<Either<IEnumerable<Hwid>, ValidationFailed>> GetHwidByDtoAsync(HwidDto hwidDto)
+    public async Task<IEnumerable<Hwid>> GetHwidByDtoAsync(HwidDto hwidDto)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var validationResult = await validator.ValidateAsync(hwidDto);
+        //var validationResult = await validator.ValidateAsync(hwidDto);
 
-        if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
+        //if (validationResult.IsValid is false) return null;
 
         const string query = @"SELECT * FROM hwids WHERE cpu = @cpu and bios = @bios;";
         var results = await connection.QueryMultipleAsync(query);

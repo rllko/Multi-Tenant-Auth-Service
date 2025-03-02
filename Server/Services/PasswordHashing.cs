@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace Authentication.Services;
 
-public class PasswordHashing
+public static class PasswordHashing
 {
     private static string GetRandomSalt()
     {

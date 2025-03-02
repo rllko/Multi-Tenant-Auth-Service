@@ -9,8 +9,7 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
     public override void Configure()
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
-#warning AUTHORIZATION HERE
-        Delete("/protected/{discordId}/{license}");
+        Delete("/protected/{discordId}/licenses/{license}");
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -29,13 +28,13 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
             return;
         }
 
-        if (userLicense.Discord != discordId) await SendUnauthorizedAsync(ct);
+        if (userLicense.DiscordId != discordId) await SendUnauthorizedAsync(ct);
 
-        if (userLicense.Hw == null)
-        {
-            response.Error = "This license doesnt need a reset!";
-            await SendOkAsync(response, ct);
-        }
+        // if (userLicense.Hw == null)
+        // {
+        //     response.Error = "This license doesnt need a reset!";
+        //     await SendOkAsync(response, ct);
+        // }
 
         // var hwidResetCount = await userManager.GetLicenseHwidResetCount("todo");
         // const int maxHwidResets = 3;

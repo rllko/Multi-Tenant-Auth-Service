@@ -11,16 +11,18 @@ public class DatabaseInitializer
 
     private string? ConnectionString { get; }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task InitializeAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         EnsureDatabase.For.PostgresqlDatabase(ConnectionString);
 
-        var upgrader = DeployChanges.To.PostgresqlDatabase(ConnectionString)
+        var upgrade = DeployChanges.To.PostgresqlDatabase(ConnectionString)
             .WithScriptsEmbeddedInAssembly(typeof(DatabaseInitializer).Assembly).LogToConsole().Build();
 
-        if (upgrader.IsUpgradeRequired())
+        if (upgrade.IsUpgradeRequired())
         {
-            var result = upgrader.PerformUpgrade();
+            var result = upgrade.PerformUpgrade();
         }
     }
 }

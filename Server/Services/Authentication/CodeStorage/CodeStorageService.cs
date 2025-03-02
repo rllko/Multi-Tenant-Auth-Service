@@ -25,8 +25,6 @@ public class CodeStorageService : ICodeStorageService
 
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
-#warning
-
         var connection = await _connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM clients WHERE client_identifier = @identifier;";

@@ -5,6 +5,11 @@ namespace Authentication.Contracts;
 
 public static class ContractMapping
 {
+    public static long ToEpoch(this DateTime dateTime)
+    {
+        return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+    }
+
     public static string MapToString(this License license)
     {
         return Guider.ToStringFromGuid(license.Value);
@@ -14,10 +19,13 @@ public static class ContractMapping
     {
         return new LicenseDto
         {
+            Value = Guider.ToStringFromGuid(license.Value),
             Email = license.Email,
-            CreationDate = license.CreationDate,
-            Discord = license.Discord,
-            Value = Guider.ToStringFromGuid(license.Value)
+            ExpirationDate = license.ExpirationDate,
+            Activated = license.Activated,
+            Paused = license.Paused,
+            CreationDate = license.CreationDate.ToUnixTimeSeconds(),
+            Discord = license.DiscordId
         };
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Authentication.Models.Entities;
-using Authentication.Services.ActivityLogger;
 using Microsoft.AspNetCore.Authorization;
 using NSec.Cryptography;
 
@@ -9,7 +8,7 @@ namespace Authentication.Endpoints.DiscordOperations.Offsets;
 public class OffsetsEndpoint_TODO
 {
     public static async Task<IResult> HandleGet(
-        HttpContext context, IActivityLogger logger,
+        HttpContext context,
         string filename)
     {
         var response = new DiscordResponse<string>();
@@ -36,11 +35,11 @@ public class OffsetsEndpoint_TODO
             return Results.Json(response);
         }
 
-        if (loggedUser.License.Hw is { Bios: null, Cpu: null })
-        {
-            response.Error = "There isnt an hwid associated to this user.";
-            return Results.Json(response);
-        }
+        // if (loggedUser.License.Hw is { Bios: null, Cpu: null })
+        // {
+        //     response.Error = "There isnt an hwid associated to this user.";
+        //     return Results.Json(response);
+        // }
 
         //var firstChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Bios!).Chunk(6).First();
         //var secondChunk = Encoding.ASCII.GetBytes(loggedUser!.Hw!.Cpu!).Chunk(6).First();
@@ -53,9 +52,6 @@ public class OffsetsEndpoint_TODO
 
         // sign the data using the private key
         // var signature = alg.Encrypt(key, nonce, aad, data);
-
-        await logger.LogActivityAsync(ActivityType.FileDownload, context.Request.Headers["cf-connecting-ip"]!,
-            loggedUser.License.Id);
 
         // return Results.File(signature, fileDownloadName: filename);
         return Results.Ok();

@@ -1,17 +1,22 @@
 using Authentication.Database;
 using Authentication.Endpoints;
+using Authentication.Endpoints.Sessions;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
 using Authentication.Services.Clients;
 using Authentication.Services.Discords;
+using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
+using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Offsets;
+using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +27,19 @@ Environment.SetEnvironmentVariable("SYM_KEY", symmetricKey);
 Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Chacha20"));
 
 builder.Services
-    .AddAuthenticationJwtBearer(s => s.SigningKey = symmetricKey)
+    .AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; })
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
-    .AddAuthentication(DiscordBasicAuth.SchemeName)
+    .AddAuthentication(o => //must be the last auth call
+    {
+        o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddScheme<AuthenticationSchemeOptions, SessionAuth>(SessionAuth.SchemeName, null);
+
+builder.Services.AddAuthentication(DiscordBasicAuth.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, DiscordBasicAuth>(DiscordBasicAuth.SchemeName, null);
-;
 
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -47,7 +58,10 @@ builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageServ
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<ILicenseService, LicenseService>();
+builder.Services.AddScoped<IHwidService, HwidService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
@@ -63,7 +77,6 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 
 var app = builder.Build();
-
 app.UseCors(myAllowSpecificOrigins);
 
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();

@@ -4,30 +4,29 @@ using Authentication.Services.Discords;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Exception = System.Exception;
 
 namespace Authentication.Endpoints.DiscordOperations.Licenses;
 
 internal class CreateEndpoint(ILicenseBuilder licenseBuilder, IDiscordService discordService)
-    : EndpointWithoutRequest<Results<Ok<LicenseDto>, BadRequest>>
+    : Endpoint<CreateEndpoint.CreateLicenseRequest, Results<Ok<LicenseDto>, BadRequest>>
 {
     public override void Configure()
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
-        AllowAnonymous();
         Post("/protected/licenses/{discordId}");
     }
 
     public override async Task<Results<Ok<LicenseDto>, BadRequest>> ExecuteAsync(
-        CancellationToken ct)
+        CreateLicenseRequest req, CancellationToken ct)
     {
-        var discordId = Route<long>("discordId");
+        var existingDiscord = await discordService.GetByIdAsync(req.DiscordId) ??
+                              await discordService.CreateUserAsync(req.DiscordId);
 
-        var existingDiscord = await discordService.GetByIdAsync(discordId) ??
-                              await discordService.CreateUserAsync(discordId);
-
-        var key = await licenseBuilder.CreateLicenseAsync(
-            existingDiscord?.DiscordId ?? null);
+        var key = await licenseBuilder.CreateLicenseAsync(req.LicenseExpirationInDays,
+            existingDiscord?.DiscordId ?? null,
+            req.Username,
+            req.Email,
+            req.Password);
 
         var response = key.Match<IResult>(
             authResponse => TypedResults.Ok(authResponse.MapToDto()),
@@ -40,4 +39,11 @@ internal class CreateEndpoint(ILicenseBuilder licenseBuilder, IDiscordService di
             _ => throw new Exception("Impossible")
         };
     }
+
+    public record CreateLicenseRequest(
+        int LicenseExpirationInDays,
+        long DiscordId,
+        string? Username,
+        string? Email,
+        string? Password);
 }

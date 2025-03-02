@@ -32,11 +32,6 @@ public class ClientService(IDbConnectionFactory connectionFactory) : IClientServ
         return null;
     }
 
-    public async Task<Client> GetClient(AuthorizeRequest clientRequest)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<IEnumerable<string>> GetClientScopesAsync(string identifier)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
