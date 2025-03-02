@@ -59,23 +59,30 @@ public class UserSessionService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery =
-            @"SELECT us.*,l.* FROM user_sessions us
-         inner join public.licenses l on l.id = us.license_id
-         inner join hwids hw on hw.id = us.hwid_id
+            @"SELECT us.*,l.*,l.expires_at as licenseExpiration FROM user_sessions us
+         left join public.licenses l on l.id = us.license_id
+         left join hwids hw on hw.id = us.hwid
          WHERE session_token = @token;";
 #warning manually map the 3 idk
 
         var session =
-            await connection.QueryAsync<UserSession, License, UserSession>(getDiscordIdQuery,
-                (session, license) =>
+            await connection.QueryAsync<dynamic, License, UserSession>(getDiscordIdQuery,
+                (x, license) =>
+                    new UserSession
+                    {
+                        AuthorizationToken = x.session_token,
+                        LicenseId = x.license_id,
+                        SessionId = x.id,
+                        RefreshedAt = x.refreshed_at,
+                        Active = x.is_active,
+                        CreatedAt = x.created_at,
+                        HwidId = x.hwid,
+                        License = license
+                    }
+                , new
                 {
-                    session.License = license;
-
-
-                    return session;
-                }, new { token });
-
-
+                    token
+                }, splitOn: "id,license_id");
         return session.FirstOrDefault();
     }
 
@@ -174,22 +181,20 @@ public class UserSessionService(
         }
 
         // check if session has time left
-        if (session.ExpiresAt > 0)
-        {
-            var error = new ValidationFailure("error", "Session could not be created");
-            return new ValidationFailed(error);
-        }
+        // if (session.ExpiresAt > 0)
+        // {
+        //     var error = new ValidationFailure("error", "Session could not be created");
+        //     return new ValidationFailed(error);
+        // }
 
         // if it was created more than one day ago, refresh
-        if (session.CreatedAt.Day != DateTime.Now.Day &&
-            session.RefreshedAt != null &&
-            session.RefreshedAt.Value.Day != DateTime.Now.Day)
+        if (DateTimeOffset.Now.ToUnixTimeSeconds() < session.RefreshedAt)
         {
             var error = new ValidationFailure("error", "Session could not be created");
             return new ValidationFailed(error);
         }
 
-        session.RefreshedAt = DateTime.Now;
+        session.RefreshedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
         var result = await UpdateSessionAsync(session);
         return result;
     }
@@ -210,19 +215,40 @@ public class UserSessionService(
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var createdAt = DateTime.Now;
+        var createdAt = DateTimeOffset.Now;
 
         var expiration = DateTimeOffset.Now.AddDays(1);
 
         const string query = @"INSERT INTO user_sessions (license_id, ip_address,created_at,refreshed_at)
         VALUES ( @licenseId, @ipAddress,@expiration,@createdAt) RETURNING *;";
 
-        var newUser =
-            await connection.QuerySingleAsync<UserSession>(query,
-                new { licenseId, ipAddress, expiration, createdAt },
+        var reader =
+            await connection.QueryAsync(query,
+                new
+                {
+                    licenseId, ipAddress, expiration = expiration.ToUnixTimeSeconds(),
+                    createdAt = createdAt.ToUnixTimeSeconds()
+                },
                 transaction);
 
-        return newUser;
+        var license = await licenseService.GetLicenseByIdAsync(licenseId);
+
+        var newSession = reader.Select(x =>
+        {
+            var xy = x;
+            return new UserSession
+            {
+                AuthorizationToken = x.session_token,
+                LicenseId = x.license_id,
+                Active = x.is_active,
+                RefreshedAt = x.refreshed_at,
+                CreatedAt = x.created_at,
+                HwidId = x.hwid,
+                License = license
+            };
+        }).First();
+
+        return newSession;
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)

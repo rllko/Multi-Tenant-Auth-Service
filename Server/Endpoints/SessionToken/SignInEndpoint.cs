@@ -8,7 +8,7 @@ namespace Authentication.Endpoints.SessionToken;
 
 public class SignInEndpoint(
     IUserSessionService sessionService)
-    : Endpoint<SignInRequest, Result<string, ValidationFailed>>
+    : Endpoint<SignInRequest, Results<Ok<string>, BadRequest<ValidationFailed>>>
 {
     public override void Configure()
     {
@@ -21,21 +21,27 @@ public class SignInEndpoint(
         Post("/sign-in");
     }
 
-    public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> HandleAsync(SignInRequest req,
+    public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> ExecuteAsync(SignInRequest req,
         CancellationToken ct)
     {
         var session = await sessionService.CreateSessionWithTokenAsync(req);
         var result = session.Match<IResult>(
             se =>
-                TypedResults.Ok(JwtBearer.CreateToken(
+            {
+                var jwt = JwtBearer.CreateToken(
                     o =>
                     {
-                        o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds(se.ExpiresAt).Date;
+                        o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
+                        o.SigningStyle = TokenSigningStyle.Symmetric;
+                        o.SigningAlgorithm = "HS256";
+                        o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).Date;
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                        o.User["username"] = se.License.Username!;
+                        o.User["username"] = se.License.Username;
                         o.User["license-expiration"] = se.License.ExpirationDate.ToString();
                         o.User["hwid-id"] = se.HwidId.ToString();
-                    })),
+                    });
+                return TypedResults.Ok(jwt);
+            },
             error => TypedResults.BadRequest(error));
 
         return result switch

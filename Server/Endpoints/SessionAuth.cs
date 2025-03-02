@@ -41,7 +41,7 @@ public class SessionAuth(
                     new Claim(ClaimTypes.Expiration,
                         session.License.ExpirationDate.ToString()),
                     new Claim(ClaimTypes.Role,
-                        session.CreatedAt.ToLongTimeString())
+                        session.CreatedAt.ToString())
                 };
                 var identity = new ClaimsIdentity(claims, SchemeName);
                 var principal = new ClaimsPrincipal(identity);

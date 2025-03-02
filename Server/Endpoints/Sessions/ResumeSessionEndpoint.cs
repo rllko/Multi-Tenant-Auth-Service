@@ -94,12 +94,16 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-        if (session.CreatedAt.Day != DateTime.Now.Day && session.RefreshedAt != null &&
-            session.RefreshedAt.Value.Day != DateTime.Now.Day)
-        {
-            await SendErrorsAsync(cancellation: ct);
-            return;
-        }
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(session.CreatedAt);
+        var refreshedAt = DateTimeOffset.FromUnixTimeSeconds((long)session.RefreshedAt);
+
+        // if ( != DateTime.Now.Day && session.RefreshedAt != null &&
+        //     session.RefreshedAt is not null &&
+        //     DateTimeOffset.FromUnixTimeSeconds((long)session.RefreshedAt).Day != DateTime.Now.Day)
+        // {
+        //     await SendErrorsAsync(cancellation: ct);
+        //     return;
+        // }
 
         if (session.License.ExpirationDate > DateTimeOffset.Now.ToUnixTimeSeconds())
         {

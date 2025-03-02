@@ -9,7 +9,7 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
     public override void Configure()
     {
         AuthSchemes(SessionAuth.SchemeName);
-        Delete("/sessions/{id}");
+        Delete("/sessions");
         Throttle(
             10,
             60
@@ -18,7 +18,7 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
+        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "authentication")?.Value;
 
         if (string.IsNullOrWhiteSpace(tokenStr) || Guid.TryParse(tokenStr!, out var tokenGuid) is false)
         {

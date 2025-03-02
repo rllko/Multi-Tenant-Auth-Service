@@ -175,8 +175,27 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 #warning start here!
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
 
-        var license = await
-            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { username });
+        var x = await
+            connection.QuerySingleOrDefaultAsync(getDiscordIdQuery, new { username });
+
+        var license = new License
+        {
+            Id = x.id,
+            Value = x.value,
+            DiscordId = x.discordid,
+            MaxSessions = x.max_sessions,
+            Email = x.email,
+            Username = x.username,
+            CreationDate = x.creation_date is not null
+                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
+                : null,
+            ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
+            Password = x.password,
+            ExpirationDate = x.expires_at,
+            Paused = x.paused,
+            Activated = x.activated
+        };
+
         return license;
     }
 
