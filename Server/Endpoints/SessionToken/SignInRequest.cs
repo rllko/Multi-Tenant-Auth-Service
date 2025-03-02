@@ -2,7 +2,7 @@ using Authentication.Models.Entities;
 
 namespace Authentication.Endpoints.Sessions;
 
-public record CreateSessionRequest
+public record SignInRequest
 {
     public HwidDto? Hwid { get; set; }
     public required string HwidStr { get; set; }

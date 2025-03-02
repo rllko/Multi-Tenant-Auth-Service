@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.Sessions;
 
-public class CreateSessionEndpoint(
+public class SignInEndpoint(
     IUserSessionService sessionService)
-    : Endpoint<CreateSessionRequest, Result<string, ValidationFailed>>
+    : Endpoint<SignInRequest, Result<string, ValidationFailed>>
 {
     public override void Configure()
     {
@@ -23,7 +23,7 @@ public class CreateSessionEndpoint(
         Post("/sessions");
     }
 
-    public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> HandleAsync(CreateSessionRequest req,
+    public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> HandleAsync(SignInRequest req,
         CancellationToken ct)
     {
         var filteredInput = req.HwidStr.Split('+').ToList();

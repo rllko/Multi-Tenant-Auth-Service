@@ -1,7 +1,7 @@
 // using FastEndpoints;
 // using Microsoft.AspNetCore.Http.HttpResults;
 //
-// namespace Authentication.Endpoints.DiscordOperations.Accounts;
+// namespace Authentication.Endpoints.DiscordOperations.SessionToken;
 //
 // public class ChangePasswordRequest
 // {

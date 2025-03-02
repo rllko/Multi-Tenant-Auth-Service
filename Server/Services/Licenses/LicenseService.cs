@@ -198,7 +198,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             return new ValidationFailed(error);
         }
 
-        if (license.Activated is true)
+        if (license.Activated)
         {
             var error = new ValidationFailure("License", "License is already activated");
             return new ValidationFailed(error);

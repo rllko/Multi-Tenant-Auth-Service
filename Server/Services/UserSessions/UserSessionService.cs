@@ -98,7 +98,7 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(CreateSessionRequest request)
+    public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(SignInRequest request)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 

@@ -3,7 +3,7 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.Sessions;
 
-public class LogoutSessionEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
+public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
 {
     public override void Configure()
     {
