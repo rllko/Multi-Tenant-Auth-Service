@@ -203,7 +203,8 @@ public class UserSessionService(
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        const string addDiscordIdQuery = @"DELETE FROM user_sessions WHERE id = @id;";
+        const string addDiscordIdQuery = @"UPDATE user_sessions SET session_token = null WHERE id = @id;";
+        //const string addDiscordIdQuery = @"DELETE FROM user_sessions WHERE id = @id;";
         var affectedRows1 =
             await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
 

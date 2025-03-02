@@ -13,8 +13,9 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
 {
     public override void Configure()
     {
-        Put("/session/{id}");
+        Put("/sessions/");
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Claims("session-token");
         Throttle(
             20,
             60

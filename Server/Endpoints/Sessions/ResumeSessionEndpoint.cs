@@ -11,7 +11,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
     public override void Configure()
     {
         AuthSchemes(SessionAuth.SchemeName);
-        Get("/sessions/{id}");
+        Get("/sessions/");
         Throttle(
             20,
             60
@@ -20,8 +20,6 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var sessionId = Route<Guid>("id");
-
         var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
 
         if (Guid.TryParse(tokenStr!, out var tokenFromRequest) is false)
@@ -86,14 +84,15 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
         // delete will turn the is_active flag
         // create session
 
-        var session = await sessionService.GetSessionByIdAsync(sessionId);
+        // var session = await sessionService.GetSessionByIdAsync(sessionId);
 
-        if (session is null || session.AuthorizationToken != tokenFromRequest)
-        {
-            await SendErrorsAsync(cancellation: ct);
-            return;
-        }
+        // if (session is null || session.AuthorizationToken != tokenFromRequest)
+        // {
+        //     await SendErrorsAsync(cancellation: ct);
+        //     return;
+        // }
 
+        /*
         var createdAt = DateTimeOffset.FromUnixTimeSeconds(session.CreatedAt);
         var refreshedAt = DateTimeOffset.FromUnixTimeSeconds((long)session.RefreshedAt);
 
@@ -110,6 +109,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             await SendErrorsAsync(cancellation: ct);
             return;
         }
+        */
 
         await SendOkAsync(ct);
     }

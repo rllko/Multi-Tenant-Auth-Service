@@ -16,6 +16,7 @@ using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,11 +27,15 @@ Environment.SetEnvironmentVariable("SYM_KEY", symmetricKey);
 Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Chacha20"));
 
 builder.Services
-    .AddAuthenticationJwtBearer(s => s.SigningKey = symmetricKey)
+    .AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; })
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
-    .AddAuthentication(SessionAuth.SchemeName)
+    .AddAuthentication(o => //must be the last auth call
+    {
+        o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddScheme<AuthenticationSchemeOptions, SessionAuth>(SessionAuth.SchemeName, null);
 
 builder.Services.AddAuthentication(DiscordBasicAuth.SchemeName)
