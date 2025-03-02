@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
 
-public class DiscordCodeValidator : AbstractValidator<RedeemDiscordCodeDto>
+public class RedeemLicenseRequestValidator : AbstractValidator<RedeemLicenseRequestDto>
 {
-    public DiscordCodeValidator()
+    public RedeemLicenseRequestValidator()
     {
         RuleFor(x => x.License)
             .Null().WithMessage("License is required.");
@@ -13,6 +13,6 @@ public class DiscordCodeValidator : AbstractValidator<RedeemDiscordCodeDto>
         RuleFor(x => x.Username)
             .Null().WithMessage("Username is required.");
         RuleFor(x => x.DiscordId)
-            .Null().WithMessage("Discord Id required.");
+            .Null().WithMessage("DiscordId Id required.");
     }
 }

@@ -38,7 +38,7 @@ public static class Guider
         Span<byte> idbytes = stackalloc byte[16];
         Span<byte> base64Bytes = stackalloc byte[24];
 
-        MemoryMarshal.TryWrite(idbytes, ref id);
+        MemoryMarshal.TryWrite(idbytes, in id);
         Base64.EncodeToUtf8(idbytes, base64Bytes, out _, out _);
 
         Span<char> finalChars = stackalloc char[22];

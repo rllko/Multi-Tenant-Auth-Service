@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Models.Entities.Discord;
 
 namespace Authentication.Models.Entities;
 
@@ -10,25 +11,30 @@ public class License
 
     [Column("license")]
     [StringLength(150)]
-    public required Guid Value { get; init; }
+    public Guid Value { get; init; }
+
     public string? Password { get; set; }
+    public long? ActivatedAt { get; set; }
     public string? Username { get; set; }
+    public short MaxSessions { get; set; } = 1;
+    public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.UtcNow;
 
-    [Column("creation_date", TypeName = "timestamp without time zone")]
-    public required DateTime CreationDate { get; init; }
+    public long ExpirationDate { get; set; }
 
-    [Column("discord")] public long? Discord { get; set; }
+    [Column("discord")] public long? DiscordId { get; set; }
     public string? Email { get; set; }
-
-    [ForeignKey("Hwid")]
-    [InverseProperty("Users")]
-    public Hwid? Hw { get; set; }
+    public bool Paused { get; set; }
+    public bool Activated { get; set; }
+    public DiscordUser? Discord { get; set; }
 }
 
 public class LicenseDto
 {
-    public string Value { get; init; }
-    public DateTime CreationDate { get; init; }
+    public required string Value { get; init; }
+    public long CreationDate { get; init; }
+    public bool Activated { get; init; }
+    public bool Paused { get; init; }
+    public long ExpirationDate { get; init; }
     public string? Email { get; init; }
     public long? Discord { get; init; }
 }

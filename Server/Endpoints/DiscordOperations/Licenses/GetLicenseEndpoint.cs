@@ -21,9 +21,6 @@ public class GetLicenseEndpoint(ILicenseService licenseService) : EndpointWithou
         var userLicenses = await licenseService.GetLicensesByDiscordId(discordId);
         var enumerable = userLicenses as License[] ?? userLicenses.ToArray();
 
-        await SendOkAsync(new DiscordResponse<IEnumerable<LicenseDto>>
-        {
-            Result = enumerable.Select(x => x.MapToDto())
-        }, ct);
+        await SendOkAsync(enumerable.Select(x => x.MapToDto()).ToList(), ct);
     }
 }
