@@ -27,5 +27,5 @@ public interface IUserSessionService
     Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession license,
         IDbTransaction? transaction = null);
 
-    Task<bool> DeleteSessionTokenAsync(long id, IDbTransaction? transaction = null);
+    Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null);
 }

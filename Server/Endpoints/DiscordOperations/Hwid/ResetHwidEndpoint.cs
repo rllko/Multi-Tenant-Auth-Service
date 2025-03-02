@@ -9,7 +9,7 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
     public override void Configure()
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
-        Delete("/protected/{discordId}/{license}");
+        Delete("/protected/{discordId}/licenses/{license}");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

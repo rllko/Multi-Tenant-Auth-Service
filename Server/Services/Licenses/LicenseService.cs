@@ -1,7 +1,9 @@
 using System.Data;
+using Authentication.Contracts;
 using Authentication.Database;
 using Authentication.Models.Entities;
 using Dapper;
+using FluentValidation.Results;
 using LanguageExt;
 
 namespace Authentication.Services.Licenses;
@@ -108,12 +110,35 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var addDiscordIdQuery =
-            @"UPDATE licenses
-	        SET discordid = @DiscordId WHERE id = @SessionId returning *";
+        var query = @"
+            UPDATE Licenses
+            SET 
+                password = @Password,
+                username = @Username,
+                max_sessions = @MaxSessions,
+                creation_date = @CreationDate,
+                expires_at = @ExpirationDate,
+                discordid = @DiscordId,
+                email = @Email,
+                paused = @Paused,
+                activated = @Activated
+            WHERE id = @Id returning *";
+
 
         var updatedLicense =
-            await connection.QuerySingleAsync<License>(addDiscordIdQuery, new { license }, transaction);
+            await connection.QuerySingleAsync<License>(query, new
+            {
+                Password = license.Password,
+                Username = license.Username,
+                MaxSessions = license.MaxSessions,
+                CreationDate = license.CreationDate,
+                ExpirationDate = license.ExpirationDate,
+                DiscordId = license.DiscordId,
+                Email = license.Email,
+                Paused = license.Paused,
+                Activated = license.Activated,
+                Id = license.Id
+            }, transaction);
         return updatedLicense;
     }
 
@@ -150,6 +175,48 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         var license = await
             connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue = username });
         return license;
+    }
+
+    public async Task<Result<LicenseDto, ValidationFailed>> ActivateLicense(Guid licenseValue, string username,
+        string password, string email,
+        long discordId,
+        IDbTransaction? transaction = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE value = @licenseValue;";
+
+        var license = await
+            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue });
+
+        if (license == null)
+        {
+            var error = new ValidationFailure("License", "License activation failed");
+            return new ValidationFailed(error);
+        }
+
+        if (license.Activated is true)
+        {
+            var error = new ValidationFailure("License", "License is already activated");
+            return new ValidationFailed(error);
+        }
+
+        license.Activated = true;
+        license.Username = username;
+        license.ActivatedAt = DateTime.Now;
+        license.Password = PasswordHashing.HashPassword(password);
+        license.DiscordId = discordId;
+        license.Email = email;
+
+        license = await UpdateLicenseAsync(license);
+
+        if (license is null)
+        {
+            var error = new ValidationFailure("License", "License activation failed");
+            return new ValidationFailed(error);
+        }
+
+        return license.MapToDto();
     }
 
 

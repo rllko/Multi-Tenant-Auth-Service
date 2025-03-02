@@ -22,23 +22,24 @@ public class LicenseBuilder(
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
-        var expiration = DateTime.Now.AddDays(licenseExpirationInDays);
+        var creationDate = DateTime.Now;
+        var expiration = DateTime.Now.AddDays(licenseExpirationInDays).ToEpoch();
 
         var query =
-            @"INSERT INTO public.licenses (discordId,email,username,remaining_seconds,password) VALUES (@discord,@email,@username,@expiration,@password) RETURNING *;";
+            @"INSERT INTO public.licenses (discordId,email,username,creation_date,expires_at) VALUES (@discord,@email,@username,@creationDate,@expiration) RETURNING *;
+        ";
 #warning dont forget to do turn into seconds the days picked for the license
-        var ye = new object[] { discordId, email, password, username }.Count(x => x == null) is not 0 or 4;
+        var ye = new object[] { discordId, email, username }.Count(x => x == null) is 4;
         if (ye)
         {
             var error = new ValidationFailure("error", "discordId, email and password must be provided");
             return new ValidationFailed(error);
         }
 
-        var originalPassword = password ?? PasswordHashing.GenerateRandomPassword();
-        password = PasswordHashing.HashPassword(originalPassword);
 
         var newLicense =
-            await connection.QueryFirstAsync(query, new { discord = discordId, email, username, expiration, password },
+            await connection.QueryFirstAsync(query,
+                new { discord = discordId, email, username, creationDate, expiration },
                 transaction);
 
         if (newLicense.id == null)
@@ -49,13 +50,12 @@ public class LicenseBuilder(
 
         return new License
         {
-            ExpirationDate = newLicense.expiration_date,
             CreationDate = newLicense.creation_date,
-            Password = originalPassword,
-            Email = newLicense.email ?? null,
             Value = newLicense.value,
-            Discord = newLicense.discord,
-            Id = newLicense.id
+            Id = newLicense.id,
+            ExpirationDate = newLicense.expires_at,
+            Email = newLicense.email ?? null,
+            Discord = newLicense.discord ?? null
         };
     }
 

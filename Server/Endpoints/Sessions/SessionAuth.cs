@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Authentication.Contracts;
 using Authentication.Models.Entities;
 using Authentication.Services.UserSessions;
 using Microsoft.AspNetCore.Authentication;
@@ -40,7 +39,7 @@ public class SessionAuth(
                     new Claim(ClaimTypes.NameIdentifier,
                         session.License.Username!),
                     new Claim(ClaimTypes.Expiration,
-                        session.License.ExpirationDate.ToEpoch().ToString()),
+                        session.License.ExpirationDate.ToString()),
                     new Claim(ClaimTypes.Role,
                         session.CreatedAt.ToLongTimeString())
                 };

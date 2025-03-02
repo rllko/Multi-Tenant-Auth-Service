@@ -14,11 +14,7 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
-            UPDATE Licenses
-            SET remaining_seconds = remaining_seconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)),
-                LastStartedAt = NULL,
-                activated = FALSE
-            WHERE LastStartedAt > now() - interval '30 day' AND activated = TRUE;
+            UPDATE Licenses SET paused = TRUE,last_paused_at = NOW() WHERE paused = false;
         ";
         var affected = await connection.ExecuteAsync(query);
         return affected > 0;
@@ -29,9 +25,9 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
-            UPDATE Licenses
-            SET LastStartedAt = NOW(), activated = TRUE
-            WHERE username = @username;
+                    UPDATE licenses
+                    SET expires_at = expires_at + EXTRACT(EPOCH FROM (NOW() - last_paused_at))::BIGINT
+                    WHERE username = @username;
         ";
 
         var affected = await connection.ExecuteAsync(query, new { username });
@@ -43,9 +39,9 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
-         UPDATE Licenses
-         SET LastStartedAt = NOW(), activated = TRUE
-         WHERE remaining_seconds > 0 AND activated = FALSE;
+        UPDATE licenses
+        SET expires_at = expires_at + EXTRACT(EPOCH FROM (NOW() - last_paused_at))::BIGINT
+        WHERE last_paused_at IS NOT NULL;
         ";
 
         var affected = await connection.ExecuteAsync(query);
@@ -114,10 +110,9 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
-            UPDATE Licenses
-            SET LastStartedAt = NULL,
-                activated = FALSE
-            WHERE username = @username AND activated = TRUE;
+            UPDATE Licenses 
+            SET paused = TRUE,last_paused_at = NOW()
+            WHERE username = @username AND paused = FALSE;
         ";
 
         var affected = await connection.ExecuteAsync(query, new { username });
@@ -129,11 +124,7 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
-            SELECT 
-                CASE 
-                    WHEN activated THEN remaining_seconds - EXTRACT(EPOCH FROM (NOW() - LastStartedAt)) 
-                    ELSE remaining_seconds 
-                END AS TimeLeft
+            SELECT EXTRACT(EPOCH FROM (NOW() - expires_at))::BIGINT 
             FROM Licenses
             WHERE username = @username;
         ";

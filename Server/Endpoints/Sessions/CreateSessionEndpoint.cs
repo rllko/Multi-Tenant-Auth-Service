@@ -1,5 +1,4 @@
-﻿using Authentication.Contracts;
-using Authentication.Models.Entities;
+﻿using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.UserSessions;
@@ -52,7 +51,7 @@ public class CreateSessionEndpoint(
                         o.ExpireAt = DateTime.UtcNow.AddDays(1);
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
                         o.User["username"] = se.License.Username!;
-                        o.User["license-expiration"] = se.License.ExpirationDate.ToEpoch().ToString();
+                        o.User["license-expiration"] = se.License.ExpirationDate.ToString();
                     })),
             error => TypedResults.BadRequest(error));
 

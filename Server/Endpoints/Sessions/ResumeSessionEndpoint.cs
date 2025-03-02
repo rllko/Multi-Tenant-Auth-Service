@@ -1,3 +1,4 @@
+using Authentication.Contracts;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FluentValidation.Results;
@@ -42,7 +43,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-        if (session.License.ExpirationDate > DateTime.Now)
+        if (session.License.ExpirationDate > DateTime.Now.ToEpoch())
         {
             await SendErrorsAsync(cancellation: ct);
             return;

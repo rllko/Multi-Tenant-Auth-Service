@@ -1,4 +1,5 @@
 using System.Data;
+using Authentication.Contracts;
 using Authentication.Database;
 using Authentication.Endpoints.Sessions;
 using Authentication.Models.Entities;
@@ -78,10 +79,7 @@ public class UserSessionService(
 
         if (session is null) return false;
 
-        // remove session token
-        session.AuthorizationToken = null;
-        var _ = UpdateSessionAsync(session);
-        return true;
+        return await DeleteSessionTokenAsync(session.SessionId);
     }
 
     public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
@@ -100,17 +98,6 @@ public class UserSessionService(
             await connection.QuerySingleAsync<UserSession>(addDiscordIdQuery, new { session }, transaction);
 
         return newSession;
-    }
-
-    public async Task<bool> DeleteSessionTokenAsync(long id, IDbTransaction? transaction = null)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        const string addDiscordIdQuery = @"DELETE FROM user_sessions WHERE id = @id;";
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
-
-        return affectedRows1 > 0;
     }
 
     public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(CreateSessionRequest request)
@@ -140,7 +127,7 @@ public class UserSessionService(
         }
 
         // check if license has time left
-        if (license.ExpirationDate < DateTime.Now)
+        if (license.ExpirationDate < DateTime.Now.ToEpoch())
         {
             var error = new ValidationFailure("error", "license expired.");
             return new ValidationFailed(error);
@@ -235,6 +222,17 @@ public class UserSessionService(
                 transaction);
 
         return newUser;
+    }
+
+    public async Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        const string addDiscordIdQuery = @"DELETE FROM user_sessions WHERE id = @id;";
+        var affectedRows1 =
+            await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
+
+        return affectedRows1 > 0;
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)
