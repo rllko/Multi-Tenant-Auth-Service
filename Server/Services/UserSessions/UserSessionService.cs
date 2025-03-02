@@ -203,7 +203,7 @@ public class UserSessionService(
         }
 
         // check if session has time left
-        if (session.ExpirationTime > 0)
+        if (session.ExpiresAt > 0)
         {
             var error = new ValidationFailure("error", "Session could not be created");
             return new ValidationFailed(error);

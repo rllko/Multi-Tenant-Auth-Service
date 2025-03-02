@@ -22,6 +22,7 @@ public class License
 
     [Column("discord")] public long? DiscordId { get; set; }
     public string? Email { get; set; }
+    public bool Paused { get; set; }
     public bool Activated { get; init; }
     public DiscordUser? Discord { get; set; }
 }

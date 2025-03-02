@@ -11,7 +11,7 @@ public class UserSession(
     long licenseId,
     License license,
     string ipAddress,
-    long expirationTime,
+    long expiresAt,
     DateTime createdAt,
     DateTime? refreshedAt)
 {
@@ -22,7 +22,7 @@ public class UserSession(
     public long LicenseId { get; } = licenseId;
     public License License { get; set; } = license;
     public string IpAddress { get; } = ipAddress;
-    public long ExpirationTime { get; set; } = expirationTime;
+    public long ExpiresAt { get; set; } = expiresAt;
     public DateTime CreatedAt { get; } = createdAt;
     public DateTime? RefreshedAt { get; set; } = refreshedAt;
 }
