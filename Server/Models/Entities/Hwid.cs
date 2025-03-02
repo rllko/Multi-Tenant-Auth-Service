@@ -39,6 +39,20 @@ public class Hwid
 
 public record HwidDto(string cpu, string bios, string ram, string disk, string display)
 {
+    public static HwidDto? MapFromString(string hwid)
+    {
+        var filteredInput = hwid.Split('+').ToList();
+
+        if (filteredInput.Count is not 5) return null;
+
+        foreach (var item in filteredInput)
+            if (item!.Length is not 64)
+                return null;
+
+        return new HwidDto(filteredInput[0], filteredInput[1], filteredInput[2],
+            filteredInput[3], filteredInput[4]);
+    }
+
     public Hwid ToHwid(long id)
     {
         return new Hwid(id, cpu, bios, ram, disk, display);

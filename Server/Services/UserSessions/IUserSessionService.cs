@@ -10,9 +10,9 @@ public interface IUserSessionService
     Task<IEnumerable<UserSession>> GetSessionsByLicenseAsync(long licenseId);
     Task<UserSession?> GetSessionByTokenAsync(Guid token);
     Task<UserSession?> GetSessionByHwidAsync(long hwid);
-    Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(SignInRequest request);
+    Task<Result<UserSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request);
 
-    Task<UserSession> CreateLicenseSessionAsync(long licenseId, long hwidId, string? ipAddress = null,
+    Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
         IDbTransaction? transaction = null);
 
     Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken);

@@ -36,7 +36,21 @@ public class UserSessionService(
 
         var results = await connection.QueryMultipleAsync(getDiscordIdQuery, new { licenseId });
 
-        var sessions = await results.ReadAsync<UserSession>();
+        var reader = await results.ReadAsync();
+
+        var sessions = reader.Select(x =>
+        {
+            var xy = x;
+            return new UserSession
+            {
+                AuthorizationToken = x.session_token,
+                LicenseId = x.license_id,
+                RefreshedAt = x.refreshed_at,
+                Active = x.is_active,
+                CreatedAt = x.created_at,
+                HwidId = x.hwid
+            };
+        });
         return sessions;
     }
 
@@ -47,15 +61,20 @@ public class UserSessionService(
         var getDiscordIdQuery =
             @"SELECT us.*,l.* FROM user_sessions us
          inner join public.licenses l on l.id = us.license_id
+         inner join hwids hw on hw.id = us.hwid_id
          WHERE session_token = @token;";
+#warning manually map the 3 idk
 
         var session =
             await connection.QueryAsync<UserSession, License, UserSession>(getDiscordIdQuery,
                 (session, license) =>
                 {
                     session.License = license;
+
+
                     return session;
                 }, new { token });
+
 
         return session.FirstOrDefault();
     }
@@ -98,7 +117,7 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> CreateSessionAsync(SignInRequest request)
+    public async Task<Result<UserSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -122,7 +141,7 @@ public class UserSessionService(
         // check for existing sessions
         var sessions = await GetSessionsByLicenseAsync(license.Id);
 
-        if (sessions.Count() >= license.MaxSessions && license.MaxSessions > 0)
+        if (sessions?.Count() >= license.MaxSessions && license.MaxSessions > 0)
         {
             var error = new ValidationFailure("error", "max sessions reached.");
             return new ValidationFailed(error);
@@ -134,67 +153,11 @@ public class UserSessionService(
             var error = new ValidationFailure("error", "license expired.");
             return new ValidationFailed(error);
         }
-#warning this
-        // this endpoint assigns the session token
-        // resume assigns the hwid / continues the thing
-        // refresh refreshes the token, give jwt and it retrieves
-        // delete will turn the is_active flag
 
-        // if (request.Hwid is null)
-        // {
-        //     var error = new ValidationFailure("error", "hwid is required.");
-        //     return new ValidationFailed(error);
-        // }
-
-        /*// if limit is reached, check hwid
-        var hwids = await hwidService.GetHwidByDtoAsync(request.Hwid);
-
-        Hwid? hwid = null;
-        // Filter out those HWID DTOs that match the CPU and BIOS, but only one other property is different.
-        foreach (var hwidDto in hwids)
-            // Check if CPU and BIOS are the same
-            if (hwidDto.Cpu == request.Hwid.cpu && hwidDto.Bios == request.Hwid.bios)
-            {
-                // Count how many properties differ
-                var differentPropertiesCount = 0;
-
-                if (hwidDto.Ram != request.Hwid.ram) differentPropertiesCount++;
-                if (hwidDto.Disk != request.Hwid.disk) differentPropertiesCount++;
-                if (hwidDto.Display != request.Hwid.display) differentPropertiesCount++;
-
-                // If only one property differs, it's a match
-                if (differentPropertiesCount == 1) hwid = hwidDto;
-            }
-
-        // if hwid correct, give him current session
-        if (hwid is not null)
-        {
-            var session = await GetSessionByHwidAsync(hwid.Id);
-
-            if (session?.AuthorizationToken is null || session.RefreshedAt?.Day == DateTimeOffset.Now.Day)
-            {
-                var error = new ValidationFailure("error", "A session already exists");
-                return new ValidationFailed(error);
-            }
-
-            return await RefreshLicenseSession((Guid)session.AuthorizationToken);
-        }*/
-
-        // if no, create hwid
-        var newHwid = await hwidService.CreateHwidAsync(request.Hwid, transaction);
-
-        if (newHwid is null)
-        {
-            transaction.Rollback();
-            var error = new ValidationFailure("error", "something wrong happened!");
-            return new ValidationFailed(error);
-        }
-
-        // create session
         var newSession = await CreateLicenseSessionAsync(license.Id, transaction: transaction);
 
         transaction.Commit();
-        // send session
+
         return newSession;
     }
 

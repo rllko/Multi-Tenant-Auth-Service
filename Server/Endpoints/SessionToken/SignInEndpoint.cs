@@ -1,9 +1,7 @@
-﻿using Authentication.Models.Entities;
-using Authentication.Services;
+﻿using Authentication.Services;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.SessionToken;
@@ -14,46 +12,29 @@ public class SignInEndpoint(
 {
     public override void Configure()
     {
-        AllowFormData();
+        //  AllowFormData();
         AllowAnonymous();
         Throttle(
             10,
             60
         );
-        Post("/sessions");
+        Post("/sign-in");
     }
 
     public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> HandleAsync(SignInRequest req,
         CancellationToken ct)
     {
-        var filteredInput = req.HwidStr.Split('+').ToList();
-
-        if (filteredInput.Count is not 5)
-        {
-            var error = new ValidationFailure("error", "Invalid HWID Size");
-            return TypedResults.BadRequest(new ValidationFailed(error));
-        }
-
-        foreach (var item in filteredInput)
-            if (item!.Length is not 64)
-            {
-                var error = new ValidationFailure("error", "Invalid HWID Format");
-                return TypedResults.BadRequest(new ValidationFailed(error));
-            }
-
-        req.Hwid = new HwidDto(filteredInput[0], filteredInput[1], filteredInput[2],
-            filteredInput[3], filteredInput[4]);
-
-        var session = await sessionService.CreateSessionAsync(req);
+        var session = await sessionService.CreateSessionWithTokenAsync(req);
         var result = session.Match<IResult>(
             se =>
                 TypedResults.Ok(JwtBearer.CreateToken(
                     o =>
                     {
-                        o.ExpireAt = DateTime.Today.Date;
+                        o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds(se.ExpiresAt).Date;
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
                         o.User["username"] = se.License.Username!;
                         o.User["license-expiration"] = se.License.ExpirationDate.ToString();
+                        o.User["hwid-id"] = se.HwidId.ToString();
                     })),
             error => TypedResults.BadRequest(error));
 

@@ -138,13 +138,12 @@ public class AccountService(
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var query = "SELECT password FROM Licenses WHERE username = @username AND activated = TRUE";
-        var result = await connection.QuerySingleOrDefaultAsync<string>(query, new { username, password });
+        var result = await connection.QuerySingleOrDefaultAsync<string>(query, new { username });
 
         if (result == null) return false;
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result);
-        if (isPasswordValid is false) return false;
 
-        return true;
+        return isPasswordValid;
     }
 }
