@@ -1,5 +1,5 @@
 using System.Data;
-using Authentication.Endpoints.Sessions;
+using Authentication.Endpoints.SessionToken;
 using Authentication.Models.Entities;
 
 namespace Authentication.Services.UserSessions;

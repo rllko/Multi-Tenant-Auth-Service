@@ -6,7 +6,7 @@ using FastEndpoints.Security;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.SessionToken;
 
 public class SignInEndpoint(
     IUserSessionService sessionService)
@@ -17,7 +17,7 @@ public class SignInEndpoint(
         AllowFormData();
         AllowAnonymous();
         Throttle(
-            20,
+            10,
             60
         );
         Post("/sessions");
@@ -50,7 +50,7 @@ public class SignInEndpoint(
                 TypedResults.Ok(JwtBearer.CreateToken(
                     o =>
                     {
-                        o.ExpireAt = DateTime.UtcNow.AddDays(1);
+                        o.ExpireAt = DateTime.Today.Date;
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
                         o.User["username"] = se.License.Username!;
                         o.User["license-expiration"] = se.License.ExpirationDate.ToString();

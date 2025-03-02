@@ -1,7 +1,8 @@
+using Authentication.Endpoints.Sessions;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.SessionToken;
 
 public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
 {
@@ -10,8 +11,8 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
         AuthSchemes(SessionAuth.SchemeName);
         Delete("/sessions/{id}");
         Throttle(
-            hitLimit: 20,
-            durationSeconds: 60
+            10,
+            60
         );
     }
 

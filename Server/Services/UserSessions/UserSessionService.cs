@@ -1,6 +1,6 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints.Sessions;
+using Authentication.Endpoints.SessionToken;
 using Authentication.Models.Entities;
 using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
@@ -134,14 +134,19 @@ public class UserSessionService(
             var error = new ValidationFailure("error", "license expired.");
             return new ValidationFailed(error);
         }
+#warning this
+        // this endpoint assigns the session token
+        // resume assigns the hwid / continues the thing
+        // refresh refreshes the token, give jwt and it retrieves
+        // delete will turn the is_active flag
 
-        if (request.Hwid is null)
-        {
-            var error = new ValidationFailure("error", "hwid is required.");
-            return new ValidationFailed(error);
-        }
+        // if (request.Hwid is null)
+        // {
+        //     var error = new ValidationFailure("error", "hwid is required.");
+        //     return new ValidationFailed(error);
+        // }
 
-        // if limit is reached, check hwid 
+        /*// if limit is reached, check hwid
         var hwids = await hwidService.GetHwidByDtoAsync(request.Hwid);
 
         Hwid? hwid = null;
@@ -173,7 +178,7 @@ public class UserSessionService(
             }
 
             return await RefreshLicenseSession((Guid)session.AuthorizationToken);
-        }
+        }*/
 
         // if no, create hwid
         var newHwid = await hwidService.CreateHwidAsync(request.Hwid, transaction);
@@ -186,7 +191,7 @@ public class UserSessionService(
         }
 
         // create session
-        var newSession = await CreateLicenseSessionAsync(license.Id, newHwid.Id, transaction: transaction);
+        var newSession = await CreateLicenseSessionAsync(license.Id, transaction: transaction);
 
         transaction.Commit();
         // send session
@@ -226,20 +231,6 @@ public class UserSessionService(
         return result;
     }
 
-    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, long hwidId, string? ipAddress = null,
-        IDbTransaction? transaction = null)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var addDiscordIdQuery = @"INSERT INTO user_sessions (license_id, ip_address,hwid)
-        VALUES ( @licenseId, @ipAddress,@hwidId) RETURNING *;";
-        var newUser =
-            await connection.QuerySingleAsync<UserSession>(addDiscordIdQuery, new { licenseId, ipAddress, hwidId },
-                transaction);
-
-        return newUser;
-    }
-
     public async Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -249,6 +240,26 @@ public class UserSessionService(
             await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
 
         return affectedRows1 > 0;
+    }
+
+    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
+        IDbTransaction? transaction = null)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+
+        var createdAt = DateTime.Now;
+
+        var expiration = DateTimeOffset.Now.AddDays(1);
+
+        const string query = @"INSERT INTO user_sessions (license_id, ip_address,created_at,refreshed_at)
+        VALUES ( @licenseId, @ipAddress,@expiration,@createdAt) RETURNING *;";
+
+        var newUser =
+            await connection.QuerySingleAsync<UserSession>(query,
+                new { licenseId, ipAddress, expiration, createdAt },
+                transaction);
+
+        return newUser;
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)

@@ -1,6 +1,6 @@
 using Authentication.Models.Entities;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.SessionToken;
 
 public record SignInRequest
 {
