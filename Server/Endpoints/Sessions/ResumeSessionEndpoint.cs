@@ -29,11 +29,10 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-
-        // if (request.Hwid is null)
-        // {
-        //     var error = new ValidationFailure("error", "hwid is required.");
-        //     return new ValidationFailed(error);
+        //    if (request.Hwid is null)
+        //  {
+        //    var error = new ValidationFailure("error", "hwid is required.");
+        //   return new ValidationFailed(error);
         // }
 
         /*// if limit is reached, check hwid
