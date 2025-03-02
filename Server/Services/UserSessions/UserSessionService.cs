@@ -129,7 +129,7 @@ public class UserSessionService(
         }
 
         // check if license has time left
-        if (license.ExpirationDate < DateTimeOffset.Now)
+        if (license.ExpirationDate < DateTimeOffset.Now.ToUnixTimeSeconds())
         {
             var error = new ValidationFailure("error", "license expired.");
             return new ValidationFailed(error);

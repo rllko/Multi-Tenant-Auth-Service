@@ -13,8 +13,8 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
         AuthSchemes(SessionAuth.SchemeName);
         Get("/sessions/{id}");
         Throttle(
-            hitLimit: 20,
-            durationSeconds: 60
+            20,
+            60
         );
     }
 
@@ -46,7 +46,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-        if (session.License.ExpirationDate.ToUnixTimeSeconds() > DateTimeOffset.Now.ToUnixTimeSeconds())
+        if (session.License.ExpirationDate > DateTimeOffset.Now.ToUnixTimeSeconds())
         {
             await SendErrorsAsync(cancellation: ct);
             return;

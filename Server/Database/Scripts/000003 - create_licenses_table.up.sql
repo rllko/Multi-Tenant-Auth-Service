@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS licenses
     value          UUID     DEFAULT gen_random_uuid(),
     discordId      BIGINT REFERENCES discords (discord_id) ON DELETE CASCADE,
     max_sessions   SMALLINT DEFAULT 1,
-    email          varchar(64) UNIQUE,
+    email          varchar(64),
     username       text UNIQUE,
     creation_date  bigint NOT NULL,
     password       text     DEFAULT NULL,

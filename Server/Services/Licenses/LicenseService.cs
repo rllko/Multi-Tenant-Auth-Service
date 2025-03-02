@@ -32,9 +32,9 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             CreationDate = x.creation_date is not null
                 ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
                 : null,
-            ActivatedAt = x.activated_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.actvated_at) : null,
+            ActivatedAt = x.activated_at is not null ? x.activated_at : null,
             Password = x.password,
-            ExpirationDate = x.expires_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.expires_at) : null,
+            ExpirationDate = x.expires_at,
             Paused = x.paused,
             Activated = x.activated
         }).ToList();
@@ -93,9 +93,9 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             CreationDate = x.creation_date is not null
                 ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
                 : null,
-            ActivatedAt = x.activated_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.actvated_at) : null,
+            ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
             Password = x.password,
-            ExpirationDate = x.expires_at is not null ? DateTimeOffset.FromUnixTimeSeconds(x.expires_at) : null,
+            ExpirationDate = x.expires_at,
             Paused = x.paused,
             Activated = x.activated
         }).ToList();
@@ -122,13 +122,11 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             SET 
                 password = @Password,
                 username = @Username,
-                max_sessions = @MaxSessions,
-                creation_date = @CreationDate,
-                expires_at = @ExpirationDate,
                 discordid = @DiscordId,
                 email = @Email,
                 paused = @Paused,
-                activated = @Activated
+                activated = @Activated,
+                activated_at = @ActivatedAt
             WHERE id = @Id returning *";
 
 
@@ -137,13 +135,11 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             {
                 license.Password,
                 license.Username,
-                license.MaxSessions,
-                license.CreationDate,
-                license.ExpirationDate,
                 license.DiscordId,
                 license.Email,
                 license.Paused,
                 license.Activated,
+                license.ActivatedAt,
                 license.Id
             }, transaction);
         return updatedLicense;
@@ -210,7 +206,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         license.Activated = true;
         license.Username = username;
-        license.ActivatedAt = DateTime.Now;
+        license.ActivatedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
         license.Password = PasswordHashing.HashPassword(password);
         license.DiscordId = discordId;
         license.Email = email;

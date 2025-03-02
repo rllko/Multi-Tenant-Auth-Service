@@ -14,12 +14,12 @@ public class License
     public Guid Value { get; init; }
 
     public string? Password { get; set; }
-    public DateTimeOffset? ActivatedAt { get; set; }
+    public long? ActivatedAt { get; set; }
     public string? Username { get; set; }
-    public short MaxSessions { get; set; }
-    public DateTimeOffset CreationDate { get; set; } = DateTime.Now;
+    public short MaxSessions { get; set; } = 1;
+    public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.UtcNow;
 
-    public DateTimeOffset ExpirationDate { get; set; }
+    public long ExpirationDate { get; set; }
 
     [Column("discord")] public long? DiscordId { get; set; }
     public string? Email { get; set; }
