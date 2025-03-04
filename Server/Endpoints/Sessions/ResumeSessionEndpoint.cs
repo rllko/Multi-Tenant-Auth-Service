@@ -11,7 +11,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
     public override void Configure()
     {
         AuthSchemes(SessionAuth.SchemeName);
-        Get("/sessions/");
+        Post("/protected/sessions/resume");
         Throttle(
             20,
             60

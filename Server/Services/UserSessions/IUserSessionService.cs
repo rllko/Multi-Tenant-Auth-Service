@@ -27,5 +27,7 @@ public interface IUserSessionService
     Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession license,
         IDbTransaction? transaction = null);
 
+    Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(Guid sessionToken, HwidDto hwidDto);
+
     Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null);
 }

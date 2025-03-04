@@ -252,6 +252,29 @@ public class UserSessionService(
         return newSession;
     }
 
+    public async Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(Guid sessionToken, HwidDto hwidDto)
+    {
+        var session = await GetSessionByTokenAsync(sessionToken);
+
+        if (session is null)
+        {
+            var error = new ValidationFailure("error", "session could not be found");
+            return new ValidationFailed(error);
+        }
+
+        var hwid = await hwidService.GetHwidByDtoAsync(hwidDto) ?? await hwidService.CreateHwidAsync(hwidDto);
+
+        if (hwid is null)
+        {
+            var error = new ValidationFailure("error", "hwid could not be created");
+            return new ValidationFailed(error);
+        }
+
+        session.HwidId = hwid.Id;
+
+        return await UpdateSessionAsync(session);
+    }
+
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
