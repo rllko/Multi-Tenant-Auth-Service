@@ -29,31 +29,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             return;
         }
 
-        //    if (request.Hwid is null)
-        //  {
-        //    var error = new ValidationFailure("error", "hwid is required.");
-        //   return new ValidationFailed(error);
-        // }
-
         /*// if limit is reached, check hwid
-        var hwids = await hwidService.GetHwidByDtoAsync(request.Hwid);
-
-        Hwid? hwid = null;
-        // Filter out those HWID DTOs that match the CPU and BIOS, but only one other property is different.
-        foreach (var hwidDto in hwids)
-            // Check if CPU and BIOS are the same
-            if (hwidDto.Cpu == request.Hwid.cpu && hwidDto.Bios == request.Hwid.bios)
-            {
-                // Count how many properties differ
-                var differentPropertiesCount = 0;
-
-                if (hwidDto.Ram != request.Hwid.ram) differentPropertiesCount++;
-                if (hwidDto.Disk != request.Hwid.disk) differentPropertiesCount++;
-                if (hwidDto.Display != request.Hwid.display) differentPropertiesCount++;
-
-                // If only one property differs, it's a match
-                if (differentPropertiesCount == 1) hwid = hwidDto;
-            }
 
         // if hwid correct, give him current session
         if (hwid is not null)
@@ -78,10 +54,6 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
         //     var error = new ValidationFailure("error", "something wrong happened!");
         //     return new ValidationFailed(error);
         // }
-        // resume assigns the hwid / continues the thing
-        // refresh refreshes the token, give jwt and it retrieves
-        // delete will turn the is_active flag
-        // create session
 
         // var session = await sessionService.GetSessionByIdAsync(sessionId);
 
