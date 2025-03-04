@@ -34,7 +34,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
                 : null,
             ActivatedAt = x.activated_at is not null ? x.activated_at : null,
             Password = x.password,
-            ExpirationDate = x.expires_at,
+            ExpiresAt = x.expires_at,
             Paused = x.paused,
             Activated = x.activated
         }).ToList();
@@ -95,7 +95,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
                 : null,
             ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
             Password = x.password,
-            ExpirationDate = x.expires_at,
+            ExpiresAt = x.expires_at,
             Paused = x.paused,
             Activated = x.activated
         }).ToList();
@@ -191,7 +191,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
                 : null,
             ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
             Password = x.password,
-            ExpirationDate = x.expires_at,
+            ExpiresAt = x.expires_at,
             Paused = x.paused,
             Activated = x.activated
         };

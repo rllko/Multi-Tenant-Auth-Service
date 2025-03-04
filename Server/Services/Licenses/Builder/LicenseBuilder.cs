@@ -47,7 +47,7 @@ public class LicenseBuilder(
             CreationDate = DateTimeOffset.FromUnixTimeSeconds(newLicense.creation_date),
             Value = newLicense.value,
             Id = newLicense.id,
-            ExpirationDate = newLicense.expires_at,
+            ExpiresAt = newLicense.expires_at,
             Email = newLicense.email ?? null,
             Discord = newLicense.discord ?? null
         };

@@ -19,7 +19,7 @@ public class License
     public short MaxSessions { get; set; } = 1;
     public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.UtcNow;
 
-    public long ExpirationDate { get; set; }
+    public long ExpiresAt { get; set; }
 
     [Column("discord")] public long? DiscordId { get; set; }
     public string? Email { get; set; }
