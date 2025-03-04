@@ -1,3 +1,5 @@
+using Authentication.Models.Entities;
+using Authentication.RequestProcessors;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FluentValidation.Results;
@@ -16,71 +18,21 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
             20,
             60
         );
+        PreProcessor<SessionProcessor<EmptyRequest>>();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
+        var session = HttpContext.Items["session"] as UserSession;
 
-        if (Guid.TryParse(tokenStr!, out var tokenFromRequest) is false)
+        if (session!.HwidId is null)
         {
-            var error = new ValidationFailure("error", "Invalid session token");
+            ValidationFailures.Add(new ValidationFailure("hwid_not_assigned", "Please assign an hwid to continue"));
             await SendErrorsAsync(cancellation: ct);
             return;
         }
 
-        /*// if limit is reached, check hwid
-
-        // if hwid correct, give him current session
-        if (hwid is not null)
-        {
-            var session = await GetSessionByHwidAsync(hwid.Id);
-
-            if (session?.AuthorizationToken is null || session.RefreshedAt?.Day == DateTimeOffset.Now.Day)
-            {
-                var error = new ValidationFailure("error", "A session already exists");
-                return new ValidationFailed(error);
-            }
-
-            return await RefreshLicenseSession((Guid)session.AuthorizationToken);
-        }*/
-
-        // if no, create hwid
-        // var newHwid = await hwidService.CreateHwidAsync(request.Hwid, transaction);
-        //
-        // if (newHwid is null)
-        // {
-        //     transaction.Rollback();
-        //     var error = new ValidationFailure("error", "something wrong happened!");
-        //     return new ValidationFailed(error);
-        // }
-
-        // var session = await sessionService.GetSessionByIdAsync(sessionId);
-
-        // if (session is null || session.AuthorizationToken != tokenFromRequest)
-        // {
-        //     await SendErrorsAsync(cancellation: ct);
-        //     return;
-        // }
-
-        /*
-        var createdAt = DateTimeOffset.FromUnixTimeSeconds(session.CreatedAt);
-        var refreshedAt = DateTimeOffset.FromUnixTimeSeconds((long)session.RefreshedAt);
-
-        // if ( != DateTime.Now.Day && session.RefreshedAt != null &&
-        //     session.RefreshedAt is not null &&
-        //     DateTimeOffset.FromUnixTimeSeconds((long)session.RefreshedAt).Day != DateTime.Now.Day)
-        // {
-        //     await SendErrorsAsync(cancellation: ct);
-        //     return;
-        // }
-
-        if (session.License.ExpirationDate > DateTimeOffset.Now.ToUnixTimeSeconds())
-        {
-            await SendErrorsAsync(cancellation: ct);
-            return;
-        }
-        */
+        // later add the whole logging here
 
         await SendOkAsync(ct);
     }

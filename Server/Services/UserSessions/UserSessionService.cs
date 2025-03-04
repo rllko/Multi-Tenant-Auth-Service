@@ -66,9 +66,28 @@ public class UserSessionService(
 #warning manually map the 3 idk
 
         var session =
-            await connection.QueryAsync<dynamic, License, UserSession>(getDiscordIdQuery,
-                (x, license) =>
-                    new UserSession
+            await connection.QueryAsync<dynamic, dynamic, UserSession>(getDiscordIdQuery,
+                (x, y) =>
+                {
+                    var license = new License
+                    {
+                        Id = y.id,
+                        Value = y.value,
+                        DiscordId = y.discordid,
+                        MaxSessions = y.max_sessions,
+                        Email = y.email,
+                        Username = y.username,
+                        CreationDate = y.creation_date is not null
+                            ? DateTimeOffset.FromUnixTimeSeconds(y.creation_date)
+                            : null,
+                        ActivatedAt = y.activated_at is not null ? y.actvated_at : null,
+                        Password = y.password,
+                        ExpiresAt = y.expires_at,
+                        Paused = y.paused,
+                        Activated = y.activated
+                    };
+
+                    return new UserSession
                     {
                         AuthorizationToken = x.session_token,
                         LicenseId = x.license_id,
@@ -78,11 +97,13 @@ public class UserSessionService(
                         CreatedAt = x.created_at,
                         HwidId = x.hwid,
                         License = license
-                    }
+                    };
+                }
                 , new
                 {
                     token
                 }, splitOn: "id,license_id");
+
         return session.FirstOrDefault();
     }
 
@@ -97,16 +118,6 @@ public class UserSessionService(
         return session;
     }
 
-    public async Task<bool> LogoutLicenseSessionAsync(Guid sessionToken)
-    {
-        // get session by session token
-        var session = await GetSessionByTokenAsync(sessionToken);
-
-        if (session is null) return false;
-
-        return await DeleteSessionTokenAsync(session.SessionId);
-    }
-
     public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
         IDbTransaction? transaction = null)
     {
@@ -114,12 +125,27 @@ public class UserSessionService(
 
         var addDiscordIdQuery =
             @"UPDATE user_sessions
-	        SET session_token = @SessionId, hwid = @HwidId,
-                license_id = @LicenseId, ip_address = @IpAddress,
-                created_at = @CreatedAt, refreshed_at = @RefreshedAt
-	        WHERE id = @SessionId returning *";
-        var newSession =
-            await connection.QuerySingleAsync<UserSession>(addDiscordIdQuery, new { session }, transaction);
+	        SET session_token = @SessionId,
+                hwid = CASE WHEN @HwidId IS NOT NULL THEN @HwidId ELSE hwid END, 
+                license_id = @LicenseId,
+                ip_address = CASE WHEN @IpAddress IS NOT NULL THEN @IpAddress ELSE ip_address END,
+                refreshed_at = CASE WHEN @RefreshedAt IS NOT NULL THEN @RefreshedAt ELSE refreshed_at END
+	        WHERE id = @SessionId returning session_token";
+
+        var newSessionToken =
+            await connection.QueryFirstAsync<Guid>(addDiscordIdQuery,
+                new
+                {
+                    session,
+                    session.SessionId,
+                    session.HwidId,
+                    session.LicenseId,
+                    session.IpAddress,
+                    session.RefreshedAt
+                },
+                transaction);
+
+        var newSession = await GetSessionByTokenAsync(newSessionToken);
 
         return newSession;
     }
@@ -133,7 +159,7 @@ public class UserSessionService(
         // validate credentials
         if (await accountService.CheckLicensePassword(request.Username, request.Password) is false)
         {
-            var error = new ValidationFailure("error", "invalid username or password");
+            var error = new ValidationFailure("invalid_credentials", "invalid username or password");
             return new ValidationFailed(error);
         }
 
@@ -141,7 +167,7 @@ public class UserSessionService(
         var license = await licenseService.GetLicenseByUsername(request.Username);
         if (license is null)
         {
-            var error = new ValidationFailure("error", "something went wrong D:");
+            var error = new ValidationFailure("internal_error", "something went wrong D:");
             return new ValidationFailed(error);
         }
 
@@ -150,14 +176,14 @@ public class UserSessionService(
 
         if (sessions?.Count() >= license.MaxSessions && license.MaxSessions > 0)
         {
-            var error = new ValidationFailure("error", "max sessions reached.");
+            var error = new ValidationFailure("error_max_sessions", "max sessions reached.");
             return new ValidationFailed(error);
         }
 
         // check if license has time left
-        if (license.ExpirationDate < DateTimeOffset.Now.ToUnixTimeSeconds())
+        if (license.ExpiresAt < DateTimeOffset.Now.ToUnixTimeSeconds())
         {
-            var error = new ValidationFailure("error", "license expired.");
+            var error = new ValidationFailure("error_license_expired", "license expired.");
             return new ValidationFailed(error);
         }
 
@@ -168,32 +194,8 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken)
+    public async Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(UserSession session)
     {
-        // get session by session token
-        var session = await GetSessionByTokenAsync(sessionToken);
-
-        // check if session is active
-        if (session is null)
-        {
-            var error = new ValidationFailure("error", "Session could not be found");
-            return new ValidationFailed(error);
-        }
-
-        // check if session has time left
-        // if (session.ExpiresAt > 0)
-        // {
-        //     var error = new ValidationFailure("error", "Session could not be created");
-        //     return new ValidationFailed(error);
-        // }
-
-        // if it was created more than one day ago, refresh
-        if (DateTimeOffset.Now.ToUnixTimeSeconds() < session.RefreshedAt)
-        {
-            var error = new ValidationFailure("error", "Session could not be created");
-            return new ValidationFailed(error);
-        }
-
         session.RefreshedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
         var result = await UpdateSessionAsync(session);
         return result;
@@ -252,16 +254,8 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(Guid sessionToken, HwidDto hwidDto)
+    public async Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(UserSession userSession, HwidDto hwidDto)
     {
-        var session = await GetSessionByTokenAsync(sessionToken);
-
-        if (session is null)
-        {
-            var error = new ValidationFailure("error", "session could not be found");
-            return new ValidationFailed(error);
-        }
-
         var hwid = await hwidService.GetHwidByDtoAsync(hwidDto) ?? await hwidService.CreateHwidAsync(hwidDto);
 
         if (hwid is null)
@@ -270,9 +264,8 @@ public class UserSessionService(
             return new ValidationFailed(error);
         }
 
-        session.HwidId = hwid.Id;
-
-        return await UpdateSessionAsync(session);
+        userSession.HwidId = hwid.Id;
+        return await UpdateSessionAsync(userSession);
     }
 
     public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)

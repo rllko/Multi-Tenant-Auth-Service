@@ -1,5 +1,6 @@
-using System.Security.Claims;
 using Authentication.Endpoints.Sessions;
+using Authentication.Models.Entities;
+using Authentication.RequestProcessors;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 
@@ -15,19 +16,14 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
             10,
             60
         );
+        PreProcessor<SessionProcessor<EmptyRequest>>();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Authentication)?.Value;
+        var session = HttpContext.Items["Session"] as UserSession;
 
-        if (string.IsNullOrWhiteSpace(tokenStr) || Guid.TryParse(tokenStr!, out var tokenGuid) is false)
-        {
-            await SendErrorsAsync(cancellation: ct);
-            return;
-        }
-
-        var result = await sessionService.LogoutLicenseSessionAsync(tokenGuid);
+        var result = await sessionService.DeleteSessionTokenAsync(session!.SessionId);
 
         if (result)
         {

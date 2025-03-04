@@ -6,7 +6,7 @@ public static class PasswordHashing
 {
     private static string GetRandomSalt()
     {
-        return BCrypt.Net.BCrypt.GenerateSalt(13);
+        return BCrypt.Net.BCrypt.GenerateSalt(10);
     }
 
     public static string HashPassword(string password)

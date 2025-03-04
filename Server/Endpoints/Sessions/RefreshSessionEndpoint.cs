@@ -1,8 +1,8 @@
-﻿using Authentication.Services;
+﻿using Authentication.Models.Entities;
+using Authentication.Services;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -25,25 +25,20 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
     public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> ExecuteAsync(
         CancellationToken ct)
     {
-        var tokenStr = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
+        var sess = HttpContext.Items["Session"] as UserSession;
 
-        if (string.IsNullOrWhiteSpace(tokenStr) || Guid.TryParse(tokenStr!, out var tokenGuid) is false)
-        {
-            var error = new ValidationFailure("error", "Invalid session token");
-            return TypedResults.BadRequest(new ValidationFailed(error));
-        }
-
-        var session = await sessionService.RefreshLicenseSession(tokenGuid);
+        var session = await sessionService.RefreshLicenseSession(sess);
 
         var result = session.Match<IResult>(
             se =>
                 TypedResults.Ok(JwtBearer.CreateToken(
                     o =>
                     {
+                        o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY");
                         o.ExpireAt = DateTime.UtcNow.AddDays(1);
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                        o.User["username"] = se.License.Username!;
-                        o.User["license-expiration"] = se.License.ExpirationDate.ToString();
+                        o.User["username"] = se.License.Username;
+                        o.User["license-expiration"] = se.License.ExpiresAt.ToString();
                     })),
             error => TypedResults.BadRequest(error));
 

@@ -25,23 +25,16 @@ public class AddHwidEndpoint(IUserSessionService sessionService)
         HwidSetupRequest req,
         CancellationToken ct)
     {
-        var sessionToken = User.Claims.FirstOrDefault(c => c.Type == "session-token")?.Value;
-
-        if (string.IsNullOrWhiteSpace(sessionToken) || !Guid.TryParse(sessionToken, out var sessionTokenGuid))
-        {
-            var error = new ValidationFailure("error", "invalid session token");
-            return TypedResults.BadRequest(new ValidationFailed(error));
-        }
+        var session = HttpContext.Items["session"] as UserSession;
 
         var hwidDto = HwidDto.MapFromString(req.hwid);
-#warning you really need to validate either here or in MapFromString
         if (hwidDto == null)
         {
             var error = new ValidationFailure("error", "invalid hwid");
             return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
-        var result = await sessionService.SetupSessionHwid(sessionTokenGuid, hwidDto);
+        var result = await sessionService.SetupSessionHwid(session, hwidDto);
 
         var match = result.Match<IResult>(
             success =>
