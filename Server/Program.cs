@@ -31,7 +31,7 @@ builder.Services
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
-    .AddAuthentication(o => //must be the last auth call
+    .AddAuthentication(o =>
     {
         o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -53,7 +53,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
         });
 });
-
+#warning add country to the session table, every time they refresh or add hwid you get the country
 builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageService>();
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
@@ -81,13 +81,6 @@ app.UseCors(myAllowSpecificOrigins);
 
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await databaseInitializer.InitializeAsync();
-
-//Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
 
 app.UseAuthentication()
     .UseAuthorization()

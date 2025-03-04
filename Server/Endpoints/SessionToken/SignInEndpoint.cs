@@ -38,7 +38,7 @@ public class SignInEndpoint(
                         o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).AddDays(1).Date;
                         o.User["session-token"] = se.AuthorizationToken.ToString()!;
                         o.User["username"] = se.License.Username;
-                        o.User["license-expiration"] = se.License.ExpirationDate.ToString();
+                        o.User["license-expiration"] = se.License.ExpiresAt.ToString();
                         o.User["hwid-id"] = se.HwidId.ToString();
                     });
                 return TypedResults.Json(jwt);

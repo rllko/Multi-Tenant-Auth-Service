@@ -15,17 +15,17 @@ public interface IUserSessionService
     Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
         IDbTransaction? transaction = null);
 
-    Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(Guid sessionToken);
+    Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(UserSession sessionToken);
 
     /// <summary>
     ///     This will make it so the user cant refresh the session again. aka remove session token
     /// </summary>
     /// <param name="sessionToken"></param>
     /// <returns></returns>
-    Task<bool> LogoutLicenseSessionAsync(Guid sessionToken);
-
     Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession license,
         IDbTransaction? transaction = null);
+
+    Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(UserSession userSession, HwidDto hwidDto);
 
     Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null);
 }

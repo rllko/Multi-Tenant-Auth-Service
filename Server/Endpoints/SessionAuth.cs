@@ -29,6 +29,27 @@ public class SessionAuth(
             var token = authHeader[SchemeName.Length..].Trim();
             UserSession? session = null;
 
+            // if (session.Active is false)
+            // {
+            /*var error = new ValidationFailure(
+                "session_inactive",
+                "This session is not active, try logging in again");
+            return new ValidationFailed(error);
+        }
+
+        if (session.License.Paused)
+        {
+            var error = new ValidationFailure("license_paused",
+                "This license is paused, contact support for more info.");
+        }
+
+        // if it was created more than one day ago, refresh
+        if (DateTimeOffset.Now.ToUnixTimeSeconds() > session.RefreshedAt)
+        {
+            var error = new ValidationFailure("error", "Session could not be created");
+            return new ValidationFailed(error);
+        }*/
+
             if (Guid.TryParse(token, out var tokenGuid) &&
                 (session = await sessionService.GetSessionByTokenAsync(tokenGuid)) != null)
             {
@@ -39,7 +60,7 @@ public class SessionAuth(
                     new Claim(ClaimTypes.NameIdentifier,
                         session.License.Username!),
                     new Claim(ClaimTypes.Expiration,
-                        session.License.ExpirationDate.ToString()),
+                        session.License.ExpiresAt.ToString()),
                     new Claim(ClaimTypes.Role,
                         session.CreatedAt.ToString())
                 };
