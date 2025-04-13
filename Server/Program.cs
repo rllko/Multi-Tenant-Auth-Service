@@ -66,7 +66,6 @@ builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
 
-// Add db connection factory
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
 
@@ -79,6 +78,5 @@ app.UseAuthentication()
     .UseAuthorization()
     .UseAntiforgeryFE()
     .UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
-;
 
 app.Run();
