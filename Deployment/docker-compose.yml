@@ -41,7 +41,7 @@
     restart: no
   
   server:
-    build: ./publish
+    build: .
     container_name: auth_server_c
       # ports:
       # - "8080:8080"
