@@ -58,6 +58,17 @@ services:
     networks:
       - nginx-network
       - database_network
+        
+  migration:
+    build: ./MigrationUtility
+    container_name: migration_utility_c
+    env_file:
+      - .env
+    depends_on:
+      - database
+    restart: no
+    networks:
+      - database_network
 
   webapp:
     build:
@@ -67,9 +78,6 @@ services:
       - NODE_ENV=production
     networks:
       - nginx-network
-#    volumes:
-##      - .:/app
-##      - /app/node_modules
 
 volumes:
   store_database_data:
