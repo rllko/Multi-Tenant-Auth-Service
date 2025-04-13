@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>latest</LangVersion>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <AssemblyName>Server</AssemblyName>
         <RootNamespace>Authentication</RootNamespace>
@@ -13,21 +13,42 @@
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="Dapper" Version="2.1.66"/>
-        <PackageReference Include="FastEndpoints" Version="5.34.0.6-beta"/>
-        <PackageReference Include="FastEndpoints.Security" Version="5.34.0.6-beta"/>
+        <PackageReference Include="FastEndpoints" Version="6.0.0" />
+        <PackageReference Include="FastEndpoints.Security" Version="6.0.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0"/>
-        <PackageReference Include="LanguageExt.Core" Version="5.0.0-beta-49"/>
-        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.2"/>
+        <PackageReference Include="LanguageExt.Core" Version="5.0.0-beta-50" />
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.0-preview.3.25172.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3"/>
-        <PackageReference Include="NSec.Cryptography" Version="25.2.0-preview.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.2.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-preview.3" />
+        <PackageReference Include="NSec.Cryptography" Version="25.3.0-preview.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1" />
 
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.5.0"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
 
         <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Database\Scripts\000001 - create_hwids_table.up.sql"/>
+        <None Remove="Database\Scripts\000002 - create_discords_table.up.sql"/>
+        <None Remove="Database\Scripts\000003 - create_licenses_table.up.sql"/>
+        <None Remove="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
+        <None Remove="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
+        <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000012 - create_clients_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000008 - create_client_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000009 - create_role_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000011 - insert_auth_data.sql"/>
+        <None Remove="Database\Scripts\000006 - create_teams_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000013 - create_role_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000017 - insert_auth_data.sql" />
+        <None Remove="Database\Scripts\000004 - create_license_session_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
     </ItemGroup>
 
 </Project>
