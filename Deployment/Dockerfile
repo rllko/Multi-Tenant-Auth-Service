@@ -3,4 +3,4 @@ WORKDIR /app
 
 COPY ./publish .
 
-ENTRYPOINT ["dotnet", "./publish/Server.dll"]
+ENTRYPOINT ["dotnet", "Server.dll"]
