@@ -1,4 +1,4 @@
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
                          client_id SERIAL PRIMARY KEY,
                          client_identifier varchar(150),
                          client_secret varchar(150), -- we need to see this thing later, for now its alright

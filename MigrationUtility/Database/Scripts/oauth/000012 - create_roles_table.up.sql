@@ -1,4 +1,4 @@
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
                        id SERIAL PRIMARY KEY,
                        role_name VARCHAR(255) UNIQUE NOT NULL,
                        slug VARCHAR(255) UNIQUE NOT NULL,
