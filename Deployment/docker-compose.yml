@@ -43,8 +43,6 @@
   server:
     build: .
     container_name: auth_server_c
-      # ports:
-      # - "8080:8080"
     env_file:
       - .env
     volumes:
@@ -56,12 +54,6 @@
     networks:
       - nginx-network
       - database_network
-#  certbot:
-#    image: certbot/certbot
-#    volumes:
-#      - ./certbot/conf:/etc/letsencrypt
-#      - ./certbot/www/:/var/www/certbot
-#    restart: unless-stopped
 
 volumes:
   store_database_data:

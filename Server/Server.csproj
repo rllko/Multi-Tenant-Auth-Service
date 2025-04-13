@@ -42,15 +42,28 @@
         <None Remove="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
         <None Remove="Database\Scripts\oauth\000012 - create_clients_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000009 - create_team_tenants_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\000010 - create_team_tenant_roles_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\000008 - create_tenants_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\000007 - create_team_tenants_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\000005 - create_tenants_table.up.sql" />
         <None Remove="Database\Scripts\oauth\000008 - create_client_scopes_table.up.sql"/>
         <None Remove="Database\Scripts\oauth\000009 - create_role_scopes_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000010 - create_role_type_table.up.sql" />
-        <EmbeddedResource Include="Database\Scripts\oauth\000014 - create_client_roles_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000011 - create_role_type_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000014 - create_team_tenant_roles_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000015 - create_client_roles_table.up.sql" />
         <None Remove="Database\Scripts\oauth\000011 - insert_auth_data.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000011 - create_roles_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000012 - create_roles_table.up.sql" />
+        <None Remove="Database\Scripts\000006 - create_teams_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\000006 - create_teams_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000013 - create_role_scopes_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000013 - create_role_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000016 - insert_auth_data.sql" />
+        <EmbeddedResource Include="Database\Scripts\oauth\000016 - insert_auth_data.sql" />
+        <None Remove="Database\Scripts\000004 - create_license_session_table.up.sql" />
+        <EmbeddedResource Include="Database\Scripts\000004 - create_license_session_table.up.sql" />
     </ItemGroup>
 
 </Project>

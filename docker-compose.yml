@@ -34,6 +34,7 @@ services:
       retries: 5
     networks:
       - database_network
+    
   keygen:
     build: ./keygen
     container_name: keygen_c
@@ -57,18 +58,15 @@ services:
     networks:
       - nginx-network
       - database_network
-#  certbot:
-#    image: certbot/certbot
-#    volumes:
-#      - ./certbot/conf:/etc/letsencrypt
-#      - ./certbot/www/:/var/www/certbot
-#    restart: unless-stopped
+
 volumes:
   store_database_data:
   secrets:
     
 networks:
   nginx-network:
+    driver: bridge
+  database_network:
     driver: bridge
 
 

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS tenants
 (
-    id             BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 10 INCREMENT BY 69) PRIMARY KEY,
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     discordId      BIGINT REFERENCES discords (discord_id) ON DELETE CASCADE,
     email          varchar(64),
     name       text UNIQUE,
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS tenants
     activated_at   bigint
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on licenses (email, password);
+CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on tenants (email, password);
