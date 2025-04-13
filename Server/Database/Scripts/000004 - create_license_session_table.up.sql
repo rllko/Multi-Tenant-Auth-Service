@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS user_sessions
+CREATE TABLE IF NOT EXISTS license_sessions
 (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_token UUID UNIQUE      DEFAULT gen_random_uuid(),
@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS user_sessions
     is_active     BOOLEAN          DEFAULT TRUE -- Add this for easy session invalidation, on logout disable
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS access_token_index on user_sessions (session_token);
+CREATE UNIQUE INDEX IF NOT EXISTS access_token_index on license_sessions (session_token);

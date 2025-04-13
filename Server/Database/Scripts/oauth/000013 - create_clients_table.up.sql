@@ -3,5 +3,6 @@ CREATE TABLE clients (
                          client_identifier varchar(150),
                          client_secret varchar(150),
                          grant_type varchar(20),
+                         role       int references roles(slug),
                          client_uri varchar(150)
 );
