@@ -1,10 +1,11 @@
-services:
+﻿services:
   nginx:
     image: nginx:1.27.4-alpine
+    container_name: nginx_c
     volumes:
-      - ./nginx/templates:/etc/nginx/templates
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/api.rikko.space.pem:/etc/nginx/ssl/api.rikko.space.pem
+      - ./nginx/api.rikko.space.key:/etc/nginx/ssl/api.rikko.space.key
     ports:
       - "80:80"
       - "443:443"
@@ -18,8 +19,6 @@ services:
 
   database:
     image: postgres
-    ports:
-      - "5432:5432"
     environment:
       - PGUSER=postgres
       - POSTGRES_USER=postgres
@@ -40,12 +39,12 @@ services:
     volumes:
       - secrets:/secrets
     restart: no
-
+  
   server:
-    build: ./Server
+    build: ./publish
     container_name: auth_server_c
-    ports:
-      - "8080:8080"
+      # ports:
+      # - "8080:8080"
     env_file:
       - .env
     volumes:
@@ -63,12 +62,15 @@ services:
 #      - ./certbot/conf:/etc/letsencrypt
 #      - ./certbot/www/:/var/www/certbot
 #    restart: unless-stopped
+
 volumes:
   store_database_data:
   secrets:
     
 networks:
   nginx-network:
+    driver: bridge
+  database_network:
     driver: bridge
 
 
