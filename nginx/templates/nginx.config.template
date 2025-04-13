@@ -1,0 +1,41 @@
+upstream server {
+  server server:8080;
+}
+
+server {
+	listen 80;
+	server ${NGINX_HOST};
+
+	location /.well-known/acme-challenge/ {
+		root /var/www/certbot;
+	}
+
+	location / {
+		return 301 https://$host$request_uri;
+	}
+}
+
+server {
+	listen 443 ssl;
+	server_name ${NGINX_HOST};
+
+	ssl_certificate /etc/letsencrypt/live/${NGINX_HOST}/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/${NGINX_HOST}/privkey.pem;
+
+	include 	/etc/letsencrypt/options-ssl-nginx.conf;
+	ssl_dhparam	/etc/letsencrypt/ssl-dhparams.pem;
+
+	location / {
+		proxy_pass 		http://127.0.0.1:8080;
+		proxy_redirect		off;
+		proxy_http_version	1.1;
+		proxy_cache_bypass	$http_upgrade;
+		proxy_set_header	upgrade $http_upgrade;
+		proxy_set_header	Connection heep-alive;
+		proxy_set_header	Host $host;
+		proxy_set_header	X-Real-IP $remote_addr;
+		proxy_set_header	X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header	X-Forwarded-Proto $scheme;
+		proxy_set_header	X-Forwarded-Host $server_name;
+	}
+}
