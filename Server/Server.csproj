@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="Dapper" Version="2.1.66"/>
-        <PackageReference Include="dbup-postgresql" Version="6.0.0-beta.44"/>
         <PackageReference Include="FastEndpoints" Version="5.34.0.6-beta"/>
         <PackageReference Include="FastEndpoints.Security" Version="5.34.0.6-beta"/>
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0"/>
@@ -33,22 +32,23 @@
 
     <ItemGroup>
         <None Remove="Database\Scripts\000001 - create_hwids_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000001 - create_hwids_table.up.sql"/>
         <None Remove="Database\Scripts\000002 - create_discords_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000002 - create_discords_table.up.sql"/>
         <None Remove="Database\Scripts\000003 - create_licenses_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000003 - create_licenses_table.up.sql"/>
         <None Remove="Database\Scripts\000004 - create_session_tokens_table.up.sql"/>
         <None Remove="Database\Scripts\000005 - create_activity_types_table.up.sql"/>
         <None Remove="Database\Scripts\000006 - create_activity_types_logs.up.sql"/>
-        <None Remove="Database\Scripts\oauth\000007 - create_clients_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000007 - create_clients_table.up.sql"/>
-        <None Remove="Database\Scripts\oauth\000008 - create_scopes_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000008 - create_scopes_table.up.sql"/>
-        <None Remove="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql"/>
-        <None Remove="Database\Scripts\oauth\000010 - insert_auth_data.sql"/>
-        <EmbeddedResource Include="Database\Scripts\oauth\000010 - insert_auth_data.sql"/>
+        <None Remove="Database\Scripts\oauth\000012 - create_clients_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000008 - create_client_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000009 - create_role_scopes_table.up.sql"/>
+        <None Remove="Database\Scripts\oauth\000011 - insert_auth_data.sql"/>
+        <None Remove="Database\Scripts\000006 - create_teams_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000013 - create_role_scopes_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000017 - insert_auth_data.sql" />
+        <None Remove="Database\Scripts\000004 - create_license_session_table.up.sql" />
+        <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
     </ItemGroup>
 
 </Project>

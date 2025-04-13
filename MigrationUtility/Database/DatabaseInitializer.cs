@@ -1,6 +1,6 @@
 using DbUp;
 
-namespace Authentication.Database;
+namespace MigrationUtility.Database;
 
 public class DatabaseInitializer
 {
@@ -11,9 +11,7 @@ public class DatabaseInitializer
 
     private string? ConnectionString { get; }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task InitializeAsync()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         EnsureDatabase.For.PostgresqlDatabase(ConnectionString);
 
