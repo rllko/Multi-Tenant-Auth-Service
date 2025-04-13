@@ -66,9 +66,6 @@ builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
 
-// Add migration singleton
-
-
 // Add db connection factory
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
@@ -76,8 +73,7 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 
 var app = builder.Build();
-app.UseCors(myAllowSpecificOrigins);
-
+app.UseCors(myAllowSpecificOrigins); 
 
 app.UseAuthentication()
     .UseAuthorization()
