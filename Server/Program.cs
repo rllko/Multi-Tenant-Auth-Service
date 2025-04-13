@@ -67,8 +67,7 @@ builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<IOffsetService, OffsetService>();
 
 // Add migration singleton
-builder.Services.AddSingleton(_ => new DatabaseInitializer(
-    Environment.GetEnvironmentVariable("DATABASE_URL")));
+
 
 // Add db connection factory
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
@@ -79,8 +78,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Si
 var app = builder.Build();
 app.UseCors(myAllowSpecificOrigins);
 
-var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
-await databaseInitializer.InitializeAsync();
 
 app.UseAuthentication()
     .UseAuthorization()

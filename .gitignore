@@ -5,6 +5,8 @@
 **/DiscordBot/bin
 **/Server/obj
 **/Server/bin
+**/MigrationUtility/obj
+**/MigrationUtility/bin
 docker-compose.env
 *.user
 Server/Database/Scripts/oauth/000010 - insert_auth_data.sql
