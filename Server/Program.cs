@@ -53,7 +53,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
         });
 });
-#warning add country to the session table, every time they refresh or add hwid you get the country
+
 builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageService>();
 builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
