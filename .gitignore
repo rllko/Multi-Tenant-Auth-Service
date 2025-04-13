@@ -10,3 +10,6 @@ docker-compose.env
 Server/Database/Scripts/oauth/000010 - insert_auth_data.sql
 .env
 /Deployment/publish
+/website/.next
+/website/node_modules
+website/next-env.d.ts

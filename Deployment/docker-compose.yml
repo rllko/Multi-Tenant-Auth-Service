@@ -54,6 +54,15 @@
     networks:
       - nginx-network
       - database_network
+        
+  webapp:
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    networks:
+      - nginx-network
 
 volumes:
   store_database_data:

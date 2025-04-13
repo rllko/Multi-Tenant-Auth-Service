@@ -59,6 +59,18 @@ services:
       - nginx-network
       - database_network
 
+  webapp:
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    networks:
+      - nginx-network
+#    volumes:
+##      - .:/app
+##      - /app/node_modules
+
 volumes:
   store_database_data:
   secrets:
