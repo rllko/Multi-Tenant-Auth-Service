@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5% 64.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Add active states for buttons */
+  .btn,
+  button,
+  [role="button"] {
+    @apply active:bg-gray-200/70 active:scale-[0.98] transition-all duration-100;
+  }
+
+  /* Override for buttons that already have active states */
+  .btn[data-active="true"],
+  button[data-active="true"],
+  [role="button"][data-active="true"] {
+    @apply active:scale-100;
+  }
+
+  /* Improve touch targets on mobile */
+  @media (max-width: 640px) {
+    button,
+    .btn,
+    [role="button"],
+    a,
+    input,
+    select,
+    textarea {
+      @apply min-h-[40px] touch-manipulation;
+    }
+
+    .touch-target {
+      @apply min-h-[40px] min-w-[40px] flex items-center justify-center;
+    }
+  }
+
+  /* Responsive typography */
+  h1 {
+    @apply text-lg md:text-xl lg:text-2xl font-bold;
+  }
+
+  h2 {
+    @apply text-base md:text-lg lg:text-xl font-semibold;
+  }
+
+  h3 {
+    @apply text-sm md:text-base lg:text-lg font-medium;
+  }
+
+  /* Responsive spacing */
+  .container-responsive {
+    @apply px-2 sm:px-3 md:px-4 lg:px-6;
+  }
+
+  /* Responsive card grid */
+  .card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3;
+  }
+
+  /* Safe area insets for mobile devices */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Mobile-specific utilities */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Prevent text from being too small on mobile */
+  .mobile-text {
+    @apply text-base;
+    font-size: max(16px, 1rem);
+  }
+
+  /* Responsive flex direction */
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row;
+  }
+
+  /* Responsive width */
+  .w-responsive {
+    @apply w-full sm:w-auto;
+  }
+
+  /* Responsive padding */
+  .p-responsive {
+    @apply p-2 sm:p-3 md:p-4;
+  }
+
+  /* Button with icon utilities */
+  .btn-with-icon {
+    @apply inline-flex items-center gap-1 sm:gap-2;
+  }
+
+  .btn-with-icon-right {
+    @apply inline-flex items-center gap-1 sm:gap-2;
+  }
+
+  /* Card footer button layouts */
+  .card-footer-btn {
+    @apply border-t p-2 sm:p-3;
+  }
+
+  .card-footer-btn-right {
+    @apply border-t p-2 sm:p-3 flex justify-end;
+  }
+
+  .card-footer-btn-between {
+    @apply border-t p-2 sm:p-3 flex flex-col sm:flex-row justify-between items-center gap-1.5;
+  }
+
+  .card-footer-btn-center {
+    @apply border-t p-2 sm:p-3 flex justify-center;
+  }
+}
+
+/* Ensure proper height behavior for the dashboard layout */
+html,
+body {
+  height: 100%;
+}
+
+#__next,
+main {
+  min-height: 100%;
+}
+
+/* Ensure sidebar spans full height */
+.sticky {
+  position: sticky;
+  height: 100vh;
+}
