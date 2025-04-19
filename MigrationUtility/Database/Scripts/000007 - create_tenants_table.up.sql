@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS tenants
 (
-    id             BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 10 INCREMENT BY 69) PRIMARY KEY,
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     discordId      BIGINT REFERENCES discords (discord_id) ON DELETE CASCADE,
     email          varchar(64),
-    name       text UNIQUE,
+    name           text UNIQUE,
     creation_date  bigint NOT NULL,
     password       text     DEFAULT NULL,
     activated_at   bigint

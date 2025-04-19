@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS licenses
     expires_at     BIGINT NOT NULL,
     last_paused_at bigint,
     paused         BOOL,
-    activated      BOOL     default false
+    activated      BOOL     default false,
+    application     UUID references applications(id) NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS value_index on licenses (value);
 CREATE UNIQUE INDEX IF NOT EXISTS login_index on licenses (email, password);
