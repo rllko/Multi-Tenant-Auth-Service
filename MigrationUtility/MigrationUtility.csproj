@@ -73,6 +73,22 @@
       <EmbeddedResource Include="Database\Scripts\oauth\000017 - create_team_tenants_table.up.sql" />
       <None Remove="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
+      <None Remove="Database\Scripts\000001 - create_applications_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000001 - create_applications_table.up.sql" />
+      <None Remove="Database\Scripts\000002 - create_hwids_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000002 - create_hwids_table.up.sql" />
+      <None Remove="Database\Scripts\000003 - create_discords_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000003 - create_discords_table.up.sql" />
+      <None Remove="Database\Scripts\000004 - create_licenses_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000004 - create_licenses_table.up.sql" />
+      <None Remove="Database\Scripts\000005 - create_license_session_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000005 - create_license_session_table.up.sql" />
+      <None Remove="Database\Scripts\000006 - create_user_session_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000006 - create_user_session_table.up.sql" />
+      <None Remove="Database\Scripts\000007 - create_tenants_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000007 - create_tenants_table.up.sql" />
+      <None Remove="Database\Scripts\000008 - create_teams_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000008 - create_teams_table.up.sql" />
     </ItemGroup>
 
     <ItemGroup>
