@@ -1,0 +1,43 @@
+﻿server {
+	listen 80;
+	server_name sub.domain.com domain.com;
+
+	if ( $host = IP OF THE MACHINE ){
+        	return 444;
+    	}
+}
+
+server {
+    listen       443 ssl;
+    http2        on;
+ 
+    if ( $host = IP OF THE MACHINE ){
+        return 444;
+    }	
+
+    server_name domain.com sub.domain.com;
+    
+    # https://www.youtube.com/watch?v=wPKmW34zUYU this tutorial is great ngl
+    ssl_certificate     /etc/nginx/ssl/sub.domain.com.pem;	
+    ssl_certificate_key /etc/nginx/ssl/sub.domain.com.key;
+    
+    ssl_protocols TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+
+    location / { 
+	proxy_pass http://server:8080;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection keep-alive;
+        proxy_set_header   Host $host;
+        proxy_redirect off;
+	proxy_buffering off;
+	proxy_cache_bypass $http_upgrade;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+	proxy_set_header   X-Content-Type-Options: nosniff;
+    }
+
+    client_max_body_size 100M;
+}
