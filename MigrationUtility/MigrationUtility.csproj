@@ -44,6 +44,7 @@
       <None Remove="Database\Scripts\000007 - create_license_session_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\000007 - create_license_session_table.up.sql" />
       <None Remove="Database\Scripts\oauth\000008 - create_scope_type_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000007 - create_tenant_application_role_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\oauth\000008 - create_scope_type_table.up.sql" />
       <None Remove="Database\Scripts\oauth\000009 - create_scopes_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_scopes_table.up.sql" />

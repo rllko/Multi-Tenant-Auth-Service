@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS team_tenants
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on licenses (email, password);
+
