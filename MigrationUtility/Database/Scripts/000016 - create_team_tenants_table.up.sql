@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS team_tenants
     invited_by     uuid references tenants(id),
     tenant         uuid references tenants(id),
     team           uuid references teams(id),
-    role           INTEGER references roles(id),
+    role           INTEGER references roles(role_id),
     created_at  bigint NOT NULL
 );
 

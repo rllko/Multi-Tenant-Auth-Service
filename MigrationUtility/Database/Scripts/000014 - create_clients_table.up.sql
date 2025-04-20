@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS clients (
     client_identifier  varchar(150),
     client_secret      varchar(150), -- we need to see this thing later, for now its alright
     grant_type         varchar(20),
-    role               int references roles(id),
+    role               int references roles(role_id),
     team               UUID references teams(id),
     client_uri         varchar(150)
 );
