@@ -29,6 +29,7 @@ Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Cha
 
 builder.Services
     .AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; })
+    .AddAuthenticationCookie(validFor: TimeSpan.FromMinutes(10)) //configure cookie auth
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
