@@ -20,39 +20,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Database\Scripts\000001 - create_hwids_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\000002 - create_discords_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\000003 - create_licenses_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000010 - create_scope_type_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000009 - create_client_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000009 - create_clients_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000015 - create_client_roles_table.up.sql" />
-      <None Remove="Database\Scripts\000004 - create_user_session_table.up.sql" />
-      <None Remove="Database\Scripts\000008 - create_applications_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000012 - create_client_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000013 - create_role_type_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000014 - create_roles_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000015 - create_team_role_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000016 - create_clients_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000017 - create_team_tenant_roles_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000011 - create_client_scopes_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000011 - create_client_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000012 - create_role_type_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000012 - create_role_type_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000013 - create_roles_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000013 - create_roles_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000014 - create_team_role_scopes_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000014 - create_team_role_scopes_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000017 - create_team_tenants_table.up.sql" />
-      <None Remove="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
-      <EmbeddedResource Include="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
+      <Reference Include="dbup-core">
+        <HintPath>..\..\..\..\.nuget\packages\dbup-core\6.0.4\lib\netstandard2.0\dbup-core.dll</HintPath>
+      </Reference>
+      <Reference Include="Npgsql">
+        <HintPath>..\..\..\..\.nuget\packages\npgsql\9.0.2\lib\net8.0\Npgsql.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
       <None Remove="Database\Scripts\000001 - create_applications_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\000001 - create_applications_table.up.sql" />
       <None Remove="Database\Scripts\000002 - create_hwids_table.up.sql" />
@@ -69,15 +45,22 @@
       <EmbeddedResource Include="Database\Scripts\000007 - create_tenants_table.up.sql" />
       <None Remove="Database\Scripts\000008 - create_teams_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\000008 - create_teams_table.up.sql" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="dbup-core">
-        <HintPath>..\..\..\..\.nuget\packages\dbup-core\6.0.4\lib\netstandard2.0\dbup-core.dll</HintPath>
-      </Reference>
-      <Reference Include="Npgsql">
-        <HintPath>..\..\..\..\.nuget\packages\npgsql\9.0.2\lib\net8.0\Npgsql.dll</HintPath>
-      </Reference>
+      <None Remove="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000009 - create_scope_type_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000010 - create_scopes_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000011 - create_client_scopes_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000011 - create_client_scopes_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000012 - create_role_type_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000012 - create_role_type_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000013 - create_roles_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000013 - create_roles_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000014 - create_team_role_scopes_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000014 - create_team_role_scopes_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000015 - create_clients_table.up.sql" />
+      <None Remove="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\oauth\000016 - create_team_tenants_table.up.sql" />
     </ItemGroup>
 
 </Project>
