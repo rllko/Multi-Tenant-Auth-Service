@@ -10,7 +10,6 @@ using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
-using Authentication.Services.Offsets;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -61,10 +60,9 @@ builder.Services.AddScoped<ILicenseService, LicenseService>();
 builder.Services.AddScoped<IHwidService, HwidService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IUserSessionService, UserSessionService>();
+builder.Services.AddScoped<ILicenseSessionService, LicenseSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
-builder.Services.AddScoped<IOffsetService, OffsetService>();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));

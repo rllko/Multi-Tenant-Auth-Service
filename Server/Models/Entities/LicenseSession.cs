@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Authentication.Models.Entities;
 
 [Table("user_sessions")]
-public class UserSession
+public class LicenseSession
 {
-    public UserSession()
+    public LicenseSession()
     {
     }
 
-    public UserSession(Guid sessionId,
+    public LicenseSession(Guid sessionId,
         Guid authorizationToken,
         Hwid? hwid,
         long hwidId,

@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.SessionToken;
 
-public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
+public class LogoutEndpoint(ILicenseSessionService sessionService) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -21,7 +21,7 @@ public class LogoutEndpoint(IUserSessionService sessionService) : EndpointWithou
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var session = HttpContext.Items["Session"] as UserSession;
+        var session = HttpContext.Items["Session"] as LicenseSession;
 
         var result = await sessionService.DeleteSessionTokenAsync(session!.SessionId);
 

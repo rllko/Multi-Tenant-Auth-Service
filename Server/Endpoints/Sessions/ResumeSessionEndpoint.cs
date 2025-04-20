@@ -7,7 +7,7 @@ using FluentValidation.Results;
 namespace Authentication.Endpoints.Sessions;
 
 // to resume a session
-public class SessionResumeEndpoint(IUserSessionService sessionService) : EndpointWithoutRequest
+public class SessionResumeEndpoint(ILicenseSessionService sessionService) : EndpointWithoutRequest
 
 {
     public override void Configure()
@@ -23,7 +23,7 @@ public class SessionResumeEndpoint(IUserSessionService sessionService) : Endpoin
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var session = HttpContext.Items["session"] as UserSession;
+        var session = HttpContext.Items["session"] as LicenseSession;
 
         if (session!.HwidId is null)
         {

@@ -195,12 +195,7 @@ export function DashboardView() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Organization Selector */}
-      <OrganizationSelector
-        organizations={organizations}
-        selectedOrganization={selectedOrganization}
-        onOrganizationChange={handleOrganizationChange}
-      />
+  
 
       {/* Organization Context Banner */}
       <Card className="bg-primary/5 border-primary/10">

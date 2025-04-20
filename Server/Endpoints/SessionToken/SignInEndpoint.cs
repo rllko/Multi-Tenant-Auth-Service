@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 namespace Authentication.Endpoints.SessionToken;
 
 public class SignInEndpoint(
-    IUserSessionService sessionService)
+    ILicenseSessionService sessionService)
     : Endpoint<SignInRequest, Results<JsonHttpResult<string>, BadRequest<ValidationFailed>>>
 {
     public override void Configure()

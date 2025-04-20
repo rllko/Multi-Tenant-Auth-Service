@@ -11,7 +11,7 @@ namespace Authentication.Endpoints.Sessions;
 public class SessionAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
-    IUserSessionService sessionService,
+    ILicenseSessionService sessionService,
     UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
@@ -27,7 +27,7 @@ public class SessionAuth(
         if (authHeader?.StartsWith(SchemeName) is true)
         {
             var token = authHeader[SchemeName.Length..].Trim();
-            UserSession? session = null;
+            LicenseSession? session = null;
 
             // if (session.Active is false)
             // {

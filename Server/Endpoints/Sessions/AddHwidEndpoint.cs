@@ -12,8 +12,8 @@ public class HwidSetupRequest
     [FromForm] public string hwid { get; set; } // complex type to bind from form data
 }
 
-public class AddHwidEndpoint(IUserSessionService sessionService)
-    : Endpoint<HwidSetupRequest, Results<Ok<UserSession>, BadRequest<ValidationFailed>>>
+public class AddHwidEndpoint(ILicenseSessionService sessionService)
+    : Endpoint<HwidSetupRequest, Results<Ok<LicenseSession>, BadRequest<ValidationFailed>>>
 {
     public override void Configure()
     {
@@ -21,11 +21,11 @@ public class AddHwidEndpoint(IUserSessionService sessionService)
         Post("protected/session/hwid");
     }
 
-    public override async Task<Results<Ok<UserSession>, BadRequest<ValidationFailed>>> ExecuteAsync(
+    public override async Task<Results<Ok<LicenseSession>, BadRequest<ValidationFailed>>> ExecuteAsync(
         HwidSetupRequest req,
         CancellationToken ct)
     {
-        var session = HttpContext.Items["session"] as UserSession;
+        var session = HttpContext.Items["session"] as LicenseSession;
 
         var hwidDto = HwidDto.MapFromString(req.hwid);
         if (hwidDto == null)
@@ -45,7 +45,7 @@ public class AddHwidEndpoint(IUserSessionService sessionService)
 
         return match switch
         {
-            Ok<UserSession> ok => ok,
+            Ok<LicenseSession> ok => ok,
             BadRequest<ValidationFailed> bad => bad,
             _ => throw new Exception("Impossible")
         };

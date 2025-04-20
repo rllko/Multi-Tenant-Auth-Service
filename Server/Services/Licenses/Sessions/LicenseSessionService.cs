@@ -10,25 +10,25 @@ using FluentValidation.Results;
 
 namespace Authentication.Services.UserSessions;
 
-public class UserSessionService(
+public class LicenseSessionService(
     IDbConnectionFactory connectionFactory,
     ILicenseService licenseService,
     IAccountService accountService,
     IHwidService hwidService)
-    : IUserSessionService
+    : ILicenseSessionService
 {
-    public async Task<UserSession?> GetSessionByIdAsync(Guid id)
+    public async Task<LicenseSession?> GetSessionByIdAsync(Guid id)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE id = @Id;";
 
         var session =
-            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { Id = id });
+            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { Id = id });
         return session;
     }
 
-    public async Task<IEnumerable<UserSession>> GetSessionsByLicenseAsync(long licenseId)
+    public async Task<IEnumerable<LicenseSession>> GetSessionsByLicenseAsync(long licenseId)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -41,7 +41,7 @@ public class UserSessionService(
         var sessions = reader.Select(x =>
         {
             var xy = x;
-            return new UserSession
+            return new LicenseSession
             {
                 AuthorizationToken = x.session_token,
                 LicenseId = x.license_id,
@@ -54,19 +54,19 @@ public class UserSessionService(
         return sessions;
     }
 
-    public async Task<UserSession?> GetSessionByTokenAsync(Guid token)
+    public async Task<LicenseSession?> GetSessionByTokenAsync(Guid token)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery =
             @"SELECT us.*,l.*,l.expires_at as licenseExpiration FROM user_sessions us
-         left join public.licenses l on l.id = us.license_id
-         left join hwids hw on hw.id = us.hwid
+         join public.licenses l on l.id = us.license_id
+         join hwids hw on hw.id = us.hwid
          WHERE session_token = @token;";
 #warning manually map the 3 idk
 
         var session =
-            await connection.QueryAsync<dynamic, dynamic, UserSession>(getDiscordIdQuery,
+            await connection.QueryAsync<dynamic, dynamic, LicenseSession>(getDiscordIdQuery,
                 (x, y) =>
                 {
                     var license = new License
@@ -87,7 +87,7 @@ public class UserSessionService(
                         Activated = y.activated
                     };
 
-                    return new UserSession
+                    return new LicenseSession
                     {
                         AuthorizationToken = x.session_token,
                         LicenseId = x.license_id,
@@ -107,18 +107,18 @@ public class UserSessionService(
         return session.FirstOrDefault();
     }
 
-    public async Task<UserSession?> GetSessionByHwidAsync(long id)
+    public async Task<LicenseSession?> GetSessionByHwidAsync(long id)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE hwid = @Id;";
 
         var session =
-            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { hwid = id });
+            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { hwid = id });
         return session;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> UpdateSessionAsync(UserSession session,
+    public async Task<Result<LicenseSession, ValidationFailed>> UpdateSessionAsync(LicenseSession session,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -150,7 +150,7 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request)
+    public async Task<Result<LicenseSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -194,7 +194,7 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> RefreshLicenseSession(UserSession session)
+    public async Task<Result<LicenseSession, ValidationFailed>> RefreshLicenseSession(LicenseSession session)
     {
         session.RefreshedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
         var result = await UpdateSessionAsync(session);
@@ -213,7 +213,7 @@ public class UserSessionService(
         return affectedRows1 > 0;
     }
 
-    public async Task<UserSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
+    public async Task<LicenseSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
         IDbTransaction? transaction = null)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
@@ -239,7 +239,7 @@ public class UserSessionService(
         var newSession = reader.Select(x =>
         {
             var xy = x;
-            return new UserSession
+            return new LicenseSession
             {
                 AuthorizationToken = x.session_token,
                 LicenseId = x.license_id,
@@ -254,7 +254,7 @@ public class UserSessionService(
         return newSession;
     }
 
-    public async Task<Result<UserSession, ValidationFailed>> SetupSessionHwid(UserSession userSession, HwidDto hwidDto)
+    public async Task<Result<LicenseSession, ValidationFailed>> SetupSessionHwid(LicenseSession licenseSession, HwidDto hwidDto)
     {
         var hwid = await hwidService.GetHwidByDtoAsync(hwidDto) ?? await hwidService.CreateHwidAsync(hwidDto);
 
@@ -264,18 +264,18 @@ public class UserSessionService(
             return new ValidationFailed(error);
         }
 
-        userSession.HwidId = hwid.Id;
-        return await UpdateSessionAsync(userSession);
+        licenseSession.HwidId = hwid.Id;
+        return await UpdateSessionAsync(licenseSession);
     }
 
-    public async Task<UserSession?> GetSessionByAccessTokenAsync(string sessionToken)
+    public async Task<LicenseSession?> GetSessionByAccessTokenAsync(string sessionToken)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE session_token = @sessionToken;";
 
         var session =
-            connection.QueryFirstOrDefault<UserSession>(getDiscordIdQuery, new { licenseId = sessionToken });
+            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { licenseId = sessionToken });
         return session;
     }
 

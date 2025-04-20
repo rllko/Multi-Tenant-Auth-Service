@@ -9,7 +9,7 @@ public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
 {
     public async Task PreProcessAsync(IPreProcessorContext<TRequest> ctx, CancellationToken ct)
     {
-        var sessionService = ctx.HttpContext.RequestServices.GetRequiredService<IUserSessionService>();
+        var sessionService = ctx.HttpContext.RequestServices.GetRequiredService<ILicenseSessionService>();
 
         var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Authentication);
 

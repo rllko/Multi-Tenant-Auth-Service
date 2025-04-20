@@ -77,8 +77,8 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-12 sm:h-14 items-center gap-2 sm:gap-3 border-b bg-white px-3 sm:px-4">
-      <div className="flex items-center justify-between w-full">
+    <header className="sticky top-0 z-20 flex h-1 sm:h-12 items-center gap-2 sm:gap-3 border-b bg-white px-3 sm:px-4">
+      <div className="flex h-12 items-center justify-between w-full">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 md:hidden">
             {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}

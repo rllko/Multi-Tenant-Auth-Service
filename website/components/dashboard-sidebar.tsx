@@ -103,7 +103,7 @@ export function DashboardSidebar({
       `}
     >
       <div className="flex min-h-full flex-col">
-        <div className="flex h-12 sm:h-14 items-center justify-between border-b px-2 sm:px-3">
+        <div className="flex h-12 sm:h-12 items-center justify-between border-b px-2 sm:px-3">
           <div
             className={`flex items-center gap-2 font-semibold overflow-hidden ${
               isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
@@ -176,7 +176,7 @@ export function DashboardSidebar({
             </nav>
           </TooltipProvider>
         </div>
-        <div className="mt-auto p-3 sm:p-4 border-t border-border">
+        <div className="mt-auto p-3 sm:p-2 border-t border-border">
           <Button
             variant="outline"
             className={`w-full justify-${isCollapsed ? "center" : "start"} active:bg-gray-200 transition-colors h-8 sm:h-9 text-xs sm:text-sm`}

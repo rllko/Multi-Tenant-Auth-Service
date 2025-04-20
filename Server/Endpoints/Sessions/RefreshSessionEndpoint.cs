@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.Sessions;
 
-internal class RefreshSessionEndpoint(IUserSessionService sessionService)
+internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
     : EndpointWithoutRequest<Results<Ok<string>, BadRequest<ValidationFailed>>>
 {
     public override void Configure()
@@ -25,7 +25,7 @@ internal class RefreshSessionEndpoint(IUserSessionService sessionService)
     public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> ExecuteAsync(
         CancellationToken ct)
     {
-        var sess = HttpContext.Items["Session"] as UserSession;
+        var sess = HttpContext.Items["Session"] as LicenseSession;
 
         var session = await sessionService.RefreshLicenseSession(sess);
 
