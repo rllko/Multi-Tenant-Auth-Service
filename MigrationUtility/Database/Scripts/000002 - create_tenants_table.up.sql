@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS tenants
     activated_at   bigint
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on licenses (email, password);
+CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on tenants (email, password);
