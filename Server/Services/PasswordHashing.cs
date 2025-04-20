@@ -14,8 +14,13 @@ public static class PasswordHashing
         return BCrypt.Net.BCrypt.HashPassword(password, GetRandomSalt());
     }
 
-    public static bool ValidatePassword(string password, string correctHash)
+    public static bool ValidatePassword(string password, string? correctHash)
     {
+        if (string.IsNullOrEmpty(password))
+        {
+            return false;
+        }
+        
         return BCrypt.Net.BCrypt.Verify(password, correctHash);
     }
 
