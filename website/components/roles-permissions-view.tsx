@@ -1,88 +1,197 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RolesTable } from "./roles-table"
 import { PermissionsTable } from "./permissions-table"
 import { RolePermissionsManager } from "./role-permissions-manager"
-import { PermissionsManager } from "./permissions-manager"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Card, CardContent } from "@/components/ui/card"
-import { Building } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { getRoles, getPermissions, createRole, updateRole, deleteRole } from "@/lib/api-service"
+import type { Role, Permission } from "@/lib/schemas"
 
-export function RolesPermissionsView({ selectedOrganization }) {
-  const [selectedRole, setSelectedRole] = useState(null)
-  const [apiPermissionsOpen, setApiPermissionsOpen] = useState(false)
+export function RolesPermissionsView() {
+  const [roles, setRoles] = useState<Role[]>([])
+  const [permissions, setPermissions] = useState<Permission[]>([])
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleManageApiPermissions = (role) => {
+  // Fetch roles and permissions on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+
+        // Fetch roles
+        const rolesResponse = await getRoles()
+        if (rolesResponse.success && rolesResponse.data) {
+          setRoles(rolesResponse.data)
+        } else {
+          setError("Failed to fetch roles")
+        }
+
+        // Fetch permissions
+        const permissionsResponse = await getPermissions()
+        if (permissionsResponse.success && permissionsResponse.data) {
+          setPermissions(permissionsResponse.data)
+        } else {
+          setError("Failed to fetch permissions")
+        }
+      } catch (err) {
+        setError("An error occurred while fetching data")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const handleRoleSelect = (role: Role) => {
     setSelectedRole(role)
-    setApiPermissionsOpen(true)
   }
 
-  const handleSaveApiPermissions = (permissions) => {
-    // In a real app, this would call an API to save the permissions
-    console.log("Saving API permissions for role:", selectedRole?.name, permissions)
-    setApiPermissionsOpen(false)
+  const handleRoleCreate = async (roleData: Omit<Role, "id">) => {
+    try {
+      setLoading(true)
+      const response = await createRole(roleData)
+      if (response.success && response.data) {
+        setRoles([...roles, response.data])
+        toast({
+          title: "Role created",
+          description: "The role has been created successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to create role",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRoleUpdate = async (id: string, roleData: Partial<Role>) => {
+    try {
+      setLoading(true)
+      const response = await updateRole(id, roleData)
+      if (response.success && response.data) {
+        setRoles(roles.map((role) => (role.id === id ? response.data : role)))
+        if (selectedRole && selectedRole.id === id) {
+          setSelectedRole(response.data)
+        }
+        toast({
+          title: "Role updated",
+          description: "The role has been updated successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update role",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRoleDelete = async (id: string) => {
+    try {
+      setLoading(true)
+      const response = await deleteRole(id)
+      if (response.success) {
+        setRoles(roles.filter((role) => role.id !== id))
+        if (selectedRole && selectedRole.id === id) {
+          setSelectedRole(null)
+        }
+        toast({
+          title: "Role deleted",
+          description: "The role has been deleted successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete role",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading && roles.length === 0 && permissions.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading roles and permissions...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+        <h3 className="font-bold">Error</h3>
+        <p>{error}</p>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Organization Context Banner */}
-      <Card className="bg-primary/5 border-primary/10">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Building className="h-5 w-5 text-primary" />
-            <div>
-              <h3 className="font-medium">Organization Context</h3>
-              <p className="text-sm text-muted-foreground">
-                Managing roles and permissions for <span className="font-medium">{selectedOrganization.name}</span>
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Roles & Permissions</h2>
+      </div>
 
-      <Tabs defaultValue="roles" className="w-full">
-        <TabsList className="grid w-full md:w-auto grid-cols-3 bg-white border">
+      <Tabs defaultValue="roles" className="space-y-4">
+        <TabsList>
           <TabsTrigger value="roles">Roles</TabsTrigger>
-          <TabsTrigger value="permissions">UI Permissions</TabsTrigger>
-          <TabsTrigger value="api-permissions">API Permissions</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          <TabsTrigger value="matrix" disabled={!selectedRole}>
+            Role-Permission Matrix
+          </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="roles" className="mt-6 space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <RolesTable
-              onManageApiPermissions={handleManageApiPermissions}
-              selectedOrganization={selectedOrganization}
+        <TabsContent value="roles" className="space-y-4">
+          <RolesTable
+            roles={roles}
+            onRoleSelect={handleRoleSelect}
+            onRoleCreate={handleRoleCreate}
+            onRoleUpdate={handleRoleUpdate}
+            onRoleDelete={handleRoleDelete}
+            loading={loading}
+          />
+        </TabsContent>
+        <TabsContent value="permissions" className="space-y-4">
+          <PermissionsTable permissions={permissions} loading={loading} />
+        </TabsContent>
+        <TabsContent value="matrix" className="space-y-4">
+          {selectedRole ? (
+            <RolePermissionsManager
+              role={selectedRole}
+              permissions={permissions}
+              onRoleUpdate={handleRoleUpdate}
+              loading={loading}
             />
-            <RolePermissionsManager selectedOrganization={selectedOrganization} />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="permissions" className="mt-6">
-          <PermissionsTable selectedOrganization={selectedOrganization} />
-        </TabsContent>
-
-        <TabsContent value="api-permissions" className="mt-6">
-          <PermissionsManager onSave={handleSaveApiPermissions} selectedOrganization={selectedOrganization} />
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">Select a role to manage permissions</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
-
-      <Dialog open={apiPermissionsOpen} onOpenChange={setApiPermissionsOpen} className="max-w-4xl">
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Manage API Permissions for {selectedRole?.name}</DialogTitle>
-            <DialogDescription>Configure which API endpoints this role can access.</DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
-            <PermissionsManager
-              selectedEntity={selectedRole}
-              onSave={handleSaveApiPermissions}
-              selectedOrganization={selectedOrganization}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

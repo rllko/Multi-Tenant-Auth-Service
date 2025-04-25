@@ -1,41 +1,134 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Key, Loader2 } from "lucide-react"
+import { Key, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { z } from "zod"
+import { toast } from "@/hooks/use-toast"
+
+// Login request schema
+const LoginRequestSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  rememberMe: z.boolean().optional(),
+})
+
+// Login response schema
+const LoginResponseSchema = z.object({
+  token: z.string(),
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    role: z.string(),
+  }),
+})
+
+type LoginRequest = z.infer<typeof LoginRequestSchema>
 
 export default function Login() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
     rememberMe: false,
   })
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }))
+    }
   }
 
-  const handleCheckboxChange = (checked: any) => {
+  const handleCheckboxChange = (checked: boolean) => {
     setFormData((prev) => ({ ...prev, rememberMe: checked }))
   }
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const validateForm = () => {
+    try {
+      LoginRequestSchema.parse(formData)
+      setErrors({})
+      return true
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {}
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0].toString()] = err.message
+          }
+        })
+        setErrors(newErrors)
+      }
+      return false
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!validateForm()) return
+
     setIsLoading(true)
 
-    // Simulate authentication
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      window.location.href = "/dashboard"
+      // API call to authenticate
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Authentication failed")
+      }
+
+      const data = await response.json()
+
+      // Validate response with Zod
+      const validatedData = LoginResponseSchema.parse(data)
+
+      // Store token in localStorage (or use a more secure method in production)
+      localStorage.setItem("keyauth_token", validatedData.token)
+
+      // Store user info if remember me is checked
+      if (formData.rememberMe) {
+        localStorage.setItem("keyauth_user", JSON.stringify(validatedData.user))
+      }
+
+      toast({
+        title: "Login successful",
+        description: "Redirecting to dashboard...",
+        variant: "success",
+      })
+
+      // Redirect to dashboard
+      router.push("/dashboard")
     } catch (error) {
       console.error("Login failed:", error)
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Please check your credentials and try again",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -66,7 +159,14 @@ export default function Login() {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
+                className={errors.email ? "border-red-500" : ""}
               />
+              {errors.email && (
+                <p className="text-sm text-red-500 flex items-center mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -83,7 +183,14 @@ export default function Login() {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
+                className={errors.password ? "border-red-500" : ""}
               />
+              {errors.password && (
+                <p className="text-sm text-red-500 flex items-center mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.password}
+                </p>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox

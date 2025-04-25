@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 // Mock notifications data
 const notifications = [
@@ -77,8 +78,8 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-1 sm:h-12 items-center gap-2 sm:gap-3 border-b bg-white px-3 sm:px-4">
-      <div className="flex h-12 items-center justify-between w-full">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-keyauth-dark-border bg-keyauth-dark px-4">
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 md:hidden">
             {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -87,9 +88,9 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
           {/* Organization Selector */}
           <div className="hidden md:flex items-center">
             <Select value={selectedOrganization.id} onValueChange={handleOrganizationChange}>
-              <SelectTrigger className="w-[180px] h-8 border-none bg-transparent hover:bg-accent focus:ring-0">
+              <SelectTrigger className="w-[180px] h-8 border-none bg-transparent hover:bg-secondary focus:ring-0">
                 <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-primary" />
+                  <Building className="h-4 w-4 text-keyauth-blue" />
                   <span className="text-sm font-medium">{selectedOrganization.name}</span>
                 </div>
               </SelectTrigger>
@@ -97,7 +98,7 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
                 {organizations.map((org) => (
                   <SelectItem key={org.id} value={org.id}>
                     <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-primary" />
+                      <Building className="h-4 w-4 text-keyauth-blue" />
                       <span>{org.name}</span>
                     </div>
                   </SelectItem>
@@ -109,15 +110,15 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
 
         {/* Search - hidden by default on mobile, toggleable */}
         <div className={`${showSearch ? "flex flex-1 mx-2" : "hidden md:flex"} relative md:w-[250px] lg:w-[350px]`}>
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search..."
-            className="w-full bg-secondary/50 pl-7 sm:pl-8 h-8 sm:h-9 text-xs sm:text-sm"
+            className="w-full bg-keyauth-dark-card border-keyauth-dark-border pl-8 h-9 text-sm"
           />
         </div>
 
-        <div className="flex items-center gap-1 md:gap-2">
+        <div className="flex items-center gap-2">
           {/* Search toggle for mobile */}
           <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" onClick={() => setShowSearch(!showSearch)}>
             {showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
@@ -127,7 +128,7 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Building className="h-4 w-4 text-primary" />
+                <Building className="h-4 w-4 text-keyauth-blue" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 md:hidden">
@@ -137,19 +138,22 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
                 <DropdownMenuItem
                   key={org.id}
                   onClick={() => setSelectedOrganization(org)}
-                  className={selectedOrganization.id === org.id ? "bg-accent" : ""}
+                  className={selectedOrganization.id === org.id ? "bg-secondary" : ""}
                 >
-                  <Building className="mr-2 h-4 w-4 text-primary" />
+                  <Building className="mr-2 h-4 w-4 text-keyauth-blue" />
                   <span>{org.name}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={handleNotificationClick}>
             <Bell className="h-4 w-4" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-keyauth-red"></span>
           </Button>
 
           {/* User menu */}

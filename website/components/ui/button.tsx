@@ -9,12 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent/80",
+        default: "bg-keyauth-blue text-white hover:bg-keyauth-blue/90 active:bg-keyauth-blue/80",
+        destructive: "bg-keyauth-red text-white hover:bg-keyauth-red/90 active:bg-keyauth-red/80",
+        outline: "border border-input bg-background hover:bg-accent/10 hover:text-accent active:bg-accent/20",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70",
-        ghost: "hover:bg-accent hover:text-accent-foreground active:bg-accent/80",
-        link: "text-primary underline-offset-4 hover:underline",
+        ghost: "hover:bg-accent/10 hover:text-accent active:bg-accent/20",
+        link: "text-keyauth-blue underline-offset-4 hover:underline",
+        success: "bg-keyauth-green text-white hover:bg-keyauth-green/90 active:bg-keyauth-green/80",
+        warning: "bg-keyauth-orange text-white hover:bg-keyauth-orange/90 active:bg-keyauth-orange/80",
+        purple: "bg-keyauth-purple text-white hover:bg-keyauth-purple/90 active:bg-keyauth-purple/80",
       },
       size: {
         default: "h-10 px-4 py-2",

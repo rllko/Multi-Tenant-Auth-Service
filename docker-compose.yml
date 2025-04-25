@@ -80,7 +80,8 @@ services:
       - NODE_ENV=production
     networks:
       - nginx-network
-    # depends_on:
+    depends_on:
+      - nginx
     #  - server
 
 

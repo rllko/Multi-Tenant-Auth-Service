@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import {
@@ -29,7 +29,6 @@ import {
   Check,
   Copy,
   Edit,
-  Filter,
   Key,
   MoreHorizontal,
   Plus,
@@ -37,151 +36,37 @@ import {
   Search,
   Trash,
   X,
-  Building,
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
+  Globe,
+  Loader2,
+  Filter,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ApplicationSelector } from "./application-selector"
+import { useToast } from "@/hooks/use-toast"
+import {
+  getLicenseKeys,
+  createLicenseKey,
+  updateLicenseKey,
+  deleteLicenseKey,
+  revokeLicenseKey,
+  banLicenseKey,
+  unbanLicenseKey,
+} from "@/lib/api-service"
+import type { LicenseKey } from "@/lib/schemas"
 
-// Mock data for organizations
+// Mock data for organizations and applications
 const organizations = [
-  { id: "org_1", name: "Acme Inc.", members: 12 },
-  { id: "org_2", name: "Globex Corporation", members: 8 },
-  { id: "org_3", name: "Initech", members: 5 },
+  { id: "org-1", name: "Acme Corp" },
+  { id: "org-2", name: "Beta Inc" },
 ]
 
-// Add organization property to license keys
-const licenseKeys = [
-  {
-    id: "lic_1",
-    key: "KEYAUTH-1234-5678-9ABC-DEFG",
-    plan: "Pro",
-    status: "active",
-    createdAt: "2023-06-15",
-    expiresAt: "2024-06-15",
-    usages: 0,
-    maxUsages: 1,
-    assignedTo: "john@example.com",
-    notes: "Annual subscription",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "lic_2",
-    key: "KEYAUTH-2345-6789-ABCD-EFGH",
-    plan: "Enterprise",
-    status: "active",
-    createdAt: "2023-05-20",
-    expiresAt: "2024-05-20",
-    usages: 1,
-    maxUsages: 5,
-    assignedTo: "acme-corp",
-    notes: "Multi-seat license",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "lic_3",
-    key: "KEYAUTH-3456-7890-ABCD-EFGH",
-    plan: "Basic",
-    status: "expired",
-    createdAt: "2023-01-10",
-    expiresAt: "2023-07-10",
-    usages: 1,
-    maxUsages: 1,
-    assignedTo: "alice@example.com",
-    notes: "6-month trial",
-    organization: "Globex Corporation",
-  },
-  {
-    id: "lic_4",
-    key: "KEYAUTH-4567-8901-ABCD-EFGH",
-    plan: "Pro",
-    status: "revoked",
-    createdAt: "2023-03-05",
-    expiresAt: "2024-03-05",
-    usages: 0,
-    maxUsages: 1,
-    assignedTo: null,
-    notes: "Revoked due to abuse",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "lic_5",
-    key: "KEYAUTH-5678-9012-ABCD-EFGH",
-    plan: "Enterprise",
-    status: "active",
-    createdAt: "2023-07-01",
-    expiresAt: "2025-07-01",
-    usages: 3,
-    maxUsages: 10,
-    assignedTo: "globex-corp",
-    notes: "2-year enterprise agreement",
-    organization: "Initech",
-  },
-  {
-    id: "lic_6",
-    key: "KEYAUTH-6789-0123-ABCD-EFGH",
-    plan: "Pro",
-    status: "active",
-    createdAt: "2023-08-15",
-    expiresAt: "2024-08-15",
-    usages: 1,
-    maxUsages: 1,
-    assignedTo: "bob@example.com",
-    notes: "Annual subscription",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "lic_7",
-    key: "KEYAUTH-7890-1234-ABCD-EFGH",
-    plan: "Basic",
-    status: "active",
-    createdAt: "2023-09-01",
-    expiresAt: "2024-03-01",
-    usages: 0,
-    maxUsages: 1,
-    assignedTo: "carol@example.com",
-    notes: "6-month subscription",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "lic_8",
-    key: "KEYAUTH-8901-2345-ABCD-EFGH",
-    plan: "Enterprise",
-    status: "active",
-    createdAt: "2023-10-10",
-    expiresAt: "2025-10-10",
-    usages: 5,
-    maxUsages: 20,
-    assignedTo: "initech-corp",
-    notes: "2-year enterprise agreement",
-    organization: "Initech",
-  },
-  {
-    id: "lic_9",
-    key: "KEYAUTH-9012-3456-ABCD-EFGH",
-    plan: "Pro",
-    status: "expired",
-    createdAt: "2023-02-15",
-    expiresAt: "2023-08-15",
-    usages: 1,
-    maxUsages: 1,
-    assignedTo: "dave@example.com",
-    notes: "Expired pro license",
-    organization: "Globex Corporation",
-  },
-  {
-    id: "lic_10",
-    key: "KEYAUTH-0123-4567-ABCD-EFGH",
-    plan: "Basic",
-    status: "active",
-    createdAt: "2023-11-05",
-    expiresAt: "2024-11-05",
-    usages: 0,
-    maxUsages: 1,
-    assignedTo: "eve@example.com",
-    notes: "Annual basic subscription",
-    organization: "Acme Inc.",
-  },
+const applications = [
+  { id: "app-1", name: "KeyAuth Desktop", organizationId: "org-1" },
+  { id: "app-2", name: "KeyAuth Mobile", organizationId: "org-1" },
+  { id: "app-3", name: "Gamma App", organizationId: "org-2" },
 ]
 
 // Plans for license keys
@@ -192,12 +77,17 @@ const plans = [
 ]
 
 export function LicenseKeysView() {
+  const [licenses, setLicenses] = useState<LicenseKey[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
-  const [selectedKey, setSelectedKey] = useState(null)
+  const [selectedKey, setSelectedKey] = useState<LicenseKey | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [planFilter, setPlanFilter] = useState("all")
   const [selectedOrganization, setSelectedOrganization] = useState(organizations[0])
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null)
+  const { toast } = useToast()
   const [newKey, setNewKey] = useState({
     plan: "pro",
     expiresAt: "",
@@ -206,14 +96,45 @@ export function LicenseKeysView() {
     generateKey: true,
     customKey: "",
     organization: selectedOrganization.name,
+    applicationId: "",
   })
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(5)
 
-  // Filter license keys based on search query, filters, and selected organization
-  const filteredKeys = licenseKeys.filter((key) => {
+  // Reset to first page when changing filters
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, statusFilter, planFilter, selectedApplicationId])
+
+  // Fetch license keys when component mounts or application ID changes
+  useEffect(() => {
+    const fetchLicenseKeys = async () => {
+      try {
+        setLoading(true)
+        const response = await getLicenseKeys(selectedApplicationId || undefined)
+        if (response.success && response.data) {
+          setLicenses(response.data)
+        } else {
+          setError("Failed to fetch license keys")
+        }
+      } catch (err) {
+        setError("An error occurred while fetching license keys")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLicenseKeys()
+  }, [selectedApplicationId])
+
+  // Get the selected application
+  const selectedApplication = applications.find((app) => app.id === selectedApplicationId)
+
+  // Filter license keys based on search query, filters, selected organization, and application
+  const filteredKeys = licenses.filter((key) => {
     // Search filter
     const matchesSearch =
       searchQuery === "" ||
@@ -227,10 +148,7 @@ export function LicenseKeysView() {
     // Plan filter
     const matchesPlan = planFilter === "all" || key.plan.toLowerCase() === planFilter.toLowerCase()
 
-    // Organization filter
-    const matchesOrg = key.organization === selectedOrganization.name
-
-    return matchesSearch && matchesStatus && matchesPlan && matchesOrg
+    return matchesSearch && matchesStatus && matchesPlan
   })
 
   // Calculate pagination
@@ -243,16 +161,17 @@ export function LicenseKeysView() {
     setCurrentPage(pageNumber)
   }
 
-  const handleEdit = (key) => {
+  const handleEdit = (key: LicenseKey) => {
     setSelectedKey(key)
     setNewKey({
       plan: key.plan.toLowerCase(),
-      expiresAt: key.expiresAt,
+      expiresAt: key.expiresAt || "",
       maxUsages: key.maxUsages,
-      notes: key.notes,
+      notes: key.notes || "",
       generateKey: false,
       customKey: key.key,
-      organization: key.organization,
+      organization: key.organization || selectedOrganization.name,
+      applicationId: key.applicationId,
     })
     setOpen(true)
   }
@@ -267,14 +186,65 @@ export function LicenseKeysView() {
       generateKey: true,
       customKey: "",
       organization: selectedOrganization.name,
+      applicationId: selectedApplicationId || "",
     })
     setOpen(true)
   }
 
-  const handleSave = () => {
-    // In a real app, this would call an API to save the license key
-    console.log("Saving license key:", selectedKey ? "update" : "create", newKey)
-    setOpen(false)
+  const handleSave = async () => {
+    try {
+      setLoading(true)
+
+      if (selectedKey) {
+        // Update existing license
+        const response = await updateLicenseKey(selectedKey.id, {
+          plan: newKey.plan,
+          expiresAt: newKey.expiresAt || undefined,
+          maxUsages: Number(newKey.maxUsages),
+          notes: newKey.notes,
+          key: newKey.generateKey ? undefined : newKey.customKey,
+        })
+
+        if (response.success && response.data) {
+          setLicenses(licenses.map((lic) => (lic.id === selectedKey.id ? response.data : lic)))
+          toast({
+            title: "License updated",
+            description: "The license has been updated successfully.",
+          })
+        }
+      } else {
+        // Create new license
+        const response = await createLicenseKey({
+          key: newKey.generateKey ? undefined : newKey.customKey,
+          plan: newKey.plan,
+          status: "active",
+          expiresAt: newKey.expiresAt || undefined,
+          usages: 0,
+          maxUsages: Number(newKey.maxUsages),
+          assignedTo: null,
+          notes: newKey.notes,
+          applicationId: selectedApplicationId || "",
+        })
+
+        if (response.success && response.data) {
+          setLicenses([response.data, ...licenses])
+          toast({
+            title: "License created",
+            description: "A new license has been created successfully.",
+          })
+        }
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to save license",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+      setOpen(false)
+    }
   }
 
   const handleInputChange = (e) => {
@@ -293,12 +263,26 @@ export function LicenseKeysView() {
 
   const handleOrganizationChange = (org) => {
     setSelectedOrganization(org)
+    setSelectedApplicationId(null)
     setNewKey({
       ...newKey,
       organization: org.name,
+      applicationId: "",
     })
     // Reset to first page when changing organization
     setCurrentPage(1)
+  }
+
+  const handleApplicationSelect = (appId) => {
+    setSelectedApplicationId(appId)
+    setNewKey({
+      ...newKey,
+      applicationId: appId,
+    })
+  }
+
+  const handleBackToApplications = () => {
+    setSelectedApplicationId(null)
   }
 
   const generateRandomKey = () => {
@@ -311,8 +295,102 @@ export function LicenseKeysView() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
-    // In a real app, you would show a toast notification here
-    console.log("Copied to clipboard:", text)
+    toast({
+      title: "Copied to clipboard",
+      description: "The license key has been copied to your clipboard.",
+    })
+  }
+
+  const handleDeleteLicense = async (licenseId) => {
+    try {
+      setLoading(true)
+      const response = await deleteLicenseKey(licenseId)
+      if (response.success) {
+        setLicenses(licenses.filter((lic) => lic.id !== licenseId))
+        toast({
+          title: "License deleted",
+          description: "The license has been deleted successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete license",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRevokeLicense = async (licenseId) => {
+    try {
+      setLoading(true)
+      const response = await revokeLicenseKey(licenseId)
+      if (response.success && response.data) {
+        setLicenses(licenses.map((lic) => (lic.id === licenseId ? response.data : lic)))
+        toast({
+          title: "License revoked",
+          description: "The license has been revoked successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to revoke license",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBanLicense = async (licenseId) => {
+    try {
+      setLoading(true)
+      const response = await banLicenseKey(licenseId)
+      if (response.success && response.data) {
+        setLicenses(licenses.map((lic) => (lic.id === licenseId ? response.data : lic)))
+        toast({
+          title: "License banned",
+          description: "The license has been banned successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to ban license",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUnbanLicense = async (licenseId) => {
+    try {
+      setLoading(true)
+      const response = await unbanLicenseKey(licenseId)
+      if (response.success && response.data) {
+        setLicenses(licenses.map((lic) => (lic.id === licenseId ? response.data : lic)))
+        toast({
+          title: "License unbanned",
+          description: "The license has been unbanned successfully.",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to unban license",
+        variant: "destructive",
+      })
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getStatusBadge = (status) => {
@@ -338,24 +416,67 @@ export function LicenseKeysView() {
             Revoked
           </Badge>
         )
+      case "banned":
+        return (
+          <Badge variant="destructive" className="bg-red-700">
+            <X className="mr-1 h-3 w-3" />
+            Banned
+          </Badge>
+        )
       default:
         return <Badge>{status}</Badge>
     }
   }
 
+  // If no application is selected, show the application selector
+  if (!selectedApplicationId) {
+    return (
+      <ApplicationSelector
+        onApplicationSelect={handleApplicationSelect}
+        selectedOrganization={selectedOrganization}
+        onOrganizationChange={handleOrganizationChange}
+      />
+    )
+  }
+
+  if (loading && licenses.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading license keys...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+        <h3 className="font-bold">Error</h3>
+        <p>{error}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* Organization Context Banner */}
+      {/* Application Context Banner */}
       <Card className="bg-primary/5 border-primary/10">
         <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Building className="h-5 w-5 text-primary" />
-            <div>
-              <h3 className="font-medium">Organization Context</h3>
-              <p className="text-sm text-muted-foreground">
-                Managing license keys for <span className="font-medium">{selectedOrganization.name}</span>
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-primary" />
+              <div>
+                <h3 className="font-medium">Application Context</h3>
+                <p className="text-sm text-muted-foreground">
+                  Managing license keys for <span className="font-medium">{selectedApplication?.name}</span> in{" "}
+                  <span className="font-medium">{selectedOrganization.name}</span>
+                </p>
+              </div>
             </div>
+            <Button variant="ghost" size="sm" onClick={handleBackToApplications}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Applications
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -368,11 +489,11 @@ export function LicenseKeysView() {
         </Button>
       </div>
 
-      <Card className="shadow-sm border-border bg-white">
+      <Card className="shadow-sm border-border bg-white dark:bg-[#1E1E1E]">
         <CardHeader className="flex flex-row items-center border-b">
           <div className="space-y-1.5">
             <CardTitle>License Keys</CardTitle>
-            <CardDescription>Generate and manage license keys for your applications.</CardDescription>
+            <CardDescription>Generate and manage license keys for {selectedApplication?.name}.</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -398,6 +519,7 @@ export function LicenseKeysView() {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
                   <SelectItem value="revoked">Revoked</SelectItem>
+                  <SelectItem value="banned">Banned</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={planFilter} onValueChange={setPlanFilter}>
@@ -417,103 +539,123 @@ export function LicenseKeysView() {
             </div>
           </div>
 
-          <Table>
-            <TableHeader className="bg-gray-50">
-              <TableRow>
-                <TableHead>License Key</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead>Usage</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentItems.length === 0 ? (
+          <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-sm">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
+
+            <Table>
+              <TableHeader className="bg-gray-50 dark:bg-gray-900">
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No license keys found. Try adjusting your filters or create a new license key.
-                  </TableCell>
+                  <TableHead>License Key</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead>Usage</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
-              ) : (
-                currentItems.map((key) => (
-                  <TableRow key={key.id} className="hover:bg-gray-50">
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono text-xs">{key.key}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => copyToClipboard(key.key)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {key.plan}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(key.status)}</TableCell>
-                    <TableCell>
-                      {key.assignedTo ? (
-                        <span className="text-sm">{key.assignedTo}</span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground italic">Unassigned</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{key.expiresAt}</TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {key.usages} / {key.maxUsages === 0 ? "∞" : key.maxUsages}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(key)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit License
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => copyToClipboard(key.key)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy Key
-                          </DropdownMenuItem>
-                          {key.status === "active" && (
-                            <DropdownMenuItem>
-                              <X className="mr-2 h-4 w-4" />
-                              Revoke License
-                            </DropdownMenuItem>
-                          )}
-                          {key.status === "revoked" && (
-                            <DropdownMenuItem>
-                              <RefreshCw className="mr-2 h-4 w-4" />
-                              Reactivate License
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash className="mr-2 h-4 w-4" />
-                            Delete License
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {currentItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No license keys found. Try adjusting your filters or create a new license key.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  currentItems.map((license) => (
+                    <TableRow key={license.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono text-xs">{license.key}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => copyToClipboard(license.key)}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {license.plan}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(license.status)}</TableCell>
+                      <TableCell>
+                        {license.assignedTo ? (
+                          <span className="text-sm">{license.assignedTo}</span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground italic">Unassigned</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{license.expiresAt || "Never"}</TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {license.usages} / {license.maxUsages === 0 ? "∞" : license.maxUsages}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(license)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit License
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => copyToClipboard(license.key)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copy Key
+                            </DropdownMenuItem>
+                            {license.status === "active" && (
+                              <DropdownMenuItem onClick={() => handleRevokeLicense(license.id)}>
+                                <X className="mr-2 h-4 w-4" />
+                                Revoke License
+                              </DropdownMenuItem>
+                            )}
+                            {license.status === "active" && (
+                              <DropdownMenuItem onClick={() => handleBanLicense(license.id)}>
+                                <X className="mr-2 h-4 w-4" />
+                                Ban License
+                              </DropdownMenuItem>
+                            )}
+                            {license.status === "banned" && (
+                              <DropdownMenuItem onClick={() => handleUnbanLicense(license.id)}>
+                                <Check className="mr-2 h-4 w-4" />
+                                Unban License
+                              </DropdownMenuItem>
+                            )}
+                            {license.status === "revoked" && (
+                              <DropdownMenuItem>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Reactivate License
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteLicense(license.id)}>
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete License
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination */}
           {filteredKeys.length > 0 && (
@@ -594,23 +736,6 @@ export function LicenseKeysView() {
 
             <TabsContent value="basic" className="space-y-4 py-4">
               <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="organization">Organization</Label>
-                  <select
-                    id="organization"
-                    name="organization"
-                    value={newKey.organization}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {organizations.map((org) => (
-                      <option key={org.id} value={org.name}>
-                        {org.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div className="grid gap-2">
                   <Label htmlFor="plan">License Plan</Label>
                   <Select value={newKey.plan} onValueChange={(value) => handleSelectChange("plan", value)}>
@@ -703,54 +828,6 @@ export function LicenseKeysView() {
                     </p>
                   </div>
                 )}
-
-                <div className="grid gap-2">
-                  <Label>Features</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="feature_1" className="rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="feature_1" className="font-normal">
-                        Core Features
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="feature_2" className="rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="feature_2" className="font-normal">
-                        API Access
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="feature_3" className="rounded border-gray-300" />
-                      <Label htmlFor="feature_3" className="font-normal">
-                        Premium Support
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="feature_4" className="rounded border-gray-300" />
-                      <Label htmlFor="feature_4" className="font-normal">
-                        White Labeling
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Hardware Binding</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="bind_device" className="rounded border-gray-300" />
-                      <Label htmlFor="bind_device" className="font-normal">
-                        Bind to device
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="bind_ip" className="rounded border-gray-300" />
-                      <Label htmlFor="bind_ip" className="font-normal">
-                        Bind to IP address
-                      </Label>
-                    </div>
-                  </div>
-                </div>
               </div>
             </TabsContent>
           </Tabs>
@@ -771,10 +848,21 @@ export function LicenseKeysView() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>{selectedKey ? "Update" : "Generate"}</Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {selectedKey ? "Updating..." : "Generating..."}
+                </>
+              ) : selectedKey ? (
+                "Update"
+              ) : (
+                "Generate"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

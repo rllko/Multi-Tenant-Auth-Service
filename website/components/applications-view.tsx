@@ -25,10 +25,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, Edit, MoreHorizontal, Plus, RefreshCw, Shield, Trash, Building, Search } from "lucide-react"
+import { Copy, Edit, MoreHorizontal, Plus, RefreshCw, Shield, Trash, Building, Search, Eye, EyeOff } from "lucide-react"
 import { ApplicationScopeSelector } from "./application-scope-selector"
 import { predefinedScopes } from "./scope-models"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
+import { EmptyState } from "./empty-state"
 
 // Mock data for applications
 const applications = [
@@ -43,6 +46,10 @@ const applications = [
     status: "active",
     scopes: ["user.read", "license.read"],
     organization: "Acme Inc.",
+    lastUsed: "2 hours ago",
+    lastIp: "192.168.1.1",
+    lastLocation: "New York, US",
+    sessionCount: 3,
   },
   {
     id: "app_2",
@@ -55,6 +62,10 @@ const applications = [
     status: "active",
     scopes: ["user.read", "user.write", "license.read", "license.write"],
     organization: "Acme Inc.",
+    lastUsed: "1 day ago",
+    lastIp: "10.0.0.1",
+    lastLocation: "AWS East, US",
+    sessionCount: 1,
   },
   {
     id: "app_3",
@@ -67,6 +78,10 @@ const applications = [
     status: "active",
     scopes: ["license.read", "license.write", "license.delete", "license.admin"],
     organization: "Globex Corporation",
+    lastUsed: "5 hours ago",
+    lastIp: "172.16.0.1",
+    lastLocation: "London, UK",
+    sessionCount: 2,
   },
   {
     id: "app_4",
@@ -79,6 +94,10 @@ const applications = [
     status: "inactive",
     scopes: ["user.read"],
     organization: "Initech",
+    lastUsed: "2 months ago",
+    lastIp: "192.168.0.1",
+    lastLocation: "Berlin, DE",
+    sessionCount: 0,
   },
 ]
 
@@ -89,6 +108,34 @@ const organizations = [
   { id: "org_3", name: "Initech", members: 5 },
 ]
 
+// Role templates
+const roleTemplates = [
+  {
+    id: "admin",
+    name: "Admin",
+    description: "Full access to all resources",
+    scopes: ["user.admin", "license.admin", "session.admin"],
+  },
+  {
+    id: "support",
+    name: "Support",
+    description: "Can view users and manage sessions",
+    scopes: ["user.read", "session.read", "session.revoke"],
+  },
+  {
+    id: "signin_bot",
+    name: "Signin Bot",
+    description: "Can only authenticate users",
+    scopes: ["auth.signin"],
+  },
+  {
+    id: "api_client",
+    name: "API Client",
+    description: "Can authenticate and read data",
+    scopes: ["auth.signin", "data.read"],
+  },
+]
+
 export function ApplicationsView() {
   const [apps, setApps] = useState(applications)
   const [open, setOpen] = useState(false)
@@ -96,6 +143,9 @@ export function ApplicationsView() {
   const [selectedApp, setSelectedApp] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedOrganization, setSelectedOrganization] = useState(organizations[0])
+  const [secretVisibility, setSecretVisibility] = useState({})
+  const [viewMode, setViewMode] = useState("grid")
+  const { toast } = useToast()
   const [newApp, setNewApp] = useState({
     name: "",
     type: "web",
@@ -104,6 +154,7 @@ export function ApplicationsView() {
     organization: organizations[0].name,
     keyFormat: "guid",
     keyLength: 16,
+    roleTemplate: "",
   })
 
   const handleEdit = (app) => {
@@ -116,6 +167,7 @@ export function ApplicationsView() {
       organization: app.organization,
       keyFormat: "guid", // Default, since existing apps don't have this property
       keyLength: 16,
+      roleTemplate: "",
     })
     setOpen(true)
   }
@@ -130,6 +182,7 @@ export function ApplicationsView() {
       organization: selectedOrganization.name,
       keyFormat: "guid",
       keyLength: 16,
+      roleTemplate: "",
     })
     setOpen(true)
   }
@@ -180,10 +233,21 @@ export function ApplicationsView() {
           status: "active",
           scopes: newApp.scopes,
           organization: newApp.organization,
+          lastUsed: "Never",
+          lastIp: "-",
+          lastLocation: "-",
+          sessionCount: 0,
         },
       ])
     }
     setOpen(false)
+
+    toast({
+      title: selectedApp ? "Client updated" : "Client created",
+      description: selectedApp
+        ? `The client "${newApp.name}" has been updated successfully.`
+        : `The client "${newApp.name}" has been created successfully.`,
+    })
   }
 
   const handleInputChange = (e) => {
@@ -207,6 +271,11 @@ export function ApplicationsView() {
     setApps(apps.map((app) => (app.id === selectedApp.id ? { ...app, scopes: newApp.scopes } : app)))
 
     setScopesDialogOpen(false)
+
+    toast({
+      title: "Permissions updated",
+      description: `The permissions for "${selectedApp.name}" have been updated successfully.`,
+    })
   }
 
   const getScopeNames = (scopeIds) => {
@@ -228,6 +297,62 @@ export function ApplicationsView() {
       ...newApp,
       organization: org.name,
     })
+  }
+
+  const toggleSecretVisibility = (appId) => {
+    setSecretVisibility((prev) => ({
+      ...prev,
+      [appId]: !prev[appId],
+    }))
+  }
+
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text)
+    toast({
+      title: `${label} copied to clipboard`,
+      description: "The value has been copied to your clipboard.",
+      duration: 2000,
+    })
+  }
+
+  const toggleClientStatus = (appId, currentStatus) => {
+    setApps(
+      apps.map((app) =>
+        app.id === appId ? { ...app, status: currentStatus === "active" ? "inactive" : "active" } : app,
+      ),
+    )
+
+    toast({
+      title: `Client ${currentStatus === "active" ? "deactivated" : "activated"}`,
+      description: "The client status has been updated successfully.",
+      duration: 2000,
+    })
+  }
+
+  const rotateSecret = (appId) => {
+    setApps(
+      apps.map((app) =>
+        app.id === appId ? { ...app, clientSecret: `secret_${Math.random().toString(36).substring(2, 15)}` } : app,
+      ),
+    )
+
+    toast({
+      title: "Secret rotated",
+      description:
+        "The client secret has been rotated successfully. Make sure to update any systems using this client.",
+      duration: 3000,
+    })
+  }
+
+  const handleRoleTemplateChange = (templateId) => {
+    const template = roleTemplates.find((t) => t.id === templateId)
+    if (template) {
+      setNewApp((prev) => ({
+        ...prev,
+        roleTemplate: templateId,
+        scopes: template.scopes,
+      }))
+    }
   }
 
   // Filter applications based on search query and selected organization
@@ -260,14 +385,14 @@ export function ApplicationsView() {
       </Card>
 
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Applications</h2>
+        <h2 className="text-2xl font-bold">OAuth Clients</h2>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          New Application
+          New Client
         </Button>
       </div>
 
-      <Card className="shadow-sm border-border bg-white">
+      <Card className="shadow-sm border-border bg-card dark:bg-[#1E1E1E]">
         <CardHeader className="flex flex-row items-center border-b">
           <div className="space-y-1.5">
             <CardTitle>OAuth Applications</CardTitle>
@@ -286,27 +411,200 @@ export function ApplicationsView() {
             />
           </div>
 
-          <Table>
-            <TableHeader className="bg-gray-50">
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Client ID</TableHead>
-                <TableHead>Scopes</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredApps.length === 0 ? (
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+              >
+                Grid View
+              </Button>
+              <Button
+                variant={viewMode === "table" ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("table")}
+              >
+                Table View
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <select
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                value={selectedOrganization.id}
+                onChange={(e) => {
+                  const org = organizations.find((o) => o.id === e.target.value)
+                  if (org) handleOrganizationChange(org)
+                }}
+              >
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {filteredApps.length === 0 ? (
+            <EmptyState
+              title="No OAuth clients found"
+              description="Create your first OAuth client to get started with authentication."
+              icon={<Shield className="h-10 w-10 text-muted-foreground" />}
+              action={
+                <Button onClick={handleCreate}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Client
+                </Button>
+              }
+            />
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredApps.map((app) => (
+                <Card key={app.id} className="overflow-hidden bg-card dark:bg-[#1E1E1E] border-border">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{app.name}</CardTitle>
+                      <Switch
+                        checked={app.status === "active"}
+                        onCheckedChange={() => toggleClientStatus(app.id, app.status)}
+                        className="data-[state=checked]:bg-[#8A63F9] data-[state=checked]:border-[#8A63F9]"
+                      />
+                    </div>
+                    <Badge variant="outline" className="capitalize mt-1">
+                      {app.type}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">Client ID</Label>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => copyToClipboard(app.clientId, "Client ID")}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <div className="font-mono text-xs bg-muted p-2 rounded-md truncate">{app.clientId}</div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">Client Secret</Label>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => toggleSecretVisibility(app.id)}
+                          >
+                            {secretVisibility[app.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => copyToClipboard(app.clientSecret, "Client Secret")}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="font-mono text-xs bg-muted p-2 rounded-md truncate">
+                        {secretVisibility[app.id] ? app.clientSecret : "••••••••••••••••••••••••"}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Permissions</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {app.scopes && app.scopes.length > 0 ? (
+                          app.scopes.slice(0, 3).map((scope) => (
+                            <Badge key={scope} variant="secondary" className="text-xs">
+                              {scope}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">No permissions assigned</span>
+                        )}
+                        {app.scopes && app.scopes.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{app.scopes.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                      <div>
+                        <div className="font-medium">Last Used</div>
+                        <div>{app.lastUsed}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Sessions</div>
+                        <div>{app.sessionCount}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Last IP</div>
+                        <div>{app.lastIp}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Location</div>
+                        <div>{app.lastLocation}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <div className="p-4 border-t flex justify-between">
+                    <Button variant="outline" size="sm" onClick={() => handleManageScopes(app)}>
+                      <Shield className="mr-2 h-3.5 w-3.5" />
+                      Permissions
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEdit(app)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Client
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => rotateSecret(app.id)}>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Rotate Secret
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash className="mr-2 h-4 w-4" />
+                          Delete Client
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No applications found in this organization.
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Client ID</TableHead>
+                  <TableHead>Scopes</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Used</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
-              ) : (
-                filteredApps.map((app) => (
-                  <TableRow key={app.id} className="hover:bg-gray-50">
+              </TableHeader>
+              <TableBody>
+                {filteredApps.map((app) => (
+                  <TableRow key={app.id} className="hover:bg-muted/30">
                     <TableCell className="font-medium">{app.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
@@ -316,7 +614,12 @@ export function ApplicationsView() {
                     <TableCell className="font-mono text-xs">
                       <div className="flex items-center space-x-2">
                         <span className="truncate max-w-[140px]">{app.clientId}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => copyToClipboard(app.clientId, "Client ID")}
+                        >
                           <Copy className="h-3 w-3" />
                         </Button>
                       </div>
@@ -328,17 +631,13 @@ export function ApplicationsView() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={app.status === "active" ? "default" : "secondary"}
-                        className={
-                          app.status === "active"
-                            ? "bg-green-500 hover:bg-green-600 active:bg-green-700"
-                            : "bg-gray-500 hover:bg-gray-600 active:bg-gray-700"
-                        }
-                      >
-                        {app.status}
-                      </Badge>
+                      <Switch
+                        checked={app.status === "active"}
+                        onCheckedChange={() => toggleClientStatus(app.id, app.status)}
+                        className="data-[state=checked]:bg-[#8A63F9] data-[state=checked]:border-[#8A63F9]"
+                      />
                     </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{app.lastUsed}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -351,29 +650,29 @@ export function ApplicationsView() {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleEdit(app)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit Application
+                            Edit Client
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleManageScopes(app)}>
                             <Shield className="mr-2 h-4 w-4" />
-                            Manage Scopes
+                            Manage Permissions
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => rotateSecret(app.id)}>
                             <RefreshCw className="mr-2 h-4 w-4" />
                             Rotate Secret
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-red-600">
                             <Trash className="mr-2 h-4 w-4" />
-                            Delete Application
+                            Delete Client
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -381,22 +680,23 @@ export function ApplicationsView() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle>{selectedApp ? "Edit Application" : "Create New Application"}</DialogTitle>
+            <DialogTitle>{selectedApp ? "Edit OAuth Client" : "Create New OAuth Client"}</DialogTitle>
             <DialogDescription>
-              {selectedApp ? "Update your OAuth application details." : "Configure a new OAuth client application."}
+              {selectedApp ? "Update your OAuth client details." : "Configure a new OAuth client application."}
             </DialogDescription>
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">Basic Settings</TabsTrigger>
-              <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
+              <TabsTrigger value="permissions">Permissions</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 py-4">
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Application Name</Label>
+                  <Label htmlFor="name">Client Name</Label>
                   <Input
                     id="name"
                     name="name"
@@ -424,7 +724,7 @@ export function ApplicationsView() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="type">Application Type</Label>
+                  <Label htmlFor="type">Client Type</Label>
                   <select
                     id="type"
                     name="type"
@@ -435,7 +735,7 @@ export function ApplicationsView() {
                     <option value="web">Web Application</option>
                     <option value="native">Native Application</option>
                     <option value="spa">Single Page App</option>
-                    <option value="service">Service (Discord Bot, etc.)</option>
+                    <option value="service">Service (Bot, API, etc.)</option>
                   </select>
                 </div>
 
@@ -453,6 +753,53 @@ export function ApplicationsView() {
                     Where to redirect users after authorization. Required for Authorization Code and Implicit flows.
                   </p>
                 </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="permissions" className="space-y-4 py-4">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>Role Template</Label>
+                  <select
+                    value={newApp.roleTemplate}
+                    onChange={(e) => handleRoleTemplateChange(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select a role template</option>
+                    {roleTemplates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name} - {template.description}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Role templates provide predefined sets of permissions for common use cases.
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Selected Permissions</Label>
+                  <div className="border rounded-md p-3 min-h-[100px] bg-muted/30">
+                    {newApp.scopes && newApp.scopes.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {newApp.scopes.map((scope) => (
+                          <Badge key={scope} variant="secondary" className="text-xs">
+                            {scope}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No permissions selected. Choose a role template or add permissions manually.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <Button variant="outline" onClick={() => setScopesDialogOpen(true)}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Manage Permissions Manually
+                </Button>
               </div>
             </TabsContent>
 
@@ -503,40 +850,11 @@ export function ApplicationsView() {
 
                 <div className="grid gap-2">
                   <Label>Token Endpoint Auth Method</Label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                     <option value="client_secret_basic">Client Secret Basic</option>
                     <option value="client_secret_post">Client Secret Post</option>
                     <option value="none">None (public client)</option>
                   </select>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Grant Types</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="authorization_code"
-                        className="rounded border-gray-300"
-                        defaultChecked
-                      />
-                      <Label htmlFor="authorization_code" className="font-normal">
-                        Authorization Code
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="refresh_token" className="rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="refresh_token" className="font-normal">
-                        Refresh Token
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="client_credentials" className="rounded border-gray-300" />
-                      <Label htmlFor="client_credentials" className="font-normal">
-                        Client Credentials
-                      </Label>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="grid gap-2">

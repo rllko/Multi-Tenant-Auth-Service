@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
+
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -15,7 +17,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -27,63 +28,50 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit, Key, MoreHorizontal, Plus, Shield, Trash } from "lucide-react"
-
-const users = [
-  {
-    id: "user_1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Administrator",
-    status: "active",
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "user_2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "Developer",
-    status: "active",
-    lastActive: "1 day ago",
-  },
-  {
-    id: "user_3",
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    role: "Analyst",
-    status: "inactive",
-    lastActive: "3 days ago",
-  },
-  {
-    id: "user_4",
-    name: "Alice Brown",
-    email: "alice@example.com",
-    role: "Developer",
-    status: "active",
-    lastActive: "Just now",
-  },
-]
-
-const roles = [
-  { id: "role_1", name: "Administrator" },
-  { id: "role_2", name: "Developer" },
-  { id: "role_3", name: "Analyst" },
-  { id: "role_4", name: "Support" },
-]
+import { useToast } from "@/hooks/use-toast"
+import { getUsers, createUser, updateUser, deleteUser } from "@/lib/api-service"
+import type { User } from "@/lib/schemas"
 
 export function UserTable() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedRole, setSelectedRole] = useState("")
+  const { toast } = useToast()
 
-  const handleEdit = (user) => {
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true)
+        const response = await getUsers()
+        if (response.success && response.data) {
+          setUsers(response.data)
+        } else {
+          setError("Failed to fetch users")
+        }
+      } catch (err) {
+        setError("An error occurred while fetching users")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUsers()
+  }, [])
+
+  const handleEdit = (user: User) => {
     setSelectedUser(user)
     setOpen(true)
   }
 
-  const handleRoleChange = (user) => {
+  const handleRoleChange = (user: User) => {
     setSelectedUser(user)
-    setSelectedRole(roles.find((r) => r.name === user.role)?.id || "")
+    setSelectedRole(user.role)
     setRoleDialogOpen(true)
   }
 
@@ -97,6 +85,71 @@ export function UserTable() {
     setSelectedRole("")
     setRoleDialogOpen(false)
   }
+
+  const handleSaveUser = async (userData: Partial<User>) => {
+    try {
+      if (selectedUser) {
+        // Update existing user
+        const response = await updateUser(selectedUser.id, userData)
+        if (response.success && response.data) {
+          setUsers(users.map((user) => (user.id === selectedUser.id ? response.data : user)))
+          toast({
+            title: "User updated",
+            description: "User has been updated successfully",
+          })
+        }
+      } else {
+        // Create new user
+        const response = await createUser(userData as Omit<User, "id">)
+        if (response.success && response.data) {
+          setUsers([...users, response.data])
+          toast({
+            title: "User created",
+            description: "User has been created successfully",
+          })
+        }
+      }
+      handleClose()
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to save user",
+        variant: "destructive",
+      })
+      console.error(err)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const response = await deleteUser(userId)
+      if (response.success) {
+        setUsers(users.filter((user) => user.id !== userId))
+        toast({
+          title: "User deleted",
+          description: "User has been deleted successfully",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
+      console.error(err)
+    }
+  }
+
+  if (loading) {
+    return <div>Loading users...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
+  }
+
+  // Rest of the component remains the same...
+  // Just replace the mock data with the users state
 
   return (
     <Card className="shadow-sm border-border">
@@ -135,16 +188,15 @@ export function UserTable() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="role">Role</Label>
-                <Select defaultValue={roles.find((r) => r.name === selectedUser?.role)?.id || roles[0].id}>
+                <Select defaultValue={selectedUser?.role || "viewer"}>
                   <SelectTrigger id="role">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="developer">Developer</SelectItem>
+                    <SelectItem value="analyst">Analyst</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -157,6 +209,7 @@ export function UserTable() {
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -165,7 +218,20 @@ export function UserTable() {
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit">{selectedUser ? "Update User" : "Add User"}</Button>
+              <Button
+                type="submit"
+                onClick={() => {
+                  // Get form values and save
+                  const name = (document.getElementById("name") as HTMLInputElement).value
+                  const email = (document.getElementById("email") as HTMLInputElement).value
+                  const role = (document.querySelector("[data-value]") as HTMLElement)?.dataset.value || "viewer"
+                  const status = (document.querySelector("[data-value]") as HTMLElement)?.dataset.value || "active"
+
+                  handleSaveUser({ name, email, role, status } as Partial<User>)
+                }}
+              >
+                {selectedUser ? "Update User" : "Add User"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -184,11 +250,10 @@ export function UserTable() {
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="developer">Developer</SelectItem>
+                    <SelectItem value="analyst">Analyst</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -197,7 +262,17 @@ export function UserTable() {
               <Button variant="outline" onClick={handleRoleDialogClose}>
                 Cancel
               </Button>
-              <Button type="submit">Update Role</Button>
+              <Button
+                type="submit"
+                onClick={() => {
+                  if (selectedUser) {
+                    handleSaveUser({ ...selectedUser, role: selectedRole })
+                  }
+                  handleRoleDialogClose()
+                }}
+              >
+                Update Role
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -219,7 +294,7 @@ export function UserTable() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8 bg-accent">
-                      <AvatarImage src={`/placeholder.svg?height=32&width=32`} alt={user.name} />
+                      <AvatarImage src={user.avatar || `/placeholder.svg?height=32&width=32`} alt={user.name} />
                       <AvatarFallback className="bg-accent text-accent-foreground">
                         {user.name.charAt(0)}
                       </AvatarFallback>
@@ -246,7 +321,7 @@ export function UserTable() {
                     {user.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{user.lastActive}</TableCell>
+                <TableCell>{user.lastActive || "Never"}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -270,7 +345,7 @@ export function UserTable() {
                         Manage API Keys
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(user.id)}>
                         <Trash className="mr-2 h-4 w-4" />
                         Delete User
                       </DropdownMenuItem>

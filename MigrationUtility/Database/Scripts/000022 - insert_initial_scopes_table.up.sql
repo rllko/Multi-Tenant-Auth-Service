@@ -47,7 +47,8 @@ ON CONFLICT DO NOTHING;
 WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'APPLICATION_SCOPE')            AS type,
                       (SELECT id FROM scope_categories WHERE slug = 'SESSION_MANAGEMENT') AS category,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')      AS low_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT')   AS medium_impact)
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT')   AS medium_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')     AS high_impact)
 INSERT
 INTO scopes (scope_name, scope_type, slug, category_id, impact_level_id)
 SELECT data.scope_name,
@@ -55,6 +56,7 @@ SELECT data.scope_name,
        data.slug,
        s.category,
        CASE data.impact_level
+           WHEN 'HIGH' THEN s.high_impact
            WHEN 'MEDIUM' THEN s.medium_impact
            WHEN 'LOW' THEN s.low_impact
            ELSE NULL
@@ -62,7 +64,7 @@ SELECT data.scope_name,
 FROM SCOPE s
          CROSS JOIN (VALUES
                          -- MEDIUM IMPACT
-                         ('End Selected Session', 'session.end', 'MEDIUM'),
+                         ('End Selected Session', 'session.end', 'HIGH'),
                          ('End All Sessions', 'session.end_all', 'MEDIUM'),
 
                          -- LOW IMPACT

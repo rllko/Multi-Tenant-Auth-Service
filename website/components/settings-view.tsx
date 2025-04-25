@@ -1,195 +1,504 @@
-import { Button } from "@/components/ui/button"
+"use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { useTheme } from "@/components/theme-provider"
+import { Settings, User, Building, CreditCard, Bell, Shield, Key, Save, AlertTriangle, Trash, Lock } from "lucide-react"
 
 export function SettingsView() {
+  const [activeTab, setActiveTab] = useState("general")
+  const { toast } = useToast()
+  const { theme, setTheme } = useTheme()
+
+  const handleSave = () => {
+    toast({
+      title: "Settings saved",
+      description: "Your settings have been saved successfully.",
+    })
+  }
+
   return (
-    <Tabs defaultValue="general" className="w-full">
-      <TabsList className="grid w-full md:w-auto grid-cols-4 md:grid-cols-4">
-        <TabsTrigger value="general">General</TabsTrigger>
-        <TabsTrigger value="security">Security</TabsTrigger>
-        <TabsTrigger value="api">API Settings</TabsTrigger>
-        <TabsTrigger value="notifications">Notifications</TabsTrigger>
-      </TabsList>
+    <div className="container py-6 max-w-5xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">Manage your account and tenant settings</p>
+      </div>
 
-      <TabsContent value="general" className="mt-4 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>General Settings</CardTitle>
-            <CardDescription>Manage your account settings and preferences.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Organization Name</Label>
-              <Input id="name" defaultValue="Acme Inc." />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Admin Email</Label>
-              <Input id="email" type="email" defaultValue="admin@acme.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
-              <select
-                id="timezone"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option>UTC (GMT+0)</option>
-                <option>Eastern Time (GMT-5)</option>
-                <option>Pacific Time (GMT-8)</option>
-                <option>Central European Time (GMT+1)</option>
-              </select>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save Changes</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        orientation="vertical"
+        className="flex flex-col lg:flex-row gap-6"
+      >
+        {/* Sidebar Navigation */}
+        <div className="lg:w-64 space-y-1">
+          <TabsList className="flex flex-col h-auto space-y-1 bg-transparent p-0">
+            <TabsTrigger
+              value="general"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              General
+            </TabsTrigger>
+            <TabsTrigger
+              value="profile"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger
+              value="tenant"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <Building className="h-4 w-4 mr-2" />
+              Tenant
+            </TabsTrigger>
+            <TabsTrigger
+              value="billing"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Billing
+            </TabsTrigger>
+            <TabsTrigger
+              value="notifications"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger
+              value="security"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger
+              value="api"
+              className="justify-start px-3 py-2 h-9 rounded-md data-[state=active]:bg-muted w-full"
+            >
+              <Key className="h-4 w-4 mr-2" />
+              API Keys
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      <TabsContent value="security" className="mt-4 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Security Settings</CardTitle>
-            <CardDescription>Manage your security preferences.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="2fa">Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+        {/* Content Area */}
+        <div className="flex-1">
+          <TabsContent value="general">
+            <Card>
+              <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Manage your general account preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <Select defaultValue="en">
+                      <SelectTrigger id="language">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="ja">Japanese</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Select defaultValue="utc">
+                      <SelectTrigger id="timezone">
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="utc">UTC</SelectItem>
+                        <SelectItem value="est">Eastern Time (ET)</SelectItem>
+                        <SelectItem value="cst">Central Time (CT)</SelectItem>
+                        <SelectItem value="mst">Mountain Time (MT)</SelectItem>
+                        <SelectItem value="pst">Pacific Time (PT)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="dark-mode">Dark Mode</Label>
+                      <Switch
+                        id="dark-mode"
+                        checked={theme === "dark"}
+                        onCheckedChange={(checked) => {
+                          setTheme(checked ? "dark" : "light")
+                          toast({
+                            title: `${checked ? "Dark" : "Light"} mode activated`,
+                            description: `The interface is now in ${checked ? "dark" : "light"} mode.`,
+                          })
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Enable dark mode for a better viewing experience in low-light environments.
+                    </p>
+                  </div>
                 </div>
-                <Switch id="2fa" />
-              </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="session">Session Timeout</Label>
-                  <p className="text-sm text-muted-foreground">Automatically log out after period of inactivity</p>
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Settings</CardTitle>
+                <CardDescription>Manage your personal profile information</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" defaultValue="John Doe" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" type="email" defaultValue="john@example.com" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Job Title</Label>
+                    <Input id="title" defaultValue="Product Manager" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <textarea
+                      id="bio"
+                      className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      placeholder="Tell us about yourself"
+                      defaultValue="Product manager with 5+ years of experience in SaaS products."
+                    />
+                  </div>
                 </div>
-                <Switch id="session" defaultChecked />
-              </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
 
-              <div className="space-y-2">
-                <Label htmlFor="timeout">Timeout Period (minutes)</Label>
-                <Input id="timeout" type="number" defaultValue="30" />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save Changes</Button>
-          </CardFooter>
-        </Card>
+          <TabsContent value="tenant">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tenant Settings</CardTitle>
+                <CardDescription>Manage your tenant configuration</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tenant-name">Tenant Name</Label>
+                    <Input id="tenant-name" defaultValue="Acme Inc." />
+                  </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Password</CardTitle>
-            <CardDescription>Change your password.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current">Current Password</Label>
-              <Input id="current" type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new">New Password</Label>
-              <Input id="new" type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm">Confirm Password</Label>
-              <Input id="confirm" type="password" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Update Password</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="tenant-domain">Domain</Label>
+                    <Input id="tenant-domain" defaultValue="acme.keyauth.io" />
+                  </div>
 
-      <TabsContent value="api" className="mt-4 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>API Settings</CardTitle>
-            <CardDescription>Configure API behavior and defaults.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="rate-limiting">Rate Limiting</Label>
-                <p className="text-sm text-muted-foreground">Limit the number of API requests per minute</p>
-              </div>
-              <Switch id="rate-limiting" defaultChecked />
-            </div>
+                  <Separator className="my-2" />
 
-            <div className="space-y-2">
-              <Label htmlFor="rate-limit">Rate Limit (requests per minute)</Label>
-              <Input id="rate-limit" type="number" defaultValue="100" />
-            </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="public-signup">Public Signup</Label>
+                      <Switch id="public-signup" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Allow users to sign up with an email address from your domain.
+                    </p>
+                  </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="logging">Request Logging</Label>
-                <p className="text-sm text-muted-foreground">Log all API requests for auditing</p>
-              </div>
-              <Switch id="logging" defaultChecked />
-            </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="require-mfa">Require MFA</Label>
+                      <Switch id="require-mfa" defaultChecked />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Require multi-factor authentication for all users in this tenant.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="webhook">Webhook URL</Label>
-              <Input id="webhook" placeholder="https://your-webhook-url.com" />
-              <p className="text-xs text-muted-foreground mt-1">Receive notifications for important API events</p>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save Changes</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage your account security</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="current-password">Current Password</Label>
+                    <Input id="current-password" type="password" />
+                  </div>
 
-      <TabsContent value="notifications" className="mt-4 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-            <CardDescription>Configure how you receive notifications.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="email-notif">Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-              </div>
-              <Switch id="email-notif" defaultChecked />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input id="new-password" type="password" />
+                  </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="security-alerts">Security Alerts</Label>
-                <p className="text-sm text-muted-foreground">Get notified about security events</p>
-              </div>
-              <Switch id="security-alerts" defaultChecked />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Input id="confirm-password" type="password" />
+                  </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="usage-alerts">Usage Alerts</Label>
-                <p className="text-sm text-muted-foreground">Get notified when approaching usage limits</p>
-              </div>
-              <Switch id="usage-alerts" defaultChecked />
-            </div>
+                  <Separator className="my-2" />
 
-            <div className="space-y-2">
-              <Label htmlFor="notification-email">Notification Email</Label>
-              <Input id="notification-email" type="email" defaultValue="alerts@acme.com" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save Preferences</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-    </Tabs>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="two-factor">Two-Factor Authentication</Label>
+                      <Switch id="two-factor" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Add an extra layer of security to your account with two-factor authentication.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="session-timeout">Session Timeout</Label>
+                      <Select defaultValue="60">
+                        <SelectTrigger id="session-timeout" className="w-[180px]">
+                          <SelectValue placeholder="Select timeout" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="15">15 minutes</SelectItem>
+                          <SelectItem value="30">30 minutes</SelectItem>
+                          <SelectItem value="60">1 hour</SelectItem>
+                          <SelectItem value="120">2 hours</SelectItem>
+                          <SelectItem value="240">4 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Automatically log out after a period of inactivity.</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button variant="outline">
+                  <Lock className="h-4 w-4 mr-2" />
+                  Reset Password
+                </Button>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="api">
+            <Card>
+              <CardHeader>
+                <CardTitle>API Keys</CardTitle>
+                <CardDescription>Manage API keys for programmatic access</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Active API Keys</h3>
+                    <div className="rounded-md border divide-y">
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">Production API Key</h4>
+                            <p className="text-sm text-muted-foreground">Created 3 months ago</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Trash className="h-4 w-4 mr-1" />
+                            Revoke
+                          </Button>
+                        </div>
+                        <div className="mt-2 font-mono text-xs bg-muted p-2 rounded-md">
+                          sk_live_••••••••••••••••••••••••••••••
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">Development API Key</h4>
+                            <p className="text-sm text-muted-foreground">Created 1 month ago</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Trash className="h-4 w-4 mr-1" />
+                            Revoke
+                          </Button>
+                        </div>
+                        <div className="mt-2 font-mono text-xs bg-muted p-2 rounded-md">
+                          sk_test_••••••••••••••••••••••••••••••
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-4">
+                    <div className="flex gap-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-amber-800 dark:text-amber-400">API Key Security</h4>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                          API keys provide full access to your account. Keep them secure and never share them in public
+                          repositories or client-side code.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button>
+                  <Key className="h-4 w-4 mr-2" />
+                  Generate New API Key
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <Card>
+              <CardHeader>
+                <CardTitle>Billing Settings</CardTitle>
+                <CardDescription>Manage your billing information and subscription</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Current Plan</h3>
+                    <div className="bg-muted rounded-md p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-medium">Business Plan</h4>
+                          <p className="text-sm text-muted-foreground">$49/month, billed annually</p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Change Plan
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Payment Method</h3>
+                    <div className="bg-muted rounded-md p-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-background p-2 rounded">
+                            <CreditCard className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Visa ending in 4242</h4>
+                            <p className="text-sm text-muted-foreground">Expires 12/2025</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Update
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Settings</CardTitle>
+                <CardDescription>Manage how you receive notifications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Email Notifications</h4>
+                        <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                      </div>
+                      <Switch id="email-notifications" defaultChecked />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Security Alerts</h4>
+                        <p className="text-sm text-muted-foreground">Get notified about security events</p>
+                      </div>
+                      <Switch id="security-alerts" defaultChecked />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Marketing Updates</h4>
+                        <p className="text-sm text-muted-foreground">Receive product updates and offers</p>
+                      </div>
+                      <Switch id="marketing-updates" />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">API Usage Alerts</h4>
+                        <p className="text-sm text-muted-foreground">Get notified when approaching usage limits</p>
+                      </div>
+                      <Switch id="api-usage-alerts" defaultChecked />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   )
 }
