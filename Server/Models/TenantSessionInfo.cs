@@ -2,10 +2,14 @@ using Redis.OM.Modeling;
 
 namespace Authentication.Models;
 
+[Document(StorageType = StorageType.Json, Prefixes = new []{"TenantSessionInfo"})]
 public class TenantSessionInfo
 {
     [Indexed]
     public Guid TenantId { get; set; }
+    
+    [Indexed]
+    public required string Email { get; set; }
 
     [Indexed]
     public required string SessionToken { get; set; }

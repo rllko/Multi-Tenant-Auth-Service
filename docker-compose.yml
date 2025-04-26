@@ -35,14 +35,23 @@ services:
     networks:
       - database_network
 
-  cache:
+  keygen:
+    build: ./keygen
+    container_name: keygen_c
+    volumes:
+      - secrets:/secrets
+    restart: no
+
+  redis:
     image: redis:8.0-rc1-alpine
     restart: always
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
-      - cache:/data
+      - redis:/data
+    networks:
+      - redis_network
 
   server:
     build: ./Server
@@ -55,11 +64,13 @@ services:
       - secrets:/app/secrets
     depends_on:
       - database
-      - cache
+      - redis
+      - keygen
     restart: unless-stopped
     networks:
       - nginx-network
       - database_network
+      - redis_network
         
   migration:
     build: ./MigrationUtility
@@ -84,18 +95,18 @@ services:
       - nginx
     #  - server
 
-
-
 volumes:
   store_database_data:
   secrets:
-  cache:
+  redis:
       driver: local
     
 networks:
   nginx-network:
     driver: bridge
   database_network:
+    driver: bridge
+  redis_network:
     driver: bridge
 
 

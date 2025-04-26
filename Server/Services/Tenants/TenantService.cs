@@ -3,6 +3,7 @@ using Authentication.Database;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Dapper;
+using FluentValidation.Results;
 using LanguageExt.Async.Linq;
 using Redis.OM;
 using Redis.OM.Searching;
@@ -12,15 +13,22 @@ namespace Authentication.Services.Tenants;
 public class TenantService(RedisConnectionProvider provider, IDbConnectionFactory connectionFactory) : ITenantService
 {
     private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
-    private readonly RedisCollection<TenantSessionInfo> _sessions = (RedisCollection<TenantSessionInfo>)provider
-        .RedisCollection<TenantSessionInfo>();
+    private readonly RedisCollection<TenantSessionInfo> _sessions = 
+        (RedisCollection<TenantSessionInfo>)provider.RedisCollection<TenantSessionInfo>();
     private readonly RedisConnectionProvider _provider = provider;
 
-    public async Task<string?> LoginAsync(string username, string password, string ip, string userAgent)
+    public async Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password, string ip,
+        string userAgent)
     {
         var tenant = await AuthenticateUser(username, password);
-        if (tenant == null) return null;
-        
+        if (tenant == null)
+        {
+            var error = new ValidationFailure(
+                "error",
+                "invalid username or password");
+            return new ValidationFailed(error);
+        }
+
         var token = Guid.NewGuid().ToString("N");
         var createdAt = DateTime.UtcNow;
 
@@ -28,6 +36,7 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         {
             SessionToken = token,
             TenantId = tenant.Id,
+            Email = tenant.Email,
             Ip = ip,
             UserAgent = userAgent,
             Created = createdAt,
@@ -35,11 +44,11 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         };
 
         var key = $"session:{token}";
-        var indexKey = $"user-sessions:{tenant}:{tenant.Id.ToString()}";
         
+        var indexKey = $"user-sessions:{tenant}:{tenant.Id.ToString()}";
         await _sessions.InsertAsync(session,_sessionTtl);
         
-        return token;
+        return session;
     }
 
     public async Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken)
@@ -86,7 +95,7 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
 
         var connection = await connectionFactory.CreateConnectionAsync();
 
-        var query = "SELECT * FROM tenants WHERE email = @email AND activated_at is not null";
+        var query = "SELECT * FROM tenants WHERE email like @email AND activated_at is not null";
         var result = await connection.QuerySingleOrDefaultAsync<Tenant>(query, new { email });
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result?.Password);

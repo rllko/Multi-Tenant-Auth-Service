@@ -1,8 +1,10 @@
 using Authentication.Models;
+using Authentication.Services;
+using Authentication.Services.Tenants;
 using FastEndpoints.Security;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.Tenants;
-
 using FastEndpoints;
 using Redis.OM;
 using Redis.OM.Searching;
@@ -11,22 +13,27 @@ public class LoginRequest
 {
     public string Username { get; set; }
     public string Password { get; set; }
-    public string TenantId { get; set; }
 }
 
 public class LoginResponse
 {
-    public string SessionToken { get; set; }
+    public string access_token { get; set; }
+    public string expires_in { get; set; }
+    public string refresh_expires_in { get; set; }
+    public string token_type { get; set; }
+    public string session_state { get; set; }
 }
 
-public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
+public class LoginEndpoint : Endpoint<LoginRequest>
 {
     private readonly IRedisCollection<TenantSessionInfo> _sessions;
     private readonly RedisConnectionProvider _provider;
+    private readonly ITenantService _tenantService;
 
-    public LoginEndpoint(RedisConnectionProvider provider)
+    public LoginEndpoint(RedisConnectionProvider provider,ITenantService tenantService)
     {
         _provider = provider;
+        _tenantService = tenantService;
         _sessions = provider.RedisCollection<TenantSessionInfo>();
     }
 
@@ -38,47 +45,31 @@ public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
+        #warning do this later
+        var result = await _tenantService.LoginAsync(req.Username, req.Password, "", "");
 
-        // 🔐 Validate user (replace with your actual logic)
-        var userId = await FakeUserValidation(req.Username, req.Password, req.TenantId);
-        if (userId is null || Guid.TryParse(req.TenantId, out var tenantId))
-        {
-            await SendUnauthorizedAsync(ct);
-            return;
-        }
+        await result.Match(
+            async tenantSession =>
+            {
+                var jwtToken = JwtBearer.CreateToken(o =>
+                {
+                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
+                    o.ExpireAt = tenantSession.Expires;
+                    o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
+                    o.User.Claims.Add(("access_token", tenantSession.SessionToken));
+                    o.User.Claims.Add(("clientAdress",tenantSession.Ip));
+                });
 
-        // 🪪 Generate session token
-        var token = Guid.NewGuid().ToString("N");
-        var now = DateTime.UtcNow;
-
-        var session = new TenantSessionInfo
-        {
-            SessionToken = token,
-            TenantId = tenantId,
-            Ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            UserAgent = HttpContext.Request.Headers["User-Agent"],
-            Created = now,
-            Expires = now.AddHours(1)
-        };
-
-        await _sessions.InsertAsync(session,TimeSpan.FromSeconds(3600));
-
-        CookieAuth.SignInAsync(u =>
-        {
-            u.Roles.Add("Admin");
-            u.Permissions.AddRange(new[] { "Create_Item", "Delete_Item" });
-            u.Claims.Add(new("Address", "123 Street"));
-
-            //indexer based claim setting
-            u["Email"] = "abc@def.com";
-            u["Department"] = "Administration";
-        });
-    }
-
-    // ⛔ Replace this with real authentication logic
-    private async Task<string?> FakeUserValidation(string username, string password, string tenantId)
-    {
-        await Task.Delay(50); // simulate I/O
-        return username == "admin" && password == "password" ? "user-123" : null;
+                await SendAsync(new
+                {
+                    req.Username,
+                    Token = jwtToken
+                });
+            },
+            fail =>
+            {
+                ThrowError(fail.Errors.First());
+                return Task.CompletedTask;
+            });
     }
 }

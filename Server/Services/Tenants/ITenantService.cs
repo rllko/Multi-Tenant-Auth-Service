@@ -1,10 +1,13 @@
 using Authentication.Models;
+using Authentication.Models.Entities;
+using FluentValidation.Results;
 
 namespace Authentication.Services.Tenants;
 
 public interface ITenantService
 {
-    Task<string?> LoginAsync(string username, string password, string ip, string userAgent);
+    Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password, string ip,
+        string userAgent);
     
     Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken);
 

@@ -1,6 +1,7 @@
 using Authentication.Database;
 using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
+using Authentication.HostedServices;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
@@ -10,6 +11,7 @@ using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
+using Authentication.Services.Tenants;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -29,7 +31,6 @@ Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Cha
 
 builder.Services
     .AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; })
-    .AddAuthenticationCookie(validFor: TimeSpan.FromMinutes(10)) //configure cookie auth
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()
@@ -66,6 +67,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ILicenseSessionService, LicenseSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
+builder.Services.AddScoped<ITenantService, TenantService>();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
     Environment.GetEnvironmentVariable("DATABASE_URL")));
@@ -73,6 +75,7 @@ builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionF
 builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 
 builder.Services.AddSingleton(new RedisConnectionProvider(Environment.GetEnvironmentVariable("REDIS_URL")!));
+builder.Services.AddHostedService<IndexCreationService>();
 
 var app = builder.Build();
 app.UseCors(myAllowSpecificOrigins);
