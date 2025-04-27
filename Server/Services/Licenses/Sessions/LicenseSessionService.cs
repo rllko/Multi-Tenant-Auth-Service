@@ -254,7 +254,8 @@ public class LicenseSessionService(
         return newSession;
     }
 
-    public async Task<Result<LicenseSession, ValidationFailed>> SetupSessionHwid(LicenseSession licenseSession, HwidDto hwidDto)
+    public async Task<Result<LicenseSession, ValidationFailed>> SetupSessionHwid(LicenseSession licenseSession,
+        HwidDto hwidDto)
     {
         var hwid = await hwidService.GetHwidByDtoAsync(hwidDto) ?? await hwidService.CreateHwidAsync(hwidDto);
 

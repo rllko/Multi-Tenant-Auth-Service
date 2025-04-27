@@ -27,12 +27,9 @@ public class IndexCreationService(RedisConnectionProvider provider) : IHostedSer
                     RegexOptions.Compiled)
                 .Trim()
                 .ToLower();
-            
+
             var indexName = $"{name}-idx";
-            if (!existingIndexes.Contains(indexName))
-            {
-                await provider.Connection.CreateIndexAsync(type);
-            }
+            if (!existingIndexes.Contains(indexName)) await provider.Connection.CreateIndexAsync(type);
         }
     }
 

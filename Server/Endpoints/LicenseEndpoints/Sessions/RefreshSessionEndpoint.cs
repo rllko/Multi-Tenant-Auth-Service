@@ -30,15 +30,14 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
 
         var result = session.Match<IResult>(
             se =>
-                TypedResults.Ok(JwtBearer.CreateToken(
-                    o =>
-                    {
-                        o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY");
-                        o.ExpireAt = DateTime.UtcNow.AddDays(1);
-                        o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                        o.User["username"] = se.License.Username;
-                        o.User["license-expiration"] = se.License.ExpiresAt.ToString();
-                    })),
+                TypedResults.Ok(JwtBearer.CreateToken(o =>
+                {
+                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY");
+                    o.ExpireAt = DateTime.UtcNow.AddDays(1);
+                    o.User["session-token"] = se.AuthorizationToken.ToString()!;
+                    o.User["username"] = se.License.Username;
+                    o.User["license-expiration"] = se.License.ExpiresAt.ToString();
+                })),
             error => TypedResults.BadRequest(error));
 
         return result switch

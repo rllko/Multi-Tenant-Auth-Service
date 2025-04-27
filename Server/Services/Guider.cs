@@ -1,8 +1,11 @@
 using System.Buffers.Text;
 using System.Runtime.InteropServices;
 
-namespace Authentication.Common;
+namespace Authentication.Services;
 
+/// <summary>
+/// This class is used in the license sessions to transform the session id from uuid to a random format
+/// </summary>
 public static class Guider
 {
     private const char EqualsChar = '=';

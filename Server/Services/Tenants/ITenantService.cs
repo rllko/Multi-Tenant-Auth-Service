@@ -8,7 +8,7 @@ public interface ITenantService
 {
     Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password, string ip,
         string userAgent);
-    
+
     Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken);
 
     Task<bool> RefreshSessionAsync(string sessionToken);

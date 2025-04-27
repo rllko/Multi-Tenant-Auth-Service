@@ -29,18 +29,17 @@ public class SignInEndpoint(
         var result = session.Match<IResult>(
             se =>
             {
-                var jwt = JwtBearer.CreateToken(
-                    o =>
-                    {
-                        o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
-                        o.SigningStyle = TokenSigningStyle.Symmetric;
-                        o.SigningAlgorithm = "HS256";
-                        o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).AddDays(1).Date;
-                        o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                        o.User["username"] = se.License.Username;
-                        o.User["license-expiration"] = se.License.ExpiresAt.ToString();
-                        o.User["hwid-id"] = se.HwidId.ToString();
-                    });
+                var jwt = JwtBearer.CreateToken(o =>
+                {
+                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
+                    o.SigningStyle = TokenSigningStyle.Symmetric;
+                    o.SigningAlgorithm = "HS256";
+                    o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).AddDays(1).Date;
+                    o.User["session-token"] = se.AuthorizationToken.ToString()!;
+                    o.User["username"] = se.License.Username;
+                    o.User["license-expiration"] = se.License.ExpiresAt.ToString();
+                    o.User["hwid-id"] = se.HwidId.ToString();
+                });
                 return TypedResults.Json(jwt);
             },
             error => TypedResults.BadRequest(error));

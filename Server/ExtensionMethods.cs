@@ -9,7 +9,7 @@ public static class ExtensionMethods
     {
         return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
     }
-    
+
     public static string GetEnumDescription(this Enum en)
     {
         var type = en!.GetType();

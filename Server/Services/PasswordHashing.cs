@@ -16,11 +16,8 @@ public static class PasswordHashing
 
     public static bool ValidatePassword(string password, string? correctHash)
     {
-        if (string.IsNullOrEmpty(password))
-        {
-            return false;
-        }
-        
+        if (string.IsNullOrEmpty(password)) return false;
+
         return BCrypt.Net.BCrypt.Verify(password, correctHash);
     }
 

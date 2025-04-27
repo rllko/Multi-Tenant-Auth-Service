@@ -21,7 +21,7 @@ public class TenantLogoutEndpoint(ITenantService tenantService) : EndpointWithou
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        string accessToken = User.FindFirstValue("access_token")!;
+        var accessToken = User.FindFirstValue("access_token")!;
 
         var result = await tenantService.LogoutAsync(accessToken);
 

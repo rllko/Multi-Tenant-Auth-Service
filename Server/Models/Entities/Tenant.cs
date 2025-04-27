@@ -13,7 +13,6 @@ public class Tenant
 
     public Tenant()
     {
-        
     }
 
     public Guid Id { get; set; }

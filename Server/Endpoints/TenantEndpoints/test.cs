@@ -18,7 +18,7 @@ public class test : EndpointWithoutRequest
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-       var context = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token");
-        await SendOkAsync(new{yuh = context.Value},cancellation:ct);
+        var context = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token");
+        await SendOkAsync(new { yuh = context.Value }, ct);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Authentication.Common;
+using Authentication.Services;
 using Authentication.Services.Licenses;
 using FastEndpoints;
 

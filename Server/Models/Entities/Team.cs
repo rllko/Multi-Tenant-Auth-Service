@@ -5,11 +5,11 @@ namespace Authentication.Models.Entities;
 
 public class Team
 {
-    Guid Id { get; set; }
+    private Guid Id { get; set; }
     public string? Name { get; set; }
-    Guid CreatedBy { get; set; }
+    private Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public string? Password { get; set; }
-    public long? ActivatedAt { get; set; } 
+    public long? ActivatedAt { get; set; }
 }

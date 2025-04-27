@@ -6,6 +6,7 @@ using FastEndpoints.Security;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.Tenants;
+
 using FastEndpoints;
 using Redis.OM;
 using Redis.OM.Searching;
@@ -30,7 +31,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
     private readonly RedisConnectionProvider _provider;
     private readonly ITenantService _tenantService;
 
-    public LoginEndpoint(RedisConnectionProvider provider,ITenantService tenantService)
+    public LoginEndpoint(RedisConnectionProvider provider, ITenantService tenantService)
     {
         _provider = provider;
         _tenantService = tenantService;
@@ -45,8 +46,8 @@ public class LoginEndpoint : Endpoint<LoginRequest>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        #warning do this later
-        var result = await _tenantService.LoginAsync(req.Username, req.Password,"", "");
+#warning do this later
+        var result = await _tenantService.LoginAsync(req.Username, req.Password, "", "");
 
         await result.Match(
             async tenantSession =>
@@ -59,7 +60,8 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));
                 });
 
-                await SendAsync(new LoginResponse{
+                await SendAsync(new LoginResponse
+                {
                     access_token = jwtToken,
                     expires_in = tenantSession.Expires.ToEpoch().ToString(),
                     token_type = "Bearer",
