@@ -39,7 +39,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
 
     public override void Configure()
     {
-        Post("/auth/login");
+        Post("/auth/tenant/login");
         AllowAnonymous();
     }
 

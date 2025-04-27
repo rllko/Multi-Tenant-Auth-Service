@@ -18,7 +18,7 @@ public class SignInEndpoint(
             10,
             60
         );
-        Post("/sign-in");
+        Post("auth/license/login");
     }
 
     public override async Task<Results<JsonHttpResult<string>, BadRequest<ValidationFailed>>> ExecuteAsync(

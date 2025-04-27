@@ -15,7 +15,6 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
     {
         Put("/sessions/");
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
-        Claims("session-token");
         Throttle(
             20,
             60

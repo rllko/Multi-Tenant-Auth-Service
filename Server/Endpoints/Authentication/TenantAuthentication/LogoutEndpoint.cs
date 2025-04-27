@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Authentication.Models.Entities;
+using Authentication.RequestProcessors;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 
@@ -10,11 +11,12 @@ public class TenantLogoutEndpoint(ITenantService tenantService) : EndpointWithou
     public override void Configure()
     {
         Claims("access_token");
-        Delete("/sessions");
+        Delete("tenant/sessions");
         Throttle(
             10,
             60
         );
+        PreProcessor<TenantProcessor<EmptyRequest>>();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

@@ -11,7 +11,7 @@ public class LogoutEndpoint(ILicenseSessionService sessionService) : EndpointWit
     public override void Configure()
     {
         AuthSchemes(LicenseSessionAuth.SchemeName);
-        Delete("/sessions");
+        Delete("license/sessions");
         Throttle(
             10,
             60

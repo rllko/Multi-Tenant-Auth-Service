@@ -55,6 +55,7 @@
 
     <ItemGroup>
       <Folder Include="Endpoints\Authentication\" />
+      <Folder Include="Endpoints\TenantEndpoints\" />
       <Folder Include="Models\Entities\Permissions\" />
     </ItemGroup>
 
