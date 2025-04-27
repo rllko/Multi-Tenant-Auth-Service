@@ -24,13 +24,13 @@ using StackExchange.Redis;
 var builder = WebApplication.CreateBuilder(args);
 
 //sets secrets, will throw if not found 
-var symmetricKey = File.ReadAllText(@"/app/secrets/symmetricKey");
-
-Environment.SetEnvironmentVariable("SYM_KEY", symmetricKey);
-Environment.SetEnvironmentVariable("CHACHA", File.ReadAllText(@"/app/secrets/Chacha20"));
+builder.Services.AddHostedService<EnvironmentVariableService>();
 
 builder.Services
-    .AddAuthenticationJwtBearer(s => { s.SigningKey = symmetricKey; })
+    .AddAuthenticationJwtBearer(s =>
+    {
+        s.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName);
+    })
     .AddFastEndpoints()
     .AddAntiforgery()
     .AddAuthorization()

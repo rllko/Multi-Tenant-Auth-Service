@@ -1,4 +1,5 @@
-﻿using Authentication.Models.Entities;
+﻿using Authentication.HostedServices;
+using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
@@ -32,7 +33,7 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
             se =>
                 TypedResults.Ok(JwtBearer.CreateToken(o =>
                 {
-                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY");
+                    o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.ExpireAt = DateTime.UtcNow.AddDays(1);
                     o.User["session-token"] = se.AuthorizationToken.ToString()!;
                     o.User["username"] = se.License.Username;

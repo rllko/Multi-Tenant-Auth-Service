@@ -1,4 +1,5 @@
 using Authentication.Common;
+using Authentication.HostedServices;
 using Authentication.Models;
 using Authentication.Services;
 using Authentication.Services.Tenants;
@@ -54,7 +55,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
             {
                 var jwtToken = JwtBearer.CreateToken(o =>
                 {
-                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
+                    o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.ExpireAt = tenantSession.Expires;
                     o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));

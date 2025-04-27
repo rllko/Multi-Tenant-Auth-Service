@@ -1,4 +1,5 @@
-﻿using Authentication.Services;
+﻿using Authentication.HostedServices;
+using Authentication.Services;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -31,8 +32,7 @@ public class SignInEndpoint(
             {
                 var jwt = JwtBearer.CreateToken(o =>
                 {
-                    o.SigningKey = Environment.GetEnvironmentVariable("SYM_KEY")!;
-                    o.SigningStyle = TokenSigningStyle.Symmetric;
+                    o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.SigningAlgorithm = "HS256";
                     o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).AddDays(1).Date;
                     o.User["session-token"] = se.AuthorizationToken.ToString()!;
