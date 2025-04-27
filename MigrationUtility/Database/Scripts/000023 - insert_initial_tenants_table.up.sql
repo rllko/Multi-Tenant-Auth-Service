@@ -7,3 +7,6 @@ values ((select discord_id from discords where discord_id = 0),
         'admin',
         '$2a$10$JRYnq1pyvoFXIe1x2FvmC.6F/QxI.V0JlbvYAXlJJPQwqIXvdJwYe',  -- its 'admin'
         extract(epoch from now() at time zone 'utc'));
+
+
+update public.tenants set activated_at = extract(epoch from now() at time zone 'utc');

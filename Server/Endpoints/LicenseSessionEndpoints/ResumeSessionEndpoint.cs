@@ -12,7 +12,7 @@ public class SessionResumeEndpoint(ILicenseSessionService sessionService) : Endp
 {
     public override void Configure()
     {
-        AuthSchemes(SessionAuth.SchemeName);
+        AuthSchemes(LicenseSessionAuth.SchemeName);
         Post("/protected/sessions/resume");
         Throttle(
             20,

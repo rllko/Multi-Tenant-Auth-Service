@@ -13,7 +13,7 @@ public interface ITenantService
 
     Task<bool> RefreshSessionAsync(string sessionToken);
 
-    Task LogoutAsync(TenantSessionInfo sessionToken);
+    Task<bool> LogoutAsync(string sessionToken);
 
     Task<IEnumerable<TenantSessionInfo>> GetActiveSessionsAsync(Guid tenantId);
 

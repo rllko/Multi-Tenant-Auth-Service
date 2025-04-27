@@ -39,7 +39,8 @@ builder.Services
         o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddScheme<AuthenticationSchemeOptions, SessionAuth>(SessionAuth.SchemeName, null);
+    
+    .AddScheme<AuthenticationSchemeOptions, LicenseSessionAuth>(LicenseSessionAuth.SchemeName, null);
 
 builder.Services.AddAuthentication(DiscordBasicAuth.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, DiscordBasicAuth>(DiscordBasicAuth.SchemeName, null);

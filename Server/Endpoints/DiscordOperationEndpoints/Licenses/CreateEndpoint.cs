@@ -1,5 +1,4 @@
-﻿using Authentication.Contracts;
-using Authentication.Models.Entities;
+﻿using Authentication.Models.Entities;
 using Authentication.Services.Discords;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;

@@ -10,7 +10,7 @@ public class IndexCreationService(RedisConnectionProvider provider) : IHostedSer
         var info = (await provider.Connection.ExecuteAsync("FT._LIST"))
             .ToArray()
             .Select(x => x.ToString());
-        if (info.All(x => x != "person-idx"))
+        if (info.All(x => x != "tenant-session-idx"))
         {
             await provider.Connection.CreateIndexAsync(typeof(TenantSessionInfo));
         }

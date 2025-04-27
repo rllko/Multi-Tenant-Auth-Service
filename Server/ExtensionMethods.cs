@@ -5,6 +5,11 @@ namespace Authentication.Common;
 
 public static class ExtensionMethods
 {
+    public static long ToEpoch(this DateTime dateTime)
+    {
+        return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+    }
+    
     public static string GetEnumDescription(this Enum en)
     {
         var type = en!.GetType();

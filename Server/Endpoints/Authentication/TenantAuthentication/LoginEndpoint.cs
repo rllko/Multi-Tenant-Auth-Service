@@ -1,3 +1,4 @@
+using Authentication.Common;
 using Authentication.Models;
 using Authentication.Services;
 using Authentication.Services.Tenants;
@@ -19,7 +20,6 @@ public class LoginResponse
 {
     public string access_token { get; set; }
     public string expires_in { get; set; }
-    public string refresh_expires_in { get; set; }
     public string token_type { get; set; }
     public string session_state { get; set; }
 }
@@ -46,7 +46,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
         #warning do this later
-        var result = await _tenantService.LoginAsync(req.Username, req.Password, "", "");
+        var result = await _tenantService.LoginAsync(req.Username, req.Password,"", "");
 
         await result.Match(
             async tenantSession =>
@@ -57,14 +57,14 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                     o.ExpireAt = tenantSession.Expires;
                     o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));
-                    o.User.Claims.Add(("clientAdress",tenantSession.Ip));
                 });
 
-                await SendAsync(new
-                {
-                    req.Username,
-                    Token = jwtToken
-                });
+                await SendAsync(new LoginResponse{
+                    access_token = jwtToken,
+                    expires_in = tenantSession.Expires.ToEpoch().ToString(),
+                    token_type = "Bearer",
+                    session_state = tenantSession.SessionToken
+                }, cancellation: ct);
             },
             fail =>
             {

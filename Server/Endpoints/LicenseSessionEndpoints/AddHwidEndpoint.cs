@@ -17,7 +17,7 @@ public class AddHwidEndpoint(ILicenseSessionService sessionService)
 {
     public override void Configure()
     {
-        AuthSchemes(SessionAuth.SchemeName);
+        AuthSchemes(LicenseSessionAuth.SchemeName);
         Post("protected/session/hwid");
     }
 

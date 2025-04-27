@@ -13,10 +13,13 @@ namespace Authentication.Services.Tenants;
 public class TenantService(RedisConnectionProvider provider, IDbConnectionFactory connectionFactory) : ITenantService
 {
     private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
+    
     private readonly RedisCollection<TenantSessionInfo> _sessions = 
         (RedisCollection<TenantSessionInfo>)provider.RedisCollection<TenantSessionInfo>();
+    
     private readonly RedisConnectionProvider _provider = provider;
 
+    
     public async Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password, string ip,
         string userAgent)
     {
@@ -42,20 +45,19 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
             Created = createdAt,
             Expires = createdAt.Add(_sessionTtl)
         };
-
-        var key = $"session:{token}";
         
-        var indexKey = $"user-sessions:{tenant}:{tenant.Id.ToString()}";
         await _sessions.InsertAsync(session,_sessionTtl);
         
         return session;
     }
 
+    
     public async Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken)
     {
         return await _sessions.FindByIdAsync(sessionToken);
     }
 
+    
     public async Task<bool> RefreshSessionAsync(string sessionToken)
     {
         var session = await _sessions.FindByIdAsync(sessionToken);
@@ -67,9 +69,15 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         return true;
     }
 
-    public async Task LogoutAsync(TenantSessionInfo sessionToken)
+    
+    public async Task<bool> LogoutAsync(string sessionToken)
     {
-        await _sessions.DeleteAsync(sessionToken);
+        var session = await _sessions.FirstOrDefaultAsync(x => x.SessionToken == sessionToken);
+        
+        if(session is null) return false;
+        
+        await _sessions.DeleteAsync(session);
+        return true;
     }
 
     public async Task<IEnumerable<TenantSessionInfo>> GetActiveSessionsAsync(Guid tenantId)
@@ -79,6 +87,7 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
             .ToListAsync();
     }
 
+    
     public async Task RevokeAllOtherSessionsAsync(string currentToken, Guid tenantId)
     {
         var sessions = await _sessions
@@ -89,6 +98,7 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
             await _sessions.DeleteAsync(s);
     }
 
+    
     private async Task<Tenant?> AuthenticateUser(string email, string password)
     {
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) return null;

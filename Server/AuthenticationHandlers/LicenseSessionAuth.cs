@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.Endpoints.Sessions;
 
-public class SessionAuth(
+public class LicenseSessionAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
     ILicenseSessionService sessionService,
