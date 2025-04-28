@@ -58,7 +58,6 @@
 
     <ItemGroup>
         <Folder Include="Endpoints\Authentication\"/>
-        <Folder Include="Models\Entities\Permissions\"/>
     </ItemGroup>
 
 </Project>

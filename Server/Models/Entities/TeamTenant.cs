@@ -1,11 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Authentication.Models.Entities;
 
+[Table("team_tenants")]
 public class TeamTenant
 {
-    public long Id { get; init; }
-    public Guid InvitedBy { get; init; }
-    public Guid TeamId { get; init; }
-    public Guid TenantId { get; init; }
-    public int RoleId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    [Key]
+    public long Id { get; set; }
+    public Guid? InvitedBy { get; set; }
+    public Guid? Tenant { get; set; }
+    public Guid? Team { get; set; }
+    public int? Role { get; set; }
+    public long CreatedAt { get; set; }
 }

@@ -29,8 +29,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Database\Scripts\000024 - create_serilog_database.up.sql" />
-      <None Remove="Database\Scripts\000001 - create_discords_table.up.sql" />
+      <None Remove="Database\Scripts\000001 - create_serilog_database.up.sql" />
+      <EmbeddedResource Include="Database\Scripts\000001 - create_serilog_database.up.sql" />
       <None Remove="Database\Scripts\000002 - create_tenants_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\000002 - create_tenants_table.up.sql" />
       <None Remove="Database\Scripts\000003 - create_teams_table.up.sql" />
@@ -76,5 +76,7 @@
       <None Remove="Database\Scripts\000023 - insert_initial_tenants_table.up.sql" />
       <EmbeddedResource Include="Database\Scripts\000023 - insert_initial_tenants_table.up.sql" />
     </ItemGroup>
+
+  
 
 </Project>

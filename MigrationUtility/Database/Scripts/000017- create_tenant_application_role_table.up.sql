@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS tenant_application_role
 (
     id             serial primary key,
     tenant_id      uuid REFERENCES tenants(id) ON DELETE CASCADE,
-    role_id        INT REFERENCES scopes(scope_id) ON DELETE CASCADE,
+    role_id        INT REFERENCES roles(role_id) ON DELETE CASCADE,
     application_id uuid REFERENCES applications(id) ON DELETE CASCADE
 );
 

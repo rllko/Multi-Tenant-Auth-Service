@@ -6,8 +6,7 @@ namespace Authentication.Models.Entities;
 [Table("discords")]
 public class DiscordUser
 {
-    [Key] [Column("discord_id")] public long DiscordId { get; set; }
-
-    [Column("date_linked", TypeName = "timestamp without time zone")]
-    public required DateTime DateLinked { get; set; }
+    [Key]
+    public long DiscordId { get; set; }
+    public DateTime DateLinked { get; set; } = DateTime.UtcNow;
 }
