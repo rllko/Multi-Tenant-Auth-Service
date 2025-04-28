@@ -38,9 +38,10 @@ public class LoggerService : ILoggerService
 
         return new LoggerConfiguration()
             .Enrich.FromLogContext()
+            .Enrich.WithProperty("MachineName", Environment.MachineName)
             .WriteTo.PostgreSQL(
                 connectionString: _connectionString,
-                tableName: "logs",
+                tableName: "activity_logs",
                 columnOptions: columnWriters,
                 needAutoCreateTable: true
             );

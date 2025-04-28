@@ -1,9 +1,8 @@
-using Authentication;
 using Authentication.Database;
 using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.HostedServices;
-using Authentication.Services;
+using Authentication.Models;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
@@ -16,6 +15,7 @@ using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Logger;
 using Authentication.Services.Tenants;
 using Authentication.Services.UserSessions;
+using Dapper;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
@@ -70,11 +70,16 @@ builder.Services.AddScoped<ILicenseSessionService, LicenseSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<ITenantService, TenantService>();
-
+Serilog.Debugging.SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();
 Log.Logger = loggerService.ConfigureLogger().CreateLogger();
 builder.Logging.AddSerilog(Log.Logger);
+builder.Logging.ClearProviders();
 
+var yuh = await loggerService.GetLoggerConnectionAsync();
+Log.ForContext("TenantId", 1212)
+    .Information("Processing request for tenant: {TenantId}", 1212);
+// await yuh.QueryFirstAsync<ActivityLog>("select * from activity_logs");
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory());

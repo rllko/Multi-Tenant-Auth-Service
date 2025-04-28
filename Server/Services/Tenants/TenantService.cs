@@ -2,6 +2,7 @@ using System.Text.Json;
 using Authentication.Database;
 using Authentication.Models;
 using Authentication.Models.Entities;
+using Authentication.Services.Logger;
 using Dapper;
 using FluentValidation.Results;
 using LanguageExt.Async.Linq;
@@ -10,7 +11,10 @@ using Redis.OM.Searching;
 
 namespace Authentication.Services.Tenants;
 
-public class TenantService(RedisConnectionProvider provider, IDbConnectionFactory connectionFactory) : ITenantService
+public class TenantService(
+    RedisConnectionProvider provider,
+    IDbConnectionFactory connectionFactory,
+    ILoggerService loggerService) : ITenantService
 {
     private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
 
@@ -58,10 +62,10 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         return await _sessions.FindByIdAsync(sessionToken);
     }
 
-    public Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId)
-    {
-        throw new NotImplementedException();
-    }
+    // public Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId)
+    // {
+    //     throw new NotImplementedException();
+    // }
 
 
     public async Task<bool> RefreshSessionAsync(string sessionToken)
@@ -110,18 +114,19 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) return null;
 
         var connection = await connectionFactory.CreateConnectionAsync();
-        var loggerConnection = await connectionFactory.CreateLoggerConnectionAsync();
+        var loggerConnection = await loggerService.GetLoggerConnectionAsync();
 
         var query = "SELECT * FROM tenants WHERE email like @email AND activated_at is not null";
         var result = await connection.QuerySingleOrDefaultAsync<Tenant>(query, new { email });
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result?.Password);
 
+        #warning yea, the Option<> THING HERE
         if (isPasswordValid)
         {
             return result;
         }
-        
+
         return null;
     }
 }
