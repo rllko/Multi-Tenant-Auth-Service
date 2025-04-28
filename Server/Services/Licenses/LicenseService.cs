@@ -171,7 +171,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
     public async Task<License?> GetLicenseByUsername(string username)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
-#warning start here!
+
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
 
         var x = await
