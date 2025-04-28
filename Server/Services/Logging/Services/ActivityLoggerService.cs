@@ -1,8 +1,8 @@
-using Authentication.Logging.Enums;
-using Authentication.Logging.Interfaces;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Serilog;
 
-namespace Authentication.Logging.Services;
+namespace Authentication.Services.Logging.Services;
 
 public class ActivityLoggerService : IActivityLoggerService
 {

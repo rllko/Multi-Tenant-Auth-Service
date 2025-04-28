@@ -1,7 +1,6 @@
-using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using FluentValidation;
 
-namespace Authentication.Endpoints.Authorization;
+namespace Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 
 public class ClientValidator : AbstractValidator<Client>
 {

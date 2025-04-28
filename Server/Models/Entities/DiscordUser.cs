@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Authentication.Models.Entities.Discord;
+namespace Authentication.Models.Entities;
 
 [Table("discords")]
 public class DiscordUser

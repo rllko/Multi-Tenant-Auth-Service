@@ -1,13 +1,13 @@
 ﻿using Authentication.HostedServices;
 using Authentication.Models.Entities;
 using Authentication.Services;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using FastEndpoints;
 using FastEndpoints.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.LicenseEndpoints.Sessions;
 
 internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
     : EndpointWithoutRequest<Results<Ok<string>, BadRequest<ValidationFailed>>>

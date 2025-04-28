@@ -1,8 +1,8 @@
 using System.Data;
-using Authentication.Endpoints.SessionToken;
+using Authentication.Endpoints.Authentication.LicenseAuthentication;
 using Authentication.Models.Entities;
 
-namespace Authentication.Services.UserSessions;
+namespace Authentication.Services.Licenses.Sessions;
 
 public interface ILicenseSessionService
 {

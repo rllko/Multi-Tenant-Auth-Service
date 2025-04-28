@@ -2,7 +2,7 @@ using Authentication.Models.Entities;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.DiscordOperations.Licenses;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Licenses;
 
 public class CreateBulkEndpoint(ILicenseBuilder licenseService) : EndpointWithoutRequest
 {

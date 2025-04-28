@@ -2,7 +2,7 @@ using Authentication.Services.Authentication.AuthorizeResult;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.Token;
+namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 public class TokenEndpoint(IAuthorizeResultService authorizeService)
     : Endpoint<TokenRequest, Results<Ok<TokenResponse>, BadRequest>>

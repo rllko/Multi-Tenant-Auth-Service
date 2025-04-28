@@ -1,10 +1,11 @@
-﻿using Authentication.Models.Entities;
+﻿using Authentication.AuthenticationHandlers;
+using Authentication.Models.Entities;
 using Authentication.Services.Discords;
 using Authentication.Services.Licenses.Builder;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.DiscordOperations.Licenses;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Licenses;
 
 internal class CreateEndpoint(ILicenseBuilder licenseBuilder, IDiscordService discordService)
     : Endpoint<CreateEndpoint.CreateLicenseRequest, Results<Ok<LicenseDto>, BadRequest>>

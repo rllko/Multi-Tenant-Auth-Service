@@ -1,8 +1,9 @@
-﻿using Authentication.Models.Entities;
+﻿using Authentication.AuthenticationHandlers;
+using Authentication.Models.Entities;
 using Authentication.Services.Licenses;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.DiscordOperations.Licenses;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Licenses;
 
 public class GetAllLicensesEndpoint(ILicenseService licenseService) : EndpointWithoutRequest
 {

@@ -1,4 +1,5 @@
 ﻿using Authentication.Models;
+using Authentication.Models.OAuth;
 
 namespace Authentication.Services.Authentication.CodeStorage;
 

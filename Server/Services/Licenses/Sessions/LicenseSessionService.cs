@@ -1,14 +1,13 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints.SessionToken;
+using Authentication.Endpoints.Authentication.LicenseAuthentication;
 using Authentication.Models.Entities;
 using Authentication.Services.Hwids;
-using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Dapper;
 using FluentValidation.Results;
 
-namespace Authentication.Services.UserSessions;
+namespace Authentication.Services.Licenses.Sessions;
 
 public class LicenseSessionService(
     IDbConnectionFactory connectionFactory,

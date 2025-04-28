@@ -1,9 +1,10 @@
+using Authentication.AuthenticationHandlers;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using FastEndpoints;
 using FluentValidation.Results;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.LicenseEndpoints.Sessions;
 
 // to resume a session
 public class SessionResumeEndpoint : EndpointWithoutRequest

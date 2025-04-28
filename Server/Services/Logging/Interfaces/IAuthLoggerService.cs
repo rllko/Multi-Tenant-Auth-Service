@@ -1,6 +1,6 @@
-using Authentication.Logging.Enums;
+using Authentication.Services.Logging.Enums;
 
-namespace Authentication.Logging.Interfaces;
+namespace Authentication.Services.Logging.Interfaces;
 
 public interface IAuthLoggerService
 {

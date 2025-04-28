@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using Authentication.Logging.Enums;
-using Authentication.Logging.Interfaces;
 using Authentication.RequestProcessors;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.Tenants;
+namespace Authentication.Endpoints.Authentication.TenantAuthentication;
 
 public class TenantLogoutEndpoint(ITenantService tenantService, IAuthLoggerService loggerService)
     : EndpointWithoutRequest

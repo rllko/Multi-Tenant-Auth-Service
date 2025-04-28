@@ -1,10 +1,10 @@
-using Authentication.Endpoints.Sessions;
+using Authentication.AuthenticationHandlers;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.SessionToken;
+namespace Authentication.Endpoints.Authentication.LicenseAuthentication;
 
 public class LogoutEndpoint(ILicenseSessionService sessionService) : EndpointWithoutRequest
 {

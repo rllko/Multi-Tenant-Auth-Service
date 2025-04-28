@@ -1,7 +1,7 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints.DiscordOperations.RedeemCode;
-using Authentication.Models.Entities.Discord;
+using Authentication.Endpoints.DiscordOperationEndpoints.RedeemCode;
+using Authentication.Models.Entities;
 using Authentication.Services.Licenses;
 using Dapper;
 using FluentValidation;

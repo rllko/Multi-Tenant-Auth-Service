@@ -1,6 +1,6 @@
 ﻿using Redis.OM.Modeling;
 
-namespace Authentication.Models;
+namespace Authentication.Models.OAuth;
 
 public class AuthorizationCodeRequest
 {

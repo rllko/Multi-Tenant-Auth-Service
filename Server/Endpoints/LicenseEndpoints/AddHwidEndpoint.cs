@@ -1,11 +1,12 @@
+using Authentication.AuthenticationHandlers;
 using Authentication.Models.Entities;
 using Authentication.Services;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using FastEndpoints;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.Endpoints.LicenseEndpoints;
 
 public class HwidSetupRequest
 {

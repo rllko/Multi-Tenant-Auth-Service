@@ -1,11 +1,11 @@
 using Authentication.HostedServices;
-using Authentication.Logging.Enums;
-using Authentication.Logging.Interfaces;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 using FastEndpoints.Security;
 
-namespace Authentication.Endpoints.Tenants;
+namespace Authentication.Endpoints.Authentication.TenantAuthentication;
 
 public class LoginRequest
 {

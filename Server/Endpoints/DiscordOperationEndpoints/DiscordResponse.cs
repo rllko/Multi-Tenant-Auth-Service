@@ -1,4 +1,4 @@
-﻿namespace Authentication.Endpoints.DiscordOperations;
+﻿namespace Authentication.Endpoints.DiscordOperationEndpoints;
 
 public class DiscordResponse<T>
 {

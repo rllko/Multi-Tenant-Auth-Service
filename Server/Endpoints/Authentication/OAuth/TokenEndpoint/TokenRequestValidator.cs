@@ -1,8 +1,7 @@
-using Authentication.Common;
-using Authentication.OauthResponse;
+using Authentication.Models.OAuth;
 using FluentValidation;
 
-namespace Authentication.Endpoints.Token;
+namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 public class TokenRequestValidator : AbstractValidator<TokenRequest>
 {

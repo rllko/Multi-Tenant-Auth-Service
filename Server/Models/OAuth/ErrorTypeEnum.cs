@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Authentication.OauthResponse;
+namespace Authentication.Models.OAuth;
 
 //Consult the OAuth2.0 specification for more details about the error types
 public enum ErrorTypeEnum : byte

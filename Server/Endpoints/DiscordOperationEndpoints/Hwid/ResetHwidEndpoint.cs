@@ -1,8 +1,9 @@
-﻿using Authentication.Services;
+﻿using Authentication.AuthenticationHandlers;
+using Authentication.Services;
 using Authentication.Services.Licenses;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.DiscordOperations.Hwid;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Hwid;
 
 public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithoutRequest
 {

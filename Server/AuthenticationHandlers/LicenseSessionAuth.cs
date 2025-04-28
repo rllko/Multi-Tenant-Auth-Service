@@ -1,12 +1,12 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Authentication.Models.Entities;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Authentication.Endpoints.Sessions;
+namespace Authentication.AuthenticationHandlers;
 
 public class LicenseSessionAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,

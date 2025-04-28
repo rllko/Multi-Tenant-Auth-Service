@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Authentication.Models.Entities;
 
-namespace Authentication.Common;
+namespace Authentication;
 
 public static class ExtensionMethods
 {

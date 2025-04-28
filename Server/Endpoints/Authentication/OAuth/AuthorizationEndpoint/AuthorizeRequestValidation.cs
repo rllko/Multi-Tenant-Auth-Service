@@ -1,7 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 
-namespace Authentication.Endpoints.Authorization;
+namespace Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 
 public class AuthorizeRequestValidation : Validator<AuthorizeRequest>
 {

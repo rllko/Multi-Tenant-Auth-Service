@@ -1,3 +1,4 @@
+using Authentication.AuthenticationHandlers;
 using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.Discords;
@@ -6,7 +7,7 @@ using FastEndpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.DiscordOperations.Accounts;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Accounts;
 
 public class ActivateLicenseEndpoint(
     IDiscordService discordService,

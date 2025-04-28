@@ -1,6 +1,4 @@
-﻿using Authentication.Common;
-
-namespace Authentication.Endpoints.Token;
+﻿namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 public class TokenResponse
 {

@@ -1,4 +1,4 @@
-namespace Authentication.Logging.Enums;
+namespace Authentication.Services.Logging.Enums;
 
 public enum AuthEventType
 {

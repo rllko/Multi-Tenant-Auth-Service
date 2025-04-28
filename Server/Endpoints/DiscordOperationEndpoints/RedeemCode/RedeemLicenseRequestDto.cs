@@ -1,4 +1,4 @@
-namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.RedeemCode;
 
 public record RedeemLicenseRequestDto
 {

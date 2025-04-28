@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Authentication.Services.Authentication.OAuthAccessToken;
+using Authentication.Services.Authentication.AccessToken;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Authentication.Endpoints;
+namespace Authentication.AuthenticationHandlers;
 
 public class DiscordBasicAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,

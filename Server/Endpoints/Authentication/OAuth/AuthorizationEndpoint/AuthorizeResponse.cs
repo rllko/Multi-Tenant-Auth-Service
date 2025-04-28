@@ -1,4 +1,4 @@
-﻿namespace Authentication.Endpoints.Authorization;
+﻿namespace Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 
 public class AuthorizeResponse
 {

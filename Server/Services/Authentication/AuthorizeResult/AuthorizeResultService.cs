@@ -1,11 +1,9 @@
-﻿using Authentication.Common;
-using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
-using Authentication.Endpoints.Authorization;
-using Authentication.Endpoints.Token;
+﻿using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
+using Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 using Authentication.Models;
-using Authentication.OauthResponse;
+using Authentication.Models.OAuth;
+using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.Authentication.OAuthAccessToken;
 using Authentication.Services.Clients;
 using FluentValidation;
 using FluentValidation.Results;

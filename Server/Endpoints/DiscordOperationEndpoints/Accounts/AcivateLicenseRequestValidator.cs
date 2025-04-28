@@ -1,7 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 
-namespace Authentication.Endpoints.DiscordOperations.Accounts;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.Accounts;
 
 public class AcivateLicenseRequestValidator : Validator<ActivateLicenseRequest>
 {

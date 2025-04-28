@@ -1,5 +1,4 @@
 ﻿using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.Authentication.OAuthAccessToken;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Authentication.Services.Authentication.AccessToken;
@@ -26,7 +25,7 @@ public class AccessTokenService : IAccessTokenService
         if (client is null)
             throw new Exception("Invalid client code");
 
-        var accessToken = new Endpoints.Token.AccessToken
+        var accessToken = new Endpoints.Authentication.OAuth.TokenEndpoint.AccessToken
         {
             ClientIdentifier = client!.ClientId,
             CreationTime = DateTime.UtcNow
@@ -44,10 +43,10 @@ public class AccessTokenService : IAccessTokenService
         return code.ToString();
     }
 
-    public bool GetByCode(Guid code, out Endpoints.Token.AccessToken? authCode)
+    public bool GetByCode(Guid code, out Endpoints.Authentication.OAuth.TokenEndpoint.AccessToken? authCode)
     {
         var result = _tokenCache
-            .TryGetValue(code, out Endpoints.Token.AccessToken? authorizationCode);
+            .TryGetValue(code, out Endpoints.Authentication.OAuth.TokenEndpoint.AccessToken? authorizationCode);
         authCode = authorizationCode;
         return result;
     }

@@ -1,5 +1,5 @@
-using Authentication.Logging.Enums;
-using Authentication.Logging.Interfaces;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Serilog;
 
 namespace Authentication.Services.Logging.Services;

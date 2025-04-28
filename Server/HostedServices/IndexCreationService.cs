@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Authentication.Models;
+using Authentication.Models.OAuth;
 using Redis.OM;
 
 namespace Authentication.HostedServices;

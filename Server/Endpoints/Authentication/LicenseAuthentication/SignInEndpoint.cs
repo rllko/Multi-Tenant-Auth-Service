@@ -1,11 +1,11 @@
 ﻿using Authentication.HostedServices;
 using Authentication.Services;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using FastEndpoints;
 using FastEndpoints.Security;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.SessionToken;
+namespace Authentication.Endpoints.Authentication.LicenseAuthentication;
 
 public class SignInEndpoint(
     ILicenseSessionService sessionService)

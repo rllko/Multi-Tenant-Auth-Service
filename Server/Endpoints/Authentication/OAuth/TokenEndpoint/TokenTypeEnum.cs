@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Authentication.Endpoints.Token;
+namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 public enum TokenTypeEnum : byte
 {

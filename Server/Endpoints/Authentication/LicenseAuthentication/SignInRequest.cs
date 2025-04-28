@@ -1,4 +1,4 @@
-namespace Authentication.Endpoints.SessionToken;
+namespace Authentication.Endpoints.Authentication.LicenseAuthentication;
 
 public record SignInRequest
 {

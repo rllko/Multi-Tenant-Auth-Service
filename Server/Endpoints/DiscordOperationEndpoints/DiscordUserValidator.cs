@@ -1,7 +1,7 @@
-using Authentication.Models.Entities.Discord;
+using Authentication.Models.Entities;
 using FluentValidation;
 
-namespace Authentication.Endpoints.DiscordOperations;
+namespace Authentication.Endpoints.DiscordOperationEndpoints;
 
 public class DiscordUserValidator : AbstractValidator<DiscordUser>
 {

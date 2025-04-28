@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Authentication.Services.UserSessions;
+using Authentication.Services.Licenses.Sessions;
 using FastEndpoints;
 using FluentValidation.Results;
 

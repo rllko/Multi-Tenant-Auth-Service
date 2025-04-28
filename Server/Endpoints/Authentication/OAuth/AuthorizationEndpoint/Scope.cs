@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using Microsoft.EntityFrameworkCore;
 
-namespace Authentication.Endpoints.Authorization;
+namespace Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 
 [Table("scopes")]
 [Index("ScopeName", Name = "scopes_scope_name_key", IsUnique = true)]

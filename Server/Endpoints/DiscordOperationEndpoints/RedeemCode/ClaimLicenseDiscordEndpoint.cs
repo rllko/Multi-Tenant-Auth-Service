@@ -1,9 +1,11 @@
-﻿using Authentication.Services.Discords;
+﻿using Authentication.AuthenticationHandlers;
+using Authentication.Services;
+using Authentication.Services.Discords;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Authentication.Endpoints.DiscordOperations.RedeemCode;
+namespace Authentication.Endpoints.DiscordOperationEndpoints.RedeemCode;
 
 [Authorize(Policy = "Special")]
 public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)

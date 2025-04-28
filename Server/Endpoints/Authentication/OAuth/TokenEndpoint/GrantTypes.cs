@@ -1,7 +1,6 @@
-﻿using Authentication.Common;
-using Authentication.Models;
+﻿using Authentication.Models.OAuth;
 
-namespace Authentication.Endpoints.Token;
+namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 //https://www.rfc-editor.org/rfc/rfc6749#page-23
 public class GrantTypes

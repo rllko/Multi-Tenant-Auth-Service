@@ -1,6 +1,6 @@
 using System.Data;
-using Authentication.Endpoints.DiscordOperations.RedeemCode;
-using Authentication.Models.Entities.Discord;
+using Authentication.Endpoints.DiscordOperationEndpoints.RedeemCode;
+using Authentication.Models.Entities;
 
 namespace Authentication.Services.Discords;
 
