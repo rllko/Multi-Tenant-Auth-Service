@@ -34,7 +34,7 @@ public class AddHwidEndpoint(ILicenseSessionService sessionService)
             return TypedResults.BadRequest(new ValidationFailed(error));
         }
 
-        var result = await sessionService.SetupSessionHwid(session, hwidDto);
+        var result = await sessionService.SetupSessionHwid(session!, hwidDto);
 
         var match = result.Match<IResult>(
             success =>

@@ -175,7 +175,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
 
         var x = await
-            connection.QuerySingleOrDefaultAsync(getDiscordIdQuery, new { username });
+            connection.QuerySingleAsync(getDiscordIdQuery, new { username });
 
         var license = new License
         {

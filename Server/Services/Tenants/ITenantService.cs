@@ -11,6 +11,8 @@ public interface ITenantService
 
     Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken);
 
+    Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId);
+    
     Task<bool> RefreshSessionAsync(string sessionToken);
 
     Task<bool> LogoutAsync(string sessionToken);

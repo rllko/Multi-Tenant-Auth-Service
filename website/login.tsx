@@ -17,19 +17,15 @@ import { toast } from "@/hooks/use-toast"
 // Login request schema
 const LoginRequestSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string(),
   rememberMe: z.boolean().optional(),
 })
 
 // Login response schema
 const LoginResponseSchema = z.object({
   token: z.string(),
-  user: z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    role: z.string(),
-  }),
+  expires_in: z.string(),
+  token_type: z.string()
 })
 
 type LoginRequest = z.infer<typeof LoginRequestSchema>
@@ -85,7 +81,7 @@ export default function Login() {
 
     try {
       // API call to authenticate
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const response = await fetch(`api/auth/tenant/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,20 +94,22 @@ export default function Login() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || "Authentication failed")
+        console.log(response)
+        throw new Error(errorData.generalErrors[0] || "Authentication failed")
       }
 
       const data = await response.json()
-
+      console.log(data)
       // Validate response with Zod
       const validatedData = LoginResponseSchema.parse(data)
+      console.log(validatedData)
 
       // Store token in localStorage (or use a more secure method in production)
       localStorage.setItem("keyauth_token", validatedData.token)
 
       // Store user info if remember me is checked
       if (formData.rememberMe) {
-        localStorage.setItem("keyauth_user", JSON.stringify(validatedData.user))
+        localStorage.setItem("keyauth_user", JSON.stringify(validatedData.token))
       }
 
       toast({

@@ -27,7 +27,7 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
     {
         var sess = HttpContext.Items["Session"] as LicenseSession;
 
-        var session = await sessionService.RefreshLicenseSession(sess);
+        var session = await sessionService.RefreshLicenseSession(sess!);
 
         var result = session.Match<IResult>(
             se =>
@@ -36,10 +36,10 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
                     o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.ExpireAt = DateTime.UtcNow.AddDays(1);
                     o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                    o.User["username"] = se.License.Username;
+                    o.User["username"] = se.License.Username!;
                     o.User["license-expiration"] = se.License.ExpiresAt.ToString();
                 })),
-            error => TypedResults.BadRequest(error));
+            TypedResults.BadRequest);
 
         return result switch
         {

@@ -147,7 +147,8 @@ public class LicenseSessionService(
 
         var newSession = await GetSessionByTokenAsync(newSessionToken);
 
-        return newSession;
+        if (newSession != null) return newSession;
+        throw new Exception("what");
     }
 
     public async Task<Result<LicenseSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request)

@@ -58,6 +58,11 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         return await _sessions.FindByIdAsync(sessionToken);
     }
 
+    public Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId)
+    {
+        throw new NotImplementedException();
+    }
+
 
     public async Task<bool> RefreshSessionAsync(string sessionToken)
     {
@@ -105,12 +110,18 @@ public class TenantService(RedisConnectionProvider provider, IDbConnectionFactor
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) return null;
 
         var connection = await connectionFactory.CreateConnectionAsync();
+        var loggerConnection = await connectionFactory.CreateLoggerConnectionAsync();
 
         var query = "SELECT * FROM tenants WHERE email like @email AND activated_at is not null";
         var result = await connection.QuerySingleOrDefaultAsync<Tenant>(query, new { email });
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result?.Password);
 
-        return result;
+        if (isPasswordValid)
+        {
+            return result;
+        }
+        
+        return null;
     }
 }

@@ -1,7 +1,9 @@
+using Authentication;
 using Authentication.Database;
 using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.HostedServices;
+using Authentication.Services;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
@@ -11,6 +13,7 @@ using Authentication.Services.Hwids;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
+using Authentication.Services.Logger;
 using Authentication.Services.Tenants;
 using Authentication.Services.UserSessions;
 using FastEndpoints;
@@ -19,11 +22,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Redis.OM;
-using StackExchange.Redis;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//sets secrets, will throw if not found 
 builder.Services.AddHostedService<EnvironmentVariableService>();
 
 builder.Services
@@ -69,8 +71,13 @@ builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 
-builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory(
-    Environment.GetEnvironmentVariable("DATABASE_URL")));
+var loggerService = new LoggerService();
+Log.Logger = loggerService.ConfigureLogger().CreateLogger();
+builder.Logging.AddSerilog(Log.Logger);
+
+builder.Services.AddSingleton<ILoggerService, LoggerService>();
+
+builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory());
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>(ServiceLifetime.Singleton);
 

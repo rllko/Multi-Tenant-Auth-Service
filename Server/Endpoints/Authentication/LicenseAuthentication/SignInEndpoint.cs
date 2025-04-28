@@ -34,11 +34,12 @@ public class SignInEndpoint(
                 {
                     o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.SigningAlgorithm = "HS256";
-                    o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt).AddDays(1).Date;
+                    o.ExpireAt = DateTimeOffset.FromUnixTimeSeconds((long)se.RefreshedAt!).AddDays(1).Date;
                     o.User["session-token"] = se.AuthorizationToken.ToString()!;
-                    o.User["username"] = se.License.Username;
+                    o.User["username"] = se.License.Username!;
                     o.User["license-expiration"] = se.License.ExpiresAt.ToString();
-                    o.User["hwid-id"] = se.HwidId.ToString();
+                    o.User["hwid-id"] = se.HwidId!.ToString(); 
+                    #warning yea, hwid id needs to be solved :D
                 });
                 return TypedResults.Json(jwt);
             },

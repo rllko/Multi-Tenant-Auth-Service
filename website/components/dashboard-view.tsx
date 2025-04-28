@@ -193,9 +193,9 @@ export function DashboardView({ userRole }: DashboardViewProps) {
                       {stats?.recentActivity?.length || 0} activities in the last 24 hours
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <ActivityFeed activities={stats?.recentActivity || []} />
-                  </CardContent>
+                  {/*<CardContent>*/}
+                  {/*  <ActivityFeed activities={stats?.recentActivity || []} />*/}
+                  {/*</CardContent>*/}
                 </Card>
                 <Card className="col-span-3">
                   <CardHeader>

@@ -11,7 +11,7 @@ public class DatabaseInitializer
 
     private string? ConnectionString { get; }
 
-    public async Task InitializeAsync()
+    public void InitializeAsync()
     {
         EnsureDatabase.For.PostgresqlDatabase(ConnectionString);
 

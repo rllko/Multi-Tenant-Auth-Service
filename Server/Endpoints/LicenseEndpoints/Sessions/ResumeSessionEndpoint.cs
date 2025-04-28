@@ -7,8 +7,8 @@ using FluentValidation.Results;
 namespace Authentication.Endpoints.Sessions;
 
 // to resume a session
-public class SessionResumeEndpoint(ILicenseSessionService sessionService) : EndpointWithoutRequest
-
+public class SessionResumeEndpoint() : EndpointWithoutRequest
+//ILicenseSessionService sessionService
 {
     public override void Configure()
     {

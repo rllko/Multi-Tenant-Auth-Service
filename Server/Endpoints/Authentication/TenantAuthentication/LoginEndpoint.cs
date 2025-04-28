@@ -14,16 +14,15 @@ using Redis.OM.Searching;
 
 public class LoginRequest
 {
-    public string Username { get; set; }
-    public string Password { get; set; }
+    public required string Email { get; set; }
+    public required string Password { get; set; }
 }
 
 public class LoginResponse
 {
-    public string access_token { get; set; }
-    public string expires_in { get; set; }
-    public string token_type { get; set; }
-    public string session_state { get; set; }
+    public required string token { get; set; }
+    public required string expires_in { get; set; }
+    public required string token_type { get; set; }
 }
 
 public class LoginEndpoint : Endpoint<LoginRequest>
@@ -48,7 +47,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
 #warning do this later
-        var result = await _tenantService.LoginAsync(req.Username, req.Password, "", "");
+        var result = await _tenantService.LoginAsync(req.Email, req.Password, "", "");
 
         await result.Match(
             async tenantSession =>
@@ -61,17 +60,16 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));
                 });
 
-                await SendAsync(new LoginResponse
+                await SendOkAsync(new LoginResponse
                 {
-                    access_token = jwtToken,
-                    expires_in = tenantSession.Expires.ToEpoch().ToString(),
-                    token_type = "Bearer",
-                    session_state = tenantSession.SessionToken
+                    token = jwtToken,
+                    expires_in = "3600",
+                    token_type = "Bearer"
                 }, cancellation: ct);
             },
             fail =>
             {
-                ThrowError(fail.Errors.First());
+                ThrowError("The supplied credentials are invalid!");
                 return Task.CompletedTask;
             });
     }

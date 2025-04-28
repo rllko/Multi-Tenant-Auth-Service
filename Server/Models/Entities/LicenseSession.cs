@@ -11,10 +11,9 @@ public class LicenseSession
 
     public LicenseSession(Guid sessionId,
         Guid authorizationToken,
-        Hwid? hwid,
         long hwidId,
         long licenseId,
-        License? license,
+        License license,
         string ipAddress,
         long refreshesAt,
         long createdAt,
@@ -22,7 +21,6 @@ public class LicenseSession
     {
         SessionId = sessionId;
         AuthorizationToken = authorizationToken;
-        Hwid = hwid;
         HwidId = hwidId;
         LicenseId = licenseId;
         License = license;
@@ -36,8 +34,8 @@ public class LicenseSession
     public Hwid? Hwid { get; set; }
     public long? HwidId { get; set; }
     public long LicenseId { get; init; }
-    public License? License { get; set; }
-    public string IpAddress { get; }
+    public License License { get; set; }
+    public string? IpAddress { get; }
 
     public bool Active { get; set; } = true;
     public long CreatedAt { get; init; }
