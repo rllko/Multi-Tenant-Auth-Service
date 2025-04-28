@@ -10,7 +10,7 @@ namespace Authentication.Endpoints;
 public class DiscordBasicAuth(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
-    IAccessTokenStorageService accessTokenStorage,
+    IAccessTokenService accessToken,
     UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
@@ -27,7 +27,7 @@ public class DiscordBasicAuth(
         {
             var token = authHeader[SchemeName.Length..].Trim();
 
-            if (Guid.TryParse(token, out var tokenGuid) && accessTokenStorage.GetByCode(tokenGuid, out var result))
+            if (Guid.TryParse(token, out var tokenGuid) && accessToken.GetByCode(tokenGuid, out var result))
             {
                 var claims = new[]
                 {

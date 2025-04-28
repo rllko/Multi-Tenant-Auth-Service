@@ -2,9 +2,9 @@
 
 namespace Authentication.Services.Authentication.CodeStorage;
 
-public interface ICodeStorageService
+public interface ICodeService
 {
     Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest);
-    bool GetClientCode(string key, out AuthorizationCodeRequest? userCode);
-    void RemoveClientCode(string key);
+    Task<AuthorizationCodeRequest?> GetClientCode(string key);
+    Task RemoveClientCode(string key);
 }

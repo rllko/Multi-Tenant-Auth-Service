@@ -2,10 +2,10 @@
 
 namespace Authentication.Services.Authentication.OAuthAccessToken;
 
-public interface IAccessTokenStorageService
+public interface IAccessTokenService
 {
-    string Generate(Guid accessCode);
+    Task<string> Generate(Guid accessCode);
 
-    bool GetByCode(Guid code, out AccessToken? authCode);
+    bool GetByCode(Guid code, out Endpoints.Token.AccessToken? authCode);
     // AuthorizationCodeRequest? UpdatedByCode(string key, ClaimsPrincipal claimsPrincipal, IList<string> requestdScopes);
 }

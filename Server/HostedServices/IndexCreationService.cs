@@ -8,7 +8,8 @@ public class IndexCreationService(RedisConnectionProvider provider) : IHostedSer
 {
     private readonly Type[] _typesToIndex =
     [
-        typeof(TenantSessionInfo)
+        typeof(TenantSessionInfo),
+        typeof(AuthorizationCodeRequest)
     ];
 
     public async Task StartAsync(CancellationToken cancellationToken)

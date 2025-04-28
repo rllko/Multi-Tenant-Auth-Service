@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using Microsoft.EntityFrameworkCore;
 
 namespace Authentication.Endpoints.Authorization;

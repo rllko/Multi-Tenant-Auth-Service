@@ -20,7 +20,7 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
             return;
         }
 
-        var session = await sessionService.ValidateSessionAsync(token.Value);
+        var session = await sessionService.GetSessionAsync(token.Value);
 
 #warning please make this more complete, add checks
         // check if session is active

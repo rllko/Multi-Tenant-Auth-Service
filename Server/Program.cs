@@ -3,6 +3,7 @@ using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.HostedServices;
 using Authentication.Models;
+using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Authentication.OAuthAccessToken;
@@ -59,8 +60,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddSingleton<IAccessTokenStorageService, AccessTokenStorageService>();
-builder.Services.AddSingleton<ICodeStorageService, CodeStorageService>();
+builder.Services.AddSingleton<IAccessTokenService, AccessTokenService>();
+builder.Services.AddSingleton<ICodeService, CodeService>();
 builder.Services.AddScoped<IAuthorizeResultService, AuthorizeResultService>();
 builder.Services.AddScoped<ILicenseService, LicenseService>();
 builder.Services.AddScoped<IHwidService, HwidService>();
@@ -74,12 +75,13 @@ Serilog.Debugging.SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();
 Log.Logger = loggerService.ConfigureLogger().CreateLogger();
 builder.Logging.AddSerilog(Log.Logger);
-builder.Logging.ClearProviders();
+builder.Host.UseSerilog(Log.Logger);
+
+//builder.Logging.ClearProviders();
+#warning  add this when testing
 
 var yuh = await loggerService.GetLoggerConnectionAsync();
-Log.ForContext("TenantId", 1212)
-    .Information("Processing request for tenant: {TenantId}", 1212);
-// await yuh.QueryFirstAsync<ActivityLog>("select * from activity_logs");
+
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory());
@@ -92,7 +94,7 @@ builder.Services.AddHostedService<IndexCreationService>();
 var app = builder.Build();
 app.UseCors(myAllowSpecificOrigins);
 
-app.UseAuthentication()
+app.UseAuthentication().UseSerilogRequestLogging()
     .UseAuthorization()
     .UseAntiforgeryFE()
     .UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);

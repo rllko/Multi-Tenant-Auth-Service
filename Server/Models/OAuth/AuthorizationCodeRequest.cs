@@ -1,12 +1,14 @@
 ﻿using FastEndpoints;
+using Redis.OM.Modeling;
 
 namespace Authentication.Models;
 
 public class AuthorizationCodeRequest
 {
-    [BindFrom("client_id")] public required string? ClientIdentifier { get; set; }
+    [Indexed] public required string? ClientId{ get; set; }
 
-    public DateTime CreationTime { get; set; } = DateTime.UtcNow.ToUniversalTime();
-    public string? Code { get; set; } = null;
-    public bool IsExpired => DateTime.UtcNow.ToUniversalTime() > CreationTime.AddSeconds(30);
+    [Indexed] public DateTime CreationTime { get; set; } = DateTime.UtcNow.ToUniversalTime();
+    [Indexed] public string Key { get; set; }
+    [Indexed] public string? Code { get; set; } = null;
+    [Indexed] public bool IsExpired => DateTime.UtcNow.ToUniversalTime() > CreationTime.AddSeconds(30);
 }

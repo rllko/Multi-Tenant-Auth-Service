@@ -57,7 +57,7 @@ public class TenantService(
     }
 
 
-    public async Task<TenantSessionInfo?> ValidateSessionAsync(string sessionToken)
+    public async Task<TenantSessionInfo?> GetSessionAsync(string sessionToken)
     {
         return await _sessions.FindByIdAsync(sessionToken);
     }

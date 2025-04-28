@@ -1,5 +1,7 @@
 using Authentication.Common;
 using Authentication.HostedServices;
+using Authentication.Logging.Enums;
+using Authentication.Logging.Interfaces;
 using Authentication.Models;
 using Authentication.Services;
 using Authentication.Services.Tenants;
@@ -27,15 +29,13 @@ public class LoginResponse
 
 public class LoginEndpoint : Endpoint<LoginRequest>
 {
-    private readonly IRedisCollection<TenantSessionInfo> _sessions;
-    private readonly RedisConnectionProvider _provider;
+    private readonly IAuthLoggerService _loggerService;
     private readonly ITenantService _tenantService;
 
-    public LoginEndpoint(RedisConnectionProvider provider, ITenantService tenantService)
+    public LoginEndpoint(IAuthLoggerService loggerService, ITenantService tenantService)
     {
-        _provider = provider;
+        _loggerService = loggerService;
         _tenantService = tenantService;
-        _sessions = provider.RedisCollection<TenantSessionInfo>();
     }
 
     public override void Configure()
@@ -59,6 +59,8 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                     o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));
                 });
+                
+                _loggerService.LogEvent(AuthEventType.LoginSuccess,tenantSession.TenantId.ToString(),req);
 
                 await SendOkAsync(new LoginResponse
                 {
@@ -69,6 +71,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
             },
             fail =>
             {
+                _loggerService.LogEvent(AuthEventType.LoginSuccess,req.Email,req);
                 ThrowError("The supplied credentials are invalid!");
                 return Task.CompletedTask;
             });
