@@ -45,8 +45,6 @@ services:
   redis:
     image: redis:8.0-rc1-alpine
     restart: always
-    ports:
-      - '6379:6379' #DEV STUFF, REMOVE LATER
     command: >
       redis-server 
       --save 20 1 
@@ -68,9 +66,9 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL= ${DATABASE_URL}
-      - DATABASE_LOGGER_URL= ${DATABASE_LOGGER_URL}
-      - REDIS_URL= ${REDIS_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_LOGGER_URL=${DATABASE_LOGGER_URL}
+      - REDIS_URL=${REDIS_URL}
     volumes:
       - secrets:/app/secrets
     depends_on:
@@ -90,6 +88,8 @@ services:
       - .env
     depends_on:
       - database
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
     restart: no
     networks:
       - database_network
