@@ -1,6 +1,4 @@
 using Authentication.Models;
-using Authentication.Models.Entities;
-using FluentValidation.Results;
 
 namespace Authentication.Services.Tenants;
 
@@ -12,7 +10,7 @@ public interface ITenantService
     Task<TenantSessionInfo?> GetSessionAsync(string sessionToken);
 
     // Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId);
-    
+
     Task<bool> RefreshSessionAsync(string sessionToken);
 
     Task<bool> LogoutAsync(string sessionToken);

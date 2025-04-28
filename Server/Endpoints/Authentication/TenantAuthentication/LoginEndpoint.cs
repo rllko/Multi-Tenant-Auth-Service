@@ -1,18 +1,11 @@
-using Authentication.Common;
 using Authentication.HostedServices;
 using Authentication.Logging.Enums;
 using Authentication.Logging.Interfaces;
-using Authentication.Models;
-using Authentication.Services;
 using Authentication.Services.Tenants;
+using FastEndpoints;
 using FastEndpoints.Security;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Authentication.Endpoints.Tenants;
-
-using FastEndpoints;
-using Redis.OM;
-using Redis.OM.Searching;
 
 public class LoginRequest
 {
@@ -59,19 +52,19 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                     o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
                     o.User.Claims.Add(("access_token", tenantSession.SessionToken));
                 });
-                
-                _loggerService.LogEvent(AuthEventType.LoginSuccess,tenantSession.TenantId.ToString(),req);
+
+                _loggerService.LogEvent(AuthEventType.LoginSuccess, tenantSession.TenantId.ToString(), req);
 
                 await SendOkAsync(new LoginResponse
                 {
                     token = jwtToken,
                     expires_in = "3600",
                     token_type = "Bearer"
-                }, cancellation: ct);
+                }, ct);
             },
             fail =>
             {
-                _loggerService.LogEvent(AuthEventType.LoginSuccess,req.Email,req);
+                _loggerService.LogEvent(AuthEventType.LoginSuccess, req.Email, req);
                 ThrowError("The supplied credentials are invalid!");
                 return Task.CompletedTask;
             });

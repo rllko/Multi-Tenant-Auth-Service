@@ -1,11 +1,10 @@
-﻿using FastEndpoints;
-using Redis.OM.Modeling;
+﻿using Redis.OM.Modeling;
 
 namespace Authentication.Models;
 
 public class AuthorizationCodeRequest
 {
-    [Indexed] public required string? ClientId{ get; set; }
+    [Indexed] public required string? ClientId { get; set; }
 
     [Indexed] public DateTime CreationTime { get; set; } = DateTime.UtcNow.ToUniversalTime();
     [Indexed] public string Key { get; set; }

@@ -1,4 +1,3 @@
-using Authentication.Common;
 using Authentication.Models.Entities;
 using Authentication.Services;
 using Authentication.Services.Discords;

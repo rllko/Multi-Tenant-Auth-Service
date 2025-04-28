@@ -1,13 +1,12 @@
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
-using Authentication.Services.UserSessions;
 using FastEndpoints;
 using FluentValidation.Results;
 
 namespace Authentication.Endpoints.Sessions;
 
 // to resume a session
-public class SessionResumeEndpoint() : EndpointWithoutRequest
+public class SessionResumeEndpoint : EndpointWithoutRequest
 //ILicenseSessionService sessionService
 {
     public override void Configure()

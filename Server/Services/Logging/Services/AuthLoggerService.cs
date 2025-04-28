@@ -11,7 +11,7 @@ public class AuthLoggerService : IAuthLoggerService
         Log
             .ForContext("TenantId", tenantId)
             .ForContext("EventType", eventType.ToString())
-            .ForContext("ExtraData", extraData, destructureObjects: true)
+            .ForContext("ExtraData", extraData, true)
             .Information("OAuth event {EventType} for Tenant {TenantId}", eventType, tenantId);
     }
 }

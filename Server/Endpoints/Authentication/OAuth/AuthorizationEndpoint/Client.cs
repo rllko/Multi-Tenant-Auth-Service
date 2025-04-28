@@ -13,5 +13,6 @@ public class Client
 
     [BindFrom("grant_type")]
     public string GrantType { get; init; } = AuthorizationGrantType.Bearer.GetEnumDescription();
+
     [BindFrom("client_uri")] public required string ClientUri { get; set; }
 }

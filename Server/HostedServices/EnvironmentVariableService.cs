@@ -3,7 +3,7 @@ namespace Authentication.HostedServices;
 public class EnvironmentVariableService : IHostedService
 {
     public const string SignKeyName = "SIGN_KEY";
-    
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var symmetricKey = await File.ReadAllTextAsync(@"/app/secrets/symmetricKey",

@@ -38,8 +38,8 @@ public class SignInEndpoint(
                     o.User["session-token"] = se.AuthorizationToken.ToString()!;
                     o.User["username"] = se.License.Username!;
                     o.User["license-expiration"] = se.License.ExpiresAt.ToString();
-                    o.User["hwid-id"] = se.HwidId!.ToString(); 
-                    #warning yea, hwid id needs to be solved :D
+                    o.User["hwid-id"] = se.HwidId!.ToString();
+#warning yea, hwid id needs to be solved :D
                 });
                 return TypedResults.Json(jwt);
             },

@@ -1,5 +1,4 @@
 ﻿using Authentication.Common;
-using Authentication.Endpoints;
 using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using Authentication.Endpoints.Authorization;
 using Authentication.Endpoints.Token;
@@ -84,8 +83,7 @@ public class AuthorizeResultService(
             AccessToken = await _accessTokenService.Generate(tokenRequest.code!)
         };
 
-        
-        
+
         return tokenResponse;
     }
 

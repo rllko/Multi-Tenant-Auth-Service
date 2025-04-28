@@ -12,7 +12,7 @@ public class NpgsqlDbConnectionFactory : IDbConnectionFactory
         _connectionString = Environment.GetEnvironmentVariable("DATABASE_LOGGER_URL")
                             ?? throw new InvalidOperationException("DATABASE_LOGGER_URL not configured.");
     }
-    
+
     public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)
     {
         var connection = new NpgsqlConnection(Environment.GetEnvironmentVariable("DATABASE_URL"));

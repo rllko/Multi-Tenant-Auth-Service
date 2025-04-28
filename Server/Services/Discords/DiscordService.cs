@@ -1,7 +1,5 @@
 using System.Data;
-using Authentication.Common;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.Endpoints.DiscordOperations.RedeemCode;
 using Authentication.Models.Entities.Discord;
 using Authentication.Services.Licenses;

@@ -1,8 +1,6 @@
-using Authentication.Models;
-using Authentication.RequestProcessors;
 using FastEndpoints;
 
-namespace Authentication.Endpoints.Authentication.TenantAuthentication;
+namespace Authentication.Endpoints.TenantEndpoints;
 
 public class StatsEndpoint : EndpointWithoutRequest
 {

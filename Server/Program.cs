@@ -2,7 +2,6 @@ using Authentication.Database;
 using Authentication.Endpoints;
 using Authentication.Endpoints.Sessions;
 using Authentication.HostedServices;
-using Authentication.Models;
 using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
@@ -16,7 +15,6 @@ using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Logger;
 using Authentication.Services.Tenants;
 using Authentication.Services.UserSessions;
-using Dapper;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
@@ -24,6 +22,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Redis.OM;
 using Serilog;
+using Serilog.Debugging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,14 +70,14 @@ builder.Services.AddScoped<ILicenseSessionService, LicenseSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<ITenantService, TenantService>();
-Serilog.Debugging.SelfLog.Enable(Console.Error);
+SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();
 Log.Logger = loggerService.ConfigureLogger().CreateLogger();
 builder.Logging.AddSerilog(Log.Logger);
 builder.Host.UseSerilog(Log.Logger);
 
 //builder.Logging.ClearProviders();
-#warning  add this when testing
+#warning add this when testing
 
 var yuh = await loggerService.GetLoggerConnectionAsync();
 

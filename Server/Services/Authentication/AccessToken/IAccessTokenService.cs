@@ -1,6 +1,4 @@
-﻿using Authentication.Endpoints.Token;
-
-namespace Authentication.Services.Authentication.OAuthAccessToken;
+﻿namespace Authentication.Services.Authentication.OAuthAccessToken;
 
 public interface IAccessTokenService
 {

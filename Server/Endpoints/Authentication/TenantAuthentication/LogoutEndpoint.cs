@@ -1,14 +1,14 @@
 using System.Security.Claims;
 using Authentication.Logging.Enums;
 using Authentication.Logging.Interfaces;
-using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.Tenants;
 
-public class TenantLogoutEndpoint(ITenantService tenantService,IAuthLoggerService loggerService) : EndpointWithoutRequest
+public class TenantLogoutEndpoint(ITenantService tenantService, IAuthLoggerService loggerService)
+    : EndpointWithoutRequest
 {
     public IAuthLoggerService _loggerService { get; } = loggerService;
 
@@ -32,7 +32,7 @@ public class TenantLogoutEndpoint(ITenantService tenantService,IAuthLoggerServic
 
         if (result is true)
         {
-            _loggerService.LogEvent(AuthEventType.Logout,session.TenantId.ToString());
+            _loggerService.LogEvent(AuthEventType.Logout, session.TenantId.ToString());
             await SendOkAsync(ct);
             return;
         }

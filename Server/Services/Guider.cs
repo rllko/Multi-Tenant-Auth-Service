@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Authentication.Services;
 
 /// <summary>
-/// This class is used in the license sessions to transform the session id from uuid to a random format
+///     This class is used in the license sessions to transform the session id from uuid to a random format
 /// </summary>
 public static class Guider
 {

@@ -1,6 +1,5 @@
 using Authentication.Database;
 using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
-using Authentication.Endpoints.Authorization;
 using Dapper;
 
 namespace Authentication.Services.Clients;

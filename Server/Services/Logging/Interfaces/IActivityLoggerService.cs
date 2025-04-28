@@ -4,5 +4,5 @@ namespace Authentication.Logging.Interfaces;
 
 public interface IActivityLoggerService
 {
-    void LogEvent(ActivityEventType eventType,string userId, string tenantId, object? extraData = null);
+    void LogEvent(ActivityEventType eventType, string userId, string tenantId, object? extraData = null);
 }

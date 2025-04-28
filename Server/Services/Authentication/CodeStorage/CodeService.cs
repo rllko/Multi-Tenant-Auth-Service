@@ -1,10 +1,8 @@
 ﻿using Authentication.Database;
 using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
-using Authentication.Endpoints.Authorization;
 using Authentication.Models;
 using Authentication.Services.Logger;
 using Dapper;
-using Microsoft.Extensions.Caching.Memory;
 using Redis.OM;
 using Redis.OM.Searching;
 
@@ -15,14 +13,16 @@ public class CodeService(
     IDbConnectionFactory connectionFactory,
     ILoggerService loggerService) : ICodeService
 {
-    private readonly RedisCollection<AuthorizationCodeRequest> _sessions =
-        (RedisCollection<AuthorizationCodeRequest>)provider.RedisCollection<AuthorizationCodeRequest>();
-    private readonly TimeSpan _sessionTtl = TimeSpan.FromSeconds(30);
-    
-    private readonly RedisConnectionProvider _provider = provider;
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
     private readonly ILoggerService _loggerService = loggerService;
-    
+
+    private readonly RedisConnectionProvider _provider = provider;
+
+    private readonly RedisCollection<AuthorizationCodeRequest> _sessions =
+        (RedisCollection<AuthorizationCodeRequest>)provider.RedisCollection<AuthorizationCodeRequest>();
+
+    private readonly TimeSpan _sessionTtl = TimeSpan.FromSeconds(30);
+
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
         var connection = await _connectionFactory.CreateConnectionAsync();
@@ -34,9 +34,9 @@ public class CodeService(
                 new { identifier = authorizationCodeRequest.ClientId });
 
         var code = Guid.NewGuid().ToString();
-        
+
         authorizationCodeRequest.Key = code;
-        
+
         await _sessions.InsertAsync(authorizationCodeRequest, _sessionTtl);
 
         return code;
@@ -44,12 +44,15 @@ public class CodeService(
 
     public async Task RemoveClientCode(string key)
     {
-       var session = await GetClientCode(key);
+        var session = await GetClientCode(key);
 
-       if (session == null) return;
-       
+        if (session == null) return;
+
         await _sessions.DeleteAsync(session);
     }
 
-    public async Task<AuthorizationCodeRequest?> GetClientCode(string key) => await _sessions.FindByIdAsync(key);
+    public async Task<AuthorizationCodeRequest?> GetClientCode(string key)
+    {
+        return await _sessions.FindByIdAsync(key);
+    }
 }

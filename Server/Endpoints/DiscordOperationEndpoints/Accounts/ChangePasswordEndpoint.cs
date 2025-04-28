@@ -24,4 +24,3 @@ public class ChangePasswordEndpoint : Endpoint<ChangePasswordRequest, Results<Ok
         return base.ExecuteAsync(req, ct);
     }
 }
-

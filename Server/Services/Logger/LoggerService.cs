@@ -46,11 +46,10 @@ public class LoggerService : ILoggerService
         //     columnOptions: columnWriters,
         //     needAutoCreateTable: true
         // );
-        #warning  remove this when testing
+#warning remove this when testing
     }
 
     public void logCLient()
     {
-        
     }
 }

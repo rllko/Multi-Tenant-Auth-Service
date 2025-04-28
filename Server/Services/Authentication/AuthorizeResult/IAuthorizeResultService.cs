@@ -1,5 +1,4 @@
-﻿using Authentication.Endpoints;
-using Authentication.Endpoints.Authorization;
+﻿using Authentication.Endpoints.Authorization;
 using Authentication.Endpoints.Token;
 
 namespace Authentication.Services.Authentication.AuthorizeResult;

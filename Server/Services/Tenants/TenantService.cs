@@ -1,11 +1,9 @@
-using System.Text.Json;
 using Authentication.Database;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.Services.Logger;
 using Dapper;
 using FluentValidation.Results;
-using LanguageExt.Async.Linq;
 using Redis.OM;
 using Redis.OM.Searching;
 
@@ -16,12 +14,12 @@ public class TenantService(
     IDbConnectionFactory connectionFactory,
     ILoggerService loggerService) : ITenantService
 {
-    private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
+    private readonly RedisConnectionProvider _provider = provider;
 
     private readonly RedisCollection<TenantSessionInfo> _sessions =
         (RedisCollection<TenantSessionInfo>)provider.RedisCollection<TenantSessionInfo>();
 
-    private readonly RedisConnectionProvider _provider = provider;
+    private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
 
 
     public async Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password,
@@ -121,11 +119,8 @@ public class TenantService(
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result?.Password);
 
-        #warning yea, the Option<> THING HERE
-        if (isPasswordValid)
-        {
-            return result;
-        }
+#warning yea, the Option<> THING HERE
+        if (isPasswordValid) return result;
 
         return null;
     }
