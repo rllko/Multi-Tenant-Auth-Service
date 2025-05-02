@@ -2,6 +2,7 @@
 
 namespace Authentication.Models.OAuth;
 
+[Document(StorageType = StorageType.Json, Prefixes = new[] { "AuthorizationCodeRequest" })]
 public class AuthorizationCodeRequest
 {
     [Indexed] public required string? ClientId { get; set; }

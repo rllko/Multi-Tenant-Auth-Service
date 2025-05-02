@@ -25,7 +25,12 @@ const LoginRequestSchema = z.object({
 const LoginResponseSchema = z.object({
   token: z.string(),
   expires_in: z.string(),
-  token_type: z.string()
+  token_type: z.string(),
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+  }),
 })
 
 type LoginRequest = z.infer<typeof LoginRequestSchema>

@@ -13,6 +13,8 @@ using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
 using Authentication.Services.Licenses.Sessions;
 using Authentication.Services.Logger;
+using Authentication.Services.Logging.Interfaces;
+using Authentication.Services.Logging.Services;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -69,10 +71,16 @@ builder.Services.AddScoped<ILicenseSessionService, LicenseSessionService>();
 builder.Services.AddScoped<IDiscordService, DiscordService>();
 builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<ITenantService, TenantService>();
-SelfLog.Enable(Console.Error);
+builder.Services.AddScoped<IAuthLoggerService, AuthLoggerService>();
+builder.Services.AddScoped<IActivityLoggerService, ActivityLoggerService>();
+
+//SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();
+
 Log.Logger = loggerService.ConfigureLogger().CreateLogger();
+
 builder.Logging.AddSerilog(Log.Logger);
+
 builder.Host.UseSerilog(Log.Logger);
 
 //builder.Logging.ClearProviders();
@@ -90,9 +98,11 @@ builder.Services.AddSingleton(new RedisConnectionProvider(Environment.GetEnviron
 builder.Services.AddHostedService<IndexCreationService>();
 
 var app = builder.Build();
+
 app.UseCors(myAllowSpecificOrigins);
 
-app.UseAuthentication().UseSerilogRequestLogging()
+app.UseAuthentication()
+    .UseSerilogRequestLogging()
     .UseAuthorization()
     .UseAntiforgeryFE()
     .UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);

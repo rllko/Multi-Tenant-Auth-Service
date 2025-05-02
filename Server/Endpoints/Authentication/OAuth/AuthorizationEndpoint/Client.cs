@@ -1,4 +1,5 @@
-﻿using FastEndpoints;
+﻿using Authentication.Misc;
+using FastEndpoints;
 
 namespace Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 

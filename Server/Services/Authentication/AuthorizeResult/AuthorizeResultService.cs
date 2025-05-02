@@ -1,5 +1,6 @@
 ﻿using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
+using Authentication.Misc;
 using Authentication.Models;
 using Authentication.Models.OAuth;
 using Authentication.Services.Authentication.AccessToken;

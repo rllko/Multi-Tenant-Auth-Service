@@ -1,4 +1,5 @@
 using Authentication.HostedServices;
+using Authentication.Models.Entities;
 using Authentication.Services.Logging.Enums;
 using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Tenants;
@@ -18,6 +19,8 @@ public class LoginResponse
     public required string token { get; set; }
     public required string expires_in { get; set; }
     public required string token_type { get; set; }
+    public required TenantDto user { get; set; }
+
 }
 
 public class LoginEndpoint : Endpoint<LoginRequest>
@@ -39,25 +42,25 @@ public class LoginEndpoint : Endpoint<LoginRequest>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-#warning do this later
         var result = await _tenantService.LoginAsync(req.Email, req.Password, "", "");
 
         await result.Match(
-            async tenantSession =>
+            async response =>
             {
                 var jwtToken = JwtBearer.CreateToken(o =>
                 {
                     o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
-                    o.ExpireAt = tenantSession.Expires;
-                    o.User.Claims.Add(("sub", tenantSession.TenantId.ToString()));
-                    o.User.Claims.Add(("access_token", tenantSession.SessionToken));
+                    o.ExpireAt = response.session.Expires;
+                    o.User.Claims.Add(("sub", response.session.TenantId.ToString()));
+                    o.User.Claims.Add(("access_token", response.session.SessionToken));
                 });
 
-                _loggerService.LogEvent(AuthEventType.LoginSuccess, tenantSession.TenantId.ToString(), req);
+                _loggerService.LogEvent(AuthEventType.LoginSuccess, response.session.TenantId.ToString(), req);
 
                 await SendOkAsync(new LoginResponse
                 {
                     token = jwtToken,
+                    user = response.tenant.ToDto(),
                     expires_in = "3600",
                     token_type = "Bearer"
                 }, ct);

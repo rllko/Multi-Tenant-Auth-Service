@@ -10,12 +10,17 @@ public class TenantSessionInfo
     [Indexed] public required string Email { get; set; }
 
     [Indexed] public required string SessionToken { get; set; }
-
+    [Indexed] public required DateTime Expires { get; set; }
+    
+    [Indexed] public required string RefreshToken { get; set; }
+    
+    [Indexed] public required DateTime RefreshExpires { get; set; }
     [Indexed] public required string Ip { get; set; }
 
     [Indexed] public required string UserAgent { get; set; }
 
     [Indexed] public required DateTime Created { get; set; }
 
-    [Indexed] public required DateTime Expires { get; set; }
+
+
 }

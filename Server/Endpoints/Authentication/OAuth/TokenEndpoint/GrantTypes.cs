@@ -1,4 +1,5 @@
-﻿using Authentication.Models.OAuth;
+﻿using Authentication.Misc;
+using Authentication.Models.OAuth;
 
 namespace Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 

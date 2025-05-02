@@ -58,6 +58,9 @@
 
     <ItemGroup>
         <Folder Include="Endpoints\Authentication\"/>
+        <Folder Include="Endpoints\TeamsEndpoints\" />
+        <Folder Include="Endpoints\TenantEndpoints\" />
+        <Folder Include="Services\Teams\" />
     </ItemGroup>
 
 </Project>

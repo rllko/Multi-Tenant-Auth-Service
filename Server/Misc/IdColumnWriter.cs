@@ -2,7 +2,7 @@ using NpgsqlTypes;
 using Serilog.Events;
 using Serilog.Sinks.PostgreSQL.ColumnWriters;
 
-namespace Authentication;
+namespace Authentication.Misc;
 
 public class IdColumnWriter() : ColumnWriterBase(NpgsqlDbType.Uuid)
 {

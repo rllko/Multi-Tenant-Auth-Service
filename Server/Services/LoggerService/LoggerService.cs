@@ -1,4 +1,5 @@
 using System.Data;
+using Authentication.Misc;
 using Npgsql;
 using Serilog;
 using Serilog.Sinks.PostgreSQL.ColumnWriters;

@@ -32,6 +32,7 @@ public class ActivateLicenseEndpoint(
             return TypedResults.BadRequest(errors);
         }
 
+        #warning what
         var existingDiscord = await discordService.GetByIdAsync(req.DiscordId) ??
                               await discordService.CreateUserAsync(req.DiscordId);
 

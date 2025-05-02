@@ -1,9 +1,13 @@
 using Authentication.Database;
+using Authentication.Endpoints.Authentication.TenantAuthentication;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.Services.Logger;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Dapper;
 using FluentValidation.Results;
+using LanguageExt;
 using Redis.OM;
 using Redis.OM.Searching;
 
@@ -12,6 +16,7 @@ namespace Authentication.Services.Tenants;
 public class TenantService(
     RedisConnectionProvider provider,
     IDbConnectionFactory connectionFactory,
+    IAuthLoggerService authLoggerService,
     ILoggerService loggerService) : ITenantService
 {
     private readonly RedisConnectionProvider _provider = provider;
@@ -20,61 +25,80 @@ public class TenantService(
         (RedisCollection<TenantSessionInfo>)provider.RedisCollection<TenantSessionInfo>();
 
     private readonly TimeSpan _sessionTtl = TimeSpan.FromHours(1);
+    private readonly TimeSpan _refreshSessionTtl = TimeSpan.FromDays(6);
 
-
-    public async Task<Result<TenantSessionInfo, ValidationFailed>> LoginAsync(string username, string password,
+    public async Task<Result<TenantLoginResponse, ValidationFailed>> LoginAsync(string email, string password,
         string ip,
-        string userAgent)
+        string tenantAgent)
     {
-        var tenant = await AuthenticateUser(username, password);
-        if (tenant == null)
+        var result = await AuthenticateTenant(email, password);
+
+        if (result.IsNone)
         {
-            var error = new ValidationFailure(
+            var er = new ValidationFailure(
                 "error",
-                "invalid username or password");
-            return new ValidationFailed(error);
+                "invalid Tenantname or password");
+            return new ValidationFailed(er);
         }
 
-        var token = Guid.NewGuid().ToString("N");
+        if (result.Case is not Tenant tenant)
+        {
+            var er = new ValidationFailure(
+                "error",
+                "invalid tenant data");
+            return new ValidationFailed(er);
+        }
+        
+        var session = await CreateSessionAsync(tenant, ip, tenantAgent);
+
+        return new TenantLoginResponse
+        {
+            session = session,
+            tenant = tenant,
+        };
+    }
+
+    private async Task<TenantSessionInfo> CreateSessionAsync(Tenant tenant,string ip,string tenantAgent)
+    {
+        var sessionToken = Guid.NewGuid().ToString("N");
+        var refreshToken = Guid.NewGuid().ToString("N");
         var createdAt = DateTime.UtcNow;
 
         var session = new TenantSessionInfo
         {
-            SessionToken = token,
             TenantId = tenant.Id,
-            Email = tenant.Email,
+            Email = tenant.Email ?? string.Empty,
             Ip = ip,
-            UserAgent = userAgent,
+            UserAgent = tenantAgent,
             Created = createdAt,
-            Expires = createdAt.Add(_sessionTtl)
+            SessionToken = sessionToken,
+            Expires = createdAt.Add(_sessionTtl),
+            RefreshToken = refreshToken,
+            RefreshExpires = createdAt.Add(_refreshSessionTtl),
         };
 
-        await _sessions.InsertAsync(session, _sessionTtl);
-
+        await _sessions.InsertAsync(session, _refreshSessionTtl);
         return session;
     }
+    
 
-
-    public async Task<TenantSessionInfo?> GetSessionAsync(string sessionToken)
+    public async Task<TenantSessionInfo?> GetSessionAsync(string sessionToken) =>
+      await _sessions.FirstOrDefaultAsync(session => session.SessionToken == sessionToken);
+    
+    
+    public async Task<Option<TenantSessionInfo>> RefreshSessionAsync(string refreshToken)
     {
-        return await _sessions.FindByIdAsync(sessionToken);
-    }
+        var session = await _sessions.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+        if (session is null) return null;
 
-    // public Task<DashboardStats> GetDashboardStatsAsync(Guid tenantId)
-    // {
-    //     throw new NotImplementedException();
-    // }
+        session.SessionToken = Guid.NewGuid().ToString("N");
 
+        session.Expires = session.Expires.AddHours(1);
+        session.RefreshExpires = session.RefreshExpires.AddDays(6);
 
-    public async Task<bool> RefreshSessionAsync(string sessionToken)
-    {
-        var session = await _sessions.FindByIdAsync(sessionToken);
-        if (session is null) return false;
+        await _sessions.UpdateAsync(session);
 
-        session.Expires = DateTime.UtcNow.AddHours(1);
-        await _sessions.UpdateAsync(session, _sessionTtl);
-
-        return true;
+        return session;
     }
 
 
@@ -107,20 +131,20 @@ public class TenantService(
     }
 
 
-    private async Task<Tenant?> AuthenticateUser(string email, string password)
+    private async Task<Option<Tenant>> AuthenticateTenant(string email, string password)
     {
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) return null;
-
         var connection = await connectionFactory.CreateConnectionAsync();
-        var loggerConnection = await loggerService.GetLoggerConnectionAsync();
 
         var query = "SELECT * FROM tenants WHERE email like @email AND activated_at is not null";
         var result = await connection.QuerySingleOrDefaultAsync<Tenant>(query, new { email });
 
         var isPasswordValid = PasswordHashing.ValidatePassword(password, result?.Password);
 
-#warning yea, the Option<> THING HERE
-        if (isPasswordValid) return result;
+        if (isPasswordValid)
+        {
+            authLoggerService.LogEvent(AuthEventType.LoginSuccess, result!.Id.ToString());
+            return result;
+        }
 
         return null;
     }

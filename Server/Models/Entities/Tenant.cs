@@ -23,10 +23,24 @@ public class Tenant
         [Key]
         public Guid Id { get; set; }
         public long? DiscordId { get; set; }
-        public string? Email { get; set; }
+        public string Email { get; set; }
         public string Name { get; set; }
         public long CreationDate { get; set; }
         public string? Password { get; set; }
         public long? ActivatedAt { get; set; }
-    
+
+        public TenantDto ToDto() => new TenantDto()
+        {
+            Id = Id,
+            Name = Name,
+            Email = Email,
+            
+        };
+}
+
+public class TenantDto
+{
+    public Guid Id { get; set; }
+    public required string Email { get; set; }
+    public required string Name { get; set; }
 }

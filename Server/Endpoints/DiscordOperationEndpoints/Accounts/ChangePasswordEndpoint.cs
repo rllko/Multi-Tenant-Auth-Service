@@ -11,16 +11,16 @@ public class ChangePasswordRequest
     public string Username { get; set; } = null!;
 }
 
-public class ChangePasswordEndpoint : Endpoint<ChangePasswordRequest, Results<Ok, BadRequest<ValidationFailed>>>
-{
-    public override void Configure()
-    {
-        base.Configure();
-    }
-
-    public override Task<Results<Ok, BadRequest<ValidationFailed>>> ExecuteAsync(ChangePasswordRequest req,
-        CancellationToken ct)
-    {
-        return base.ExecuteAsync(req, ct);
-    }
-}
+// public class ChangePasswordEndpoint : Endpoint<ChangePasswordRequest, Results<Ok, BadRequest<ValidationFailed>>>
+// {
+//     public override void Configure()
+//     {
+//         base.Configure();
+//     }
+//
+//     public override Task<Results<Ok, BadRequest<ValidationFailed>>> ExecuteAsync(ChangePasswordRequest req,
+//         CancellationToken ct)
+//     {
+//         return base.ExecuteAsync(req, ct);
+//     }
+// }

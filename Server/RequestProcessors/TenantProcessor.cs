@@ -9,9 +9,9 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
 {
     public async Task PreProcessAsync(IPreProcessorContext<TRequest> ctx, CancellationToken ct)
     {
-        var sessionService = ctx.HttpContext.RequestServices.GetRequiredService<ITenantService>();
-
-        var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Authentication);
+        var tenantService = ctx.HttpContext.RequestServices.GetRequiredService<ITenantService>();
+        
+        var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token");
 
         if (token is null)
         {
@@ -19,7 +19,7 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
             return;
         }
 
-        var session = await sessionService.GetSessionAsync(token.Value);
+        var session = await tenantService.GetSessionAsync(token.Value);
 
 #warning please make this more complete, add checks
         // check if session is active
