@@ -6,19 +6,12 @@ using LanguageExt;
 
 namespace Authentication.Services.Roles;
 
-public class RoleService : IRoleService
+public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-
-    public RoleService(IDbConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
-
     public async Task<Option<Role>> GetRoleByIdAsync(Guid roleId)
     {
         const string sql = "SELECT * FROM roles WHERE role_id = @Id;";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var role = await conn.QueryFirstOrDefaultAsync<Role>(sql, new { Id = roleId });
         return role is null ? Option<Role>.None : Option<Role>.Some(role);
     }
@@ -26,7 +19,7 @@ public class RoleService : IRoleService
     public async Task<IEnumerable<Role>> GetAllRolesAsync()
     {
         const string sql = "SELECT * FROM roles;";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         return await conn.QueryAsync<Role>(sql);
     }
 
@@ -37,7 +30,7 @@ public class RoleService : IRoleService
             VALUES (@RoleName, @Slug, @RoleType, @CreatedBy)
             RETURNING *;
         ";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         return await conn.QuerySingleAsync<Role>(sql, dto,transact);
     }
@@ -49,7 +42,7 @@ public class RoleService : IRoleService
             SET role_name = @RoleName, slug = @Slug, role_type = @RoleType
             WHERE role_id = @Id;
         ";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         var affected = await conn.ExecuteAsync(sql, new { dto.RoleName, dto.Slug, dto.RoleType, Id = roleId },transact);
         return affected > 0;
@@ -58,7 +51,7 @@ public class RoleService : IRoleService
     public async Task<bool> DeleteRoleAsync(Guid roleId, IDbTransaction? transaction = null)
     {
         const string sql = "DELETE FROM roles WHERE role_id = @Id;";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         var affected = await conn.ExecuteAsync(sql, new { Id = roleId });
         return affected > 0;
@@ -71,7 +64,7 @@ public class RoleService : IRoleService
             VALUES (@RoleId, @ScopeId)
             ON CONFLICT DO NOTHING;
         ";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         var affected = await conn.ExecuteAsync(sql, new { RoleId = roleId, ScopeId = scopeId },transact);
         return affected > 0;
@@ -83,7 +76,7 @@ public class RoleService : IRoleService
             DELETE FROM team_role_scopes
             WHERE role_id = @RoleId AND scope_id = @ScopeId;
         ";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         var affected = await conn.ExecuteAsync(sql, new { RoleId = roleId, ScopeId = scopeId },transact);
         return affected > 0;
@@ -97,7 +90,7 @@ public class RoleService : IRoleService
             JOIN team_role_scopes trs ON s.scope_id = trs.scope_id
             WHERE trs.role_id = @RoleId;
         ";
-        using var conn = await _connectionFactory.CreateConnectionAsync();
+        using var conn = await connectionFactory.CreateConnectionAsync();
         return await conn.QueryAsync<Scope>(sql, new { RoleId = roleId });
     }
 }

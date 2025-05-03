@@ -1,9 +1,10 @@
 using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities;
-using Authentication.Services.Teams;
 using Dapper;
 using LanguageExt;
+
+namespace Authentication.Services.Teams;
 
 public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
 {
