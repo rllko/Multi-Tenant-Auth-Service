@@ -1,182 +1,69 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserTable } from "@/components/user-table"
-import { RolesTable } from "@/components/roles-table"
-import { fetchTeamMembers } from "@/lib/api-service"
-import type { TeamMemberSchema } from "@/lib/schemas"
-import type { z } from "zod"
-import { AlertCircle, UserPlus } from "lucide-react"
-import { PermissionEditorModal } from "./permission-editor-modal"
-
-// Mock data for team members
-// const teamMembers = [
-//   {
-//     id: "user_1",
-//     name: "John Doe",
-//     email: "john@example.com",
-//     status: "active",
-//     lastActive: "2 hours ago",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "admin",
-//     tenants: [
-//       { id: "tenant_1", name: "Acme Inc.", color: "#4f46e5" },
-//       { id: "tenant_2", name: "Globex Corporation", color: "#0ea5e9" },
-//     ],
-//   },
-//   {
-//     id: "user_2",
-//     name: "Jane Smith",
-//     email: "jane@example.com",
-//     status: "active",
-//     lastActive: "1 day ago",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "editor",
-//     tenants: [
-//       { id: "tenant_1", name: "Acme Inc.", color: "#4f46e5" },
-//       { id: "tenant_3", name: "Initech", color: "#10b981" },
-//     ],
-//   },
-//   {
-//     id: "user_3",
-//     name: "Bob Johnson",
-//     email: "bob@example.com",
-//     status: "inactive",
-//     lastActive: "3 days ago",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "admin",
-//     tenants: [{ id: "tenant_2", name: "Globex Corporation", color: "#0ea5e9" }],
-//   },
-//   {
-//     id: "user_4",
-//     name: "Alice Brown",
-//     email: "alice@example.com",
-//     status: "active",
-//     lastActive: "Just now",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "viewer",
-//     tenants: [
-//       { id: "tenant_1", name: "Acme Inc.", color: "#4f46e5" },
-//       { id: "tenant_4", name: "Umbrella Corp", color: "#f59e0b" },
-//     ],
-//   },
-//   {
-//     id: "user_5",
-//     name: "Charlie Wilson",
-//     email: "charlie@example.com",
-//     status: "pending",
-//     lastActive: "Never",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "editor",
-//     tenants: [{ id: "tenant_1", name: "Acme Inc.", color: "#4f46e5" }],
-//   },
-//   {
-//     id: "user_6",
-//     name: "Diana Prince",
-//     email: "diana@example.com",
-//     status: "active",
-//     lastActive: "5 hours ago",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     role: "viewer",
-//     tenants: [
-//       { id: "tenant_1", name: "Acme Inc.", color: "#4f46e5" },
-//       { id: "tenant_5", name: "Stark Industries", color: "#ef4444" },
-//     ],
-//   },
-// ]
-
-// Role badge colors
-const roleBadgeColors = {
-  admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  editor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  viewer: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-}
+import { AlertCircle, Plus, Search, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useTeam } from "@/contexts/team-context"
 
 export function TeamMembersView() {
-  const [teamMembers, setTeamMembers] = useState<z.infer<typeof TeamMemberSchema>[]>([])
+  const [members, setMembers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const [tenantFilter, setTenantFilter] = useState("all")
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
-  const [permissionModalOpen, setPermissionModalOpen] = useState(false)
-  const [selectedMember, setSelectedMember] = useState(null)
-  const [viewMode, setViewMode] = useState("grid")
+  const { selectedTeam } = useTeam()
 
   useEffect(() => {
     const loadTeamMembers = async () => {
+      if (!selectedTeam) return
+
       try {
         setIsLoading(true)
-        const members = await fetchTeamMembers()
-        setTeamMembers(members)
+
+        // Real API call to fetch team members
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/members`)
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch team members: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setMembers(data)
         setError(null)
       } catch (err) {
         console.error("Failed to fetch team members:", err)
         setError("Failed to load team members. Please try again.")
-        // Set fallback data
-        setTeamMembers([
-          {
-            id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            role: "Admin",
-            status: "active",
-            joinedAt: "2023-01-15T00:00:00Z",
-            lastActive: "2023-04-28T14:30:00Z",
-          },
-          {
-            id: "2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            role: "Developer",
-            status: "active",
-            joinedAt: "2023-02-10T00:00:00Z",
-            lastActive: "2023-04-27T09:15:00Z",
-          },
-        ])
       } finally {
         setIsLoading(false)
       }
     }
 
     loadTeamMembers()
-  }, [])
+  }, [selectedTeam])
 
-  // Filter team members
-  const filteredMembers = teamMembers.filter((member) => {
-    const matchesSearch =
-      searchQuery === "" ||
+  const filteredMembers = members.filter(
+    (member) =>
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesStatus = statusFilter === "all" || member.status === statusFilter
-
-    const matchesRole = roleFilter === "all" || member.role === roleFilter
-
-    const matchesTenant = tenantFilter === "all" || member.tenants.some((tenant) => tenant.id === tenantFilter)
-
-    return matchesSearch && matchesStatus && matchesRole && matchesTenant
-  })
-
-  const handleEditRole = (member) => {
-    setSelectedMember(member)
-    setPermissionModalOpen(true)
-  }
+      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.role.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Team Members</h2>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Member
-        </Button>
-      </div>
+    <div className="space-y-4">
+      {/* Team context banner */}
+      {selectedTeam && (
+        <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="font-semibold text-primary">{selectedTeam.name.charAt(0)}</span>
+            </div>
+            <div>
+              <h3 className="font-medium">Team: {selectedTeam.name}</h3>
+              <p className="text-xs text-muted-foreground">Managing team members</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
@@ -186,58 +73,80 @@ export function TeamMembersView() {
         </div>
       )}
 
-      <Tabs defaultValue="members" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="roles">Roles</TabsTrigger>
-          <TabsTrigger value="invitations">Invitations</TabsTrigger>
-        </TabsList>
-        <TabsContent value="members" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Members</CardTitle>
-              <CardDescription>Manage your team members and their access levels.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="h-[400px] bg-muted rounded-lg animate-pulse"></div>
-              ) : (
-                <UserTable users={teamMembers} />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="roles" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Roles & Permissions</CardTitle>
-              <CardDescription>Manage roles and their associated permissions.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RolesTable />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="invitations" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Invitations</CardTitle>
-              <CardDescription>Manage pending team invitations.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">No pending invitations</div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Team Members</CardTitle>
+            <CardDescription>Manage your team members and their access levels.</CardDescription>
+          </div>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Invite Member
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search members..."
+              className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
-      {/* Permission Editor Modal */}
-      <PermissionEditorModal
-        isOpen={permissionModalOpen}
-        onClose={() => setPermissionModalOpen(false)}
-        member={selectedMember}
-        type="team"
-      />
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2">Loading team members...</span>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <div className="grid grid-cols-5 p-3 text-sm font-medium text-muted-foreground">
+                <div>Name</div>
+                <div>Email</div>
+                <div>Role</div>
+                <div>Status</div>
+                <div>Last Active</div>
+              </div>
+              <div className="divide-y">
+                {filteredMembers.length > 0 ? (
+                  filteredMembers.map((member) => (
+                    <div key={member.id} className="grid grid-cols-5 p-3 text-sm">
+                      <div className="font-medium">{member.name}</div>
+                      <div>{member.email}</div>
+                      <div>{member.role}</div>
+                      <div>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                            member.status === "active"
+                              ? "bg-green-50 text-green-700"
+                              : member.status === "invited"
+                                ? "bg-yellow-50 text-yellow-700"
+                                : "bg-gray-50 text-gray-700"
+                          }`}
+                        >
+                          {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
+                        </span>
+                      </div>
+                      <div>
+                        {member.lastActive
+                          ? new Date(member.lastActive).toLocaleDateString()
+                          : member.status === "invited"
+                            ? "Not joined yet"
+                            : "Never"}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">No members found</div>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -12,17 +12,130 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "@/components/theme-provider"
 import { Settings, User, Building, CreditCard, Bell, Shield, Key, Save, AlertTriangle, Trash, Lock } from "lucide-react"
+import { useSettings, useMutation } from "@/hooks/use-api"
+import { useTeam } from "@/contexts/team-context"
+import { Loader2 } from "lucide-react"
+import { apiService } from "@/lib/api-service"
+import React from "react"
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState("general")
   const { toast } = useToast()
   const { theme, setTheme } = useTheme()
+  const { selectedTeam } = useTeam()
 
-  const handleSave = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your settings have been saved successfully.",
+  // Fetch settings from API
+  const { data: settings, isLoading, error, refetch } = useSettings(selectedTeam?.id || null)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    language: "en",
+    timezone: "utc",
+    darkMode: theme === "dark",
+    name: "",
+    email: "",
+    jobTitle: "",
+    bio: "",
+    tenantName: "",
+    tenantDomain: "",
+    publicSignup: false,
+    requireMfa: true,
+    sessionTimeout: "60",
+  })
+
+  // Update form data when settings are loaded
+  React.useEffect(() => {
+    if (settings) {
+      setFormData({
+        language: settings.language || "en",
+        timezone: settings.timezone || "utc",
+        darkMode: theme === "dark",
+        name: settings.user?.name || "",
+        email: settings.user?.email || "",
+        jobTitle: settings.user?.jobTitle || "",
+        bio: settings.user?.bio || "",
+        tenantName: settings.tenant?.name || "",
+        tenantDomain: settings.tenant?.domain || "",
+        publicSignup: settings.tenant?.publicSignup || false,
+        requireMfa: settings.tenant?.requireMfa || true,
+        sessionTimeout: settings.security?.sessionTimeout || "60",
+      })
+    }
+  }, [settings, theme])
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { id, value, checked, type } = e.target
+    setFormData({
+      ...formData,
+      [id]: type === "checkbox" ? checked : value,
     })
+  }
+
+  // Handle select changes
+  const handleSelectChange = (id, value) => {
+    setFormData({
+      ...formData,
+      [id]: value,
+    })
+  }
+
+  // Handle switch changes
+  const handleSwitchChange = (id, checked) => {
+    setFormData({
+      ...formData,
+      [id]: checked,
+    })
+  }
+
+  // Update settings mutation
+  const updateSettingsMutation = useMutation(
+    (data) => apiService.settings.updateSettings(selectedTeam?.id || "", data),
+    {
+      onSuccess: () => {
+        toast({
+          title: "Settings saved",
+          description: "Your settings have been saved successfully.",
+        })
+        refetch()
+      },
+      errorMessage: "Failed to save settings. Please try again.",
+    },
+  )
+
+  // Handle save
+  const handleSave = () => {
+    if (!selectedTeam?.id) {
+      toast({
+        title: "Error",
+        description: "No team selected. Please select a team first.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Prepare data for API
+    const apiData = {
+      language: formData.language,
+      timezone: formData.timezone,
+      user: {
+        name: formData.name,
+        email: formData.email,
+        jobTitle: formData.jobTitle,
+        bio: formData.bio,
+      },
+      tenant: {
+        name: formData.tenantName,
+        domain: formData.tenantDomain,
+        publicSignup: formData.publicSignup,
+        requireMfa: formData.requireMfa,
+      },
+      security: {
+        sessionTimeout: formData.sessionTimeout,
+      },
+    }
+
+    updateSettingsMutation.mutate(apiData)
   }
 
   return (
@@ -102,64 +215,93 @@ export function SettingsView() {
                 <CardDescription>Manage your general account preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Language</Label>
-                    <Select defaultValue="en">
-                      <SelectTrigger id="language">
-                        <SelectValue placeholder="Select language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="de">German</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                        <SelectItem value="ja">Japanese</SelectItem>
-                      </SelectContent>
-                    </Select>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select defaultValue="utc">
-                      <SelectTrigger id="timezone">
-                        <SelectValue placeholder="Select timezone" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="utc">UTC</SelectItem>
-                        <SelectItem value="est">Eastern Time (ET)</SelectItem>
-                        <SelectItem value="cst">Central Time (CT)</SelectItem>
-                        <SelectItem value="mst">Mountain Time (MT)</SelectItem>
-                        <SelectItem value="pst">Pacific Time (PT)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                ) : error ? (
+                  <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    <p>Failed to load settings. Please try again.</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={refetch}>
+                      Retry
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="dark-mode">Dark Mode</Label>
-                      <Switch
-                        id="dark-mode"
-                        checked={theme === "dark"}
-                        onCheckedChange={(checked) => {
-                          setTheme(checked ? "dark" : "light")
-                          toast({
-                            title: `${checked ? "Dark" : "Light"} mode activated`,
-                            description: `The interface is now in ${checked ? "dark" : "light"} mode.`,
-                          })
-                        }}
-                      />
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="language">Language</Label>
+                      <Select
+                        value={formData.language}
+                        onValueChange={(value) => handleSelectChange("language", value)}
+                      >
+                        <SelectTrigger id="language">
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="ja">Japanese</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Enable dark mode for a better viewing experience in low-light environments.
-                    </p>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="timezone">Timezone</Label>
+                      <Select
+                        value={formData.timezone}
+                        onValueChange={(value) => handleSelectChange("timezone", value)}
+                      >
+                        <SelectTrigger id="timezone">
+                          <SelectValue placeholder="Select timezone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="utc">UTC</SelectItem>
+                          <SelectItem value="est">Eastern Time (ET)</SelectItem>
+                          <SelectItem value="cst">Central Time (CT)</SelectItem>
+                          <SelectItem value="mst">Mountain Time (MT)</SelectItem>
+                          <SelectItem value="pst">Pacific Time (PT)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="darkMode">Dark Mode</Label>
+                        <Switch
+                          id="darkMode"
+                          checked={formData.darkMode}
+                          onCheckedChange={(checked) => {
+                            setTheme(checked ? "dark" : "light")
+                            handleSwitchChange("darkMode", checked)
+                            toast({
+                              title: `${checked ? "Dark" : "Light"} mode activated`,
+                              description: `The interface is now in ${checked ? "dark" : "light"} mode.`,
+                            })
+                          }}
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Enable dark mode for a better viewing experience in low-light environments.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -172,37 +314,60 @@ export function SettingsView() {
                 <CardDescription>Manage your personal profile information</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue="John Doe" />
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
+                ) : error ? (
+                  <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    <p>Failed to load settings. Please try again.</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={refetch}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input id="name" value={formData.name} onChange={handleChange} />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue="john@example.com" />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input id="email" type="email" value={formData.email} onChange={handleChange} />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Job Title</Label>
-                    <Input id="title" defaultValue="Product Manager" />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="jobTitle">Job Title</Label>
+                      <Input id="jobTitle" value={formData.jobTitle} onChange={handleChange} />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <textarea
-                      id="bio"
-                      className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      placeholder="Tell us about yourself"
-                      defaultValue="Product manager with 5+ years of experience in SaaS products."
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <textarea
+                        id="bio"
+                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        placeholder="Tell us about yourself"
+                        value={formData.bio}
+                        onChange={handleChange}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -215,44 +380,74 @@ export function SettingsView() {
                 <CardDescription>Manage your tenant configuration</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tenant-name">Tenant Name</Label>
-                    <Input id="tenant-name" defaultValue="Acme Inc." />
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="tenant-domain">Domain</Label>
-                    <Input id="tenant-domain" defaultValue="acme.keyauth.io" />
+                ) : error ? (
+                  <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    <p>Failed to load settings. Please try again.</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={refetch}>
+                      Retry
+                    </Button>
                   </div>
-
-                  <Separator className="my-2" />
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="public-signup">Public Signup</Label>
-                      <Switch id="public-signup" />
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tenantName">Tenant Name</Label>
+                      <Input id="tenantName" value={formData.tenantName} onChange={handleChange} />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Allow users to sign up with an email address from your domain.
-                    </p>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="require-mfa">Require MFA</Label>
-                      <Switch id="require-mfa" defaultChecked />
+                    <div className="space-y-2">
+                      <Label htmlFor="tenantDomain">Domain</Label>
+                      <Input id="tenantDomain" value={formData.tenantDomain} onChange={handleChange} />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Require multi-factor authentication for all users in this tenant.
-                    </p>
+
+                    <Separator className="my-2" />
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="publicSignup">Public Signup</Label>
+                        <Switch
+                          id="publicSignup"
+                          checked={formData.publicSignup}
+                          onCheckedChange={(checked) => handleSwitchChange("publicSignup", checked)}
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Allow users to sign up with an email address from your domain.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="requireMfa">Require MFA</Label>
+                        <Switch
+                          id="requireMfa"
+                          checked={formData.requireMfa}
+                          onCheckedChange={(checked) => handleSwitchChange("requireMfa", checked)}
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Require multi-factor authentication for all users in this tenant.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -265,62 +460,89 @@ export function SettingsView() {
                 <CardDescription>Manage your account security</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
+                ) : error ? (
+                  <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    <p>Failed to load settings. Please try again.</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={refetch}>
+                      Retry
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <Input id="confirm-password" type="password" />
-                  </div>
-
-                  <Separator className="my-2" />
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="two-factor">Two-Factor Authentication</Label>
-                      <Switch id="two-factor" />
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Current Password</Label>
+                      <Input id="current-password" type="password" />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Add an extra layer of security to your account with two-factor authentication.
-                    </p>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="session-timeout">Session Timeout</Label>
-                      <Select defaultValue="60">
-                        <SelectTrigger id="session-timeout" className="w-[180px]">
-                          <SelectValue placeholder="Select timeout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="15">15 minutes</SelectItem>
-                          <SelectItem value="30">30 minutes</SelectItem>
-                          <SelectItem value="60">1 hour</SelectItem>
-                          <SelectItem value="120">2 hours</SelectItem>
-                          <SelectItem value="240">4 hours</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">New Password</Label>
+                      <Input id="new-password" type="password" />
                     </div>
-                    <p className="text-sm text-muted-foreground">Automatically log out after a period of inactivity.</p>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm New Password</Label>
+                      <Input id="confirm-password" type="password" />
+                    </div>
+
+                    <Separator className="my-2" />
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="two-factor">Two-Factor Authentication</Label>
+                        <Switch id="two-factor" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Add an extra layer of security to your account with two-factor authentication.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="sessionTimeout">Session Timeout</Label>
+                        <Select
+                          value={formData.sessionTimeout}
+                          onValueChange={(value) => handleSelectChange("sessionTimeout", value)}
+                        >
+                          <SelectTrigger id="sessionTimeout" className="w-[180px]">
+                            <SelectValue placeholder="Select timeout" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="15">15 minutes</SelectItem>
+                            <SelectItem value="30">30 minutes</SelectItem>
+                            <SelectItem value="60">1 hour</SelectItem>
+                            <SelectItem value="120">2 hours</SelectItem>
+                            <SelectItem value="240">4 hours</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Automatically log out after a period of inactivity.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button variant="outline">
                   <Lock className="h-4 w-4 mr-2" />
                   Reset Password
                 </Button>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -438,9 +660,18 @@ export function SettingsView() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -490,9 +721,18 @@ export function SettingsView() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button onClick={handleSave} disabled={isLoading || updateSettingsMutation.isLoading}>
+                  {updateSettingsMutation.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>

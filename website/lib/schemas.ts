@@ -1,247 +1,238 @@
 import { z } from "zod"
 
-// Base schemas
+// User schema
+export const UserSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().optional(),
+  avatar: z.string().url().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+
+export type User = z.infer<typeof UserSchema>
+
+// Team schema
+export const TeamSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  logo: z.string().url().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+
+export type Team = z.infer<typeof TeamSchema>
+
+// Team Member schema
 export const TeamMemberSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  email: z.string().email(),
-  role: z.string(),
-  status: z.enum(["active", "inactive", "pending"]),
-  joinedAt: z.string().optional(),
-  lastActive: z.string().optional(),
-  avatar: z.string().url().optional(),
-  tenants: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        color: z.string().optional(),
-      }),
-    )
-    .default([]),
-  permissions: z.array(z.string()).optional(),
-})
-
-export const AppSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  status: z.enum(["active", "inactive", "development", "maintenance"]),
-  type: z.enum(["web", "spa", "native", "service"]),
-  icon: z.string().optional(),
-  clientId: z.string(),
-  clientSecret: z.string(),
-  redirectUris: z.array(z.string()),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  ownerId: z.string().optional(),
-  teamId: z.string().optional(),
-  logoUrl: z.string().url().optional(),
-  websiteUrl: z.string().url().optional(),
-  privacyPolicyUrl: z.string().url().optional(),
-  termsOfServiceUrl: z.string().url().optional(),
-  allowedOrigins: z.array(z.string()).optional(),
-  sessionCount: z.number().optional(),
-  userCount: z.number().optional(),
-})
-
-export const ActivityLogSchema = z.object({
-  id: z.string(),
-  action: z.string(),
-  resource: z.string(),
-  resourceId: z.string().optional(),
+  teamId: z.string(),
   userId: z.string(),
-  userName: z.string().optional(),
-  userEmail: z.string().email().optional(),
-  timestamp: z.string(),
-  ipAddress: z.string().optional(),
-  userAgent: z.string().optional(),
-  details: z.record(z.any()).optional(),
-  status: z.enum(["success", "error", "warning", "info"]).optional(),
+  user: UserSchema,
+  role: z.string(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
-export const DashboardStatsSchema = z.object({
-  totalApps: z.number(),
-  totalUsers: z.number(),
-  totalSessions: z.number(),
-  activeKeys: z.number(),
-  apiRequests: z.object({
-    today: z.number(),
-    thisWeek: z.number(),
-    thisMonth: z.number(),
-  }),
-  newUsers: z.object({
-    today: z.number(),
-    thisWeek: z.number(),
-    thisMonth: z.number(),
-  }),
-  recentActivity: z.array(ActivityLogSchema).optional(),
-})
+export type TeamMember = z.infer<typeof TeamMemberSchema>
 
-export const ApiModelSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  schema: z.record(z.any()),
-  endpoints: z
-    .array(
-      z.object({
-        path: z.string(),
-        method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
-        description: z.string(),
-        parameters: z
-          .array(
-            z.object({
-              name: z.string(),
-              type: z.string(),
-              required: z.boolean().optional(),
-              description: z.string().optional(),
-            }),
-          )
-          .optional(),
-      }),
-    )
-    .optional(),
-  examples: z
-    .array(
-      z.object({
-        title: z.string(),
-        code: z.string(),
-        language: z.string().optional(),
-      }),
-    )
-    .optional(),
-})
-
-export const OAuthClientSchema = z.object({
+// Application schema
+export const ApplicationSchema = z.object({
   id: z.string(),
+  teamId: z.string(),
   name: z.string(),
   description: z.string().optional(),
-  clientId: z.string(),
-  clientSecret: z.string(),
-  redirectUris: z.array(z.string()),
-  allowedScopes: z.array(z.string()),
-  createdAt: z.string(),
-  updatedAt: z.string().optional(),
-  createdBy: z.string().optional(),
-  status: z.enum(["active", "inactive"]).default("active"),
-  applicationType: z.enum(["web", "native", "spa", "service"]),
-  tokenEndpointAuthMethod: z.enum(["client_secret_basic", "client_secret_post", "none"]).optional(),
-  grantTypes: z.array(z.enum(["authorization_code", "client_credentials", "refresh_token", "implicit"])).optional(),
-  responseTypes: z.array(z.enum(["code", "token", "id_token"])).optional(),
-  lastUsed: z.string().optional(),
-  lastIp: z.string().optional(),
+  icon: z.string().url().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
-export const LicenseKeySchema = z.object({
+export type Application = z.infer<typeof ApplicationSchema>
+
+// License schema
+export const LicenseSchema = z.object({
   id: z.string(),
+  appId: z.string(),
   key: z.string(),
-  status: z.enum(["active", "inactive", "revoked", "expired"]),
-  plan: z.string(),
-  createdAt: z.string(),
-  expiresAt: z.string().optional(),
-  revokedAt: z.string().optional(),
-  createdBy: z.string().optional(),
-  assignedTo: z.string().nullable().optional(),
-  assignedToEmail: z.string().email().optional(),
-  usageCount: z.number().optional(),
-  maxUsages: z.number().optional(),
-  notes: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
-  applicationId: z.string(),
+  name: z.string().optional(),
+  status: z.enum(["active", "expired", "revoked"]),
+  expiresAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
+export type License = z.infer<typeof LicenseSchema>
+
+// Session schema
 export const SessionSchema = z.object({
   id: z.string(),
-  userId: z.string(),
-  userName: z.string().optional(),
-  userEmail: z.string().email().optional(),
-  clientId: z.string().optional(),
-  clientName: z.string().optional(),
+  appId: z.string(),
+  userId: z.string().optional(),
+  deviceInfo: z.string().optional(),
   ipAddress: z.string().optional(),
-  userAgent: z.string().optional(),
-  browser: z.string().optional(),
-  os: z.string().optional(),
-  device: z.string().optional(),
-  location: z.string().optional(),
-  createdAt: z.string(),
-  expiresAt: z.string().optional(),
-  lastActive: z.string().optional(),
-  status: z.enum(["active", "expired", "revoked"]),
+  lastActive: z.string().datetime(),
+  createdAt: z.string().datetime(),
 })
 
+export type Session = z.infer<typeof SessionSchema>
+
+// OAuth Client schema
+export const OAuthClientSchema = z.object({
+  id: z.string(),
+  appId: z.string(),
+  name: z.string(),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  redirectUris: z.array(z.string().url()),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+
+export type OAuthClient = z.infer<typeof OAuthClientSchema>
+
+// Role schema
 export const RoleSchema = z.object({
   id: z.string(),
+  teamId: z.string(),
   name: z.string(),
   description: z.string().optional(),
-  permissions: z.array(z.string()),
-  isDefault: z.boolean().optional(),
-  isSystem: z.boolean().optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-  createdBy: z.string().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
+export type Role = z.infer<typeof RoleSchema>
+
+// Permission schema
 export const PermissionSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
   resource: z.string(),
   action: z.string(),
-  isSystem: z.boolean().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
+export type Permission = z.infer<typeof PermissionSchema>
+
+// Activity Log schema
+export const ActivityLogSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  userId: z.string().optional(),
+  user: UserSchema.optional(),
+  action: z.string(),
+  resource: z.string(),
+  resourceId: z.string().optional(),
+  details: z.record(z.any()).optional(),
+  createdAt: z.string().datetime(),
+})
+
+export type ActivityLog = z.infer<typeof ActivityLogSchema>
+
+// Analytics schema
+export const AnalyticsSchema = z.object({
+  totalUsers: z.number(),
+  activeUsers: z.number(),
+  totalSessions: z.number(),
+  activeSessions: z.number(),
+  newUsers: z.number(),
+  totalLicenses: z.number(),
+  activeLicenses: z.number(),
+  dailyStats: z.array(
+    z.object({
+      date: z.string(),
+      users: z.number(),
+      sessions: z.number(),
+    }),
+  ),
+})
+
+export type Analytics = z.infer<typeof AnalyticsSchema>
+
+// Settings schema
+export const SettingsSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  theme: z.enum(["light", "dark", "system"]).optional(),
+  notifications: z.record(z.boolean()).optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+
+export type Settings = z.infer<typeof SettingsSchema>
+
+// Tenant schema
 export const TenantSchema = z.object({
   id: z.string(),
+  teamId: z.string(),
   name: z.string(),
-  slug: z.string().optional(),
   domain: z.string().optional(),
-  plan: z.string().optional(),
-  status: z.enum(["active", "inactive", "suspended"]),
-  createdAt: z.string(),
-  updatedAt: z.string().optional(),
-  ownerId: z.string().optional(),
-  settings: z.record(z.any()).optional(),
-  features: z.array(z.string()).optional(),
-  userCount: z.number().optional(),
-  appCount: z.number().optional(),
-  logoUrl: z.string().url().optional(),
+  logo: z.string().url().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 })
 
-// Response schemas
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(schema: T) =>
-  z.object({
-    data: z.array(schema),
-    pagination: z.object({
-      total: z.number(),
-      page: z.number(),
-      limit: z.number(),
-      pages: z.number(),
-    }),
-  })
-
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(schema: T) =>
-  z.object({
-    data: schema,
-    meta: z.record(z.any()).optional(),
-  })
-
-export const ApiErrorSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.any().optional(),
-  }),
-})
-
-// Export types
-export type TeamMember = z.infer<typeof TeamMemberSchema>
-export type App = z.infer<typeof AppSchema>
-export type ActivityLog = z.infer<typeof ActivityLogSchema>
-export type DashboardStats = z.infer<typeof DashboardStatsSchema>
-export type ApiModel = z.infer<typeof ApiModelSchema>
-export type OAuthClient = z.infer<typeof OAuthClientSchema>
-export type LicenseKey = z.infer<typeof LicenseKeySchema>
-export type Session = z.infer<typeof SessionSchema>
-export type Role = z.infer<typeof RoleSchema>
-export type Permission = z.infer<typeof PermissionSchema>
 export type Tenant = z.infer<typeof TenantSchema>
+
+// File schema
+export const FileSchema = z.object({
+  id: z.string(),
+  appId: z.string(),
+  name: z.string(),
+  size: z.number(),
+  type: z.string(),
+  url: z.string().url(),
+  createdAt: z.string().datetime(),
+})
+
+export type File = z.infer<typeof FileSchema>
+
+// Login schema
+export const LoginSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string(),
+})
+
+// Register schema
+export const RegisterSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+})
+
+// Create Team schema
+export const CreateTeamSchema = z.object({
+  name: z.string().min(2, { message: "Team name must be at least 2 characters" }),
+})
+
+// Create Application schema
+export const CreateApplicationSchema = z.object({
+  name: z.string().min(2, { message: "Application name must be at least 2 characters" }),
+  description: z.string().optional(),
+})
+
+// Create License schema
+export const CreateLicenseSchema = z.object({
+  name: z.string().optional(),
+  expiresAt: z.string().datetime().optional(),
+})
+
+// Create OAuth Client schema
+export const CreateOAuthClientSchema = z.object({
+  name: z.string().min(2, { message: "Client name must be at least 2 characters" }),
+  redirectUris: z.array(z.string().url({ message: "Please enter valid URLs" })),
+})
+
+// Create Role schema
+export const CreateRoleSchema = z.object({
+  name: z.string().min(2, { message: "Role name must be at least 2 characters" }),
+  description: z.string().optional(),
+})
+
+// Create Tenant schema
+export const CreateTenantSchema = z.object({
+  name: z.string().min(2, { message: "Tenant name must be at least 2 characters" }),
+  domain: z.string().optional(),
+})

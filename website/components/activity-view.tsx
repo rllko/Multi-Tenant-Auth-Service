@@ -4,58 +4,48 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActivityFeed } from "@/components/activity-feed"
-import { fetchActivityLogs } from "@/lib/api-service"
-import type { ActivityLogSchema } from "@/lib/schemas"
-import type { z } from "zod"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Loader2 } from "lucide-react"
+import { useTeam } from "@/contexts/team-context"
+import { Button } from "@/components/ui/button"
 
 export function ActivityView() {
-  const [activities, setActivities] = useState<z.infer<typeof ActivityLogSchema>[]>([])
+  const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const { selectedTeam } = useTeam()
 
   useEffect(() => {
     const loadActivityLogs = async () => {
+      if (!selectedTeam) return
+
       try {
         setIsLoading(true)
-        const logs = await fetchActivityLogs(page, 20)
-        setActivities((prev) => (page === 1 ? logs : [...prev, ...logs]))
-        setHasMore(logs.length === 20) // If we got less than 20 items, there's no more data
+
+        // Real API call to fetch activity logs
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/activity?page=${page}&limit=20`,
+        )
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch activity logs: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setActivities((prev) => (page === 1 ? data : [...prev, ...data]))
+        setHasMore(data.length === 20) // If we got less than 20 items, there's no more data
         setError(null)
       } catch (err) {
         console.error("Failed to fetch activity logs:", err)
         setError("Failed to load activity logs. Please try again.")
-        // Set fallback data
-        setActivities([
-          {
-            id: "1",
-            action: "login",
-            resource: "auth",
-            userId: "user_1",
-            userName: "John Doe",
-            timestamp: new Date().toISOString(),
-            ipAddress: "192.168.1.1",
-          },
-          {
-            id: "2",
-            action: "create",
-            resource: "app",
-            resourceId: "app_1",
-            userId: "user_1",
-            userName: "John Doe",
-            timestamp: new Date(Date.now() - 3600000).toISOString(),
-            ipAddress: "192.168.1.1",
-          },
-        ])
       } finally {
         setIsLoading(false)
       }
     }
 
     loadActivityLogs()
-  }, [page])
+  }, [page, selectedTeam])
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
@@ -65,6 +55,21 @@ export function ActivityView() {
 
   return (
     <div className="space-y-4">
+      {/* Team context banner */}
+      {selectedTeam && (
+        <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="font-semibold text-primary">{selectedTeam.name.charAt(0)}</span>
+            </div>
+            <div>
+              <h3 className="font-medium">Team: {selectedTeam.name}</h3>
+              <p className="text-xs text-muted-foreground">Viewing activity logs for this team</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center mb-4">
@@ -88,7 +93,10 @@ export function ActivityView() {
             </CardHeader>
             <CardContent>
               {isLoading && page === 1 ? (
-                <div className="h-[400px] bg-muted rounded-lg animate-pulse"></div>
+                <div className="flex items-center justify-center h-32">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2">Loading activity logs...</span>
+                </div>
               ) : (
                 <>
                   <ActivityFeed activities={activities} />
@@ -99,13 +107,16 @@ export function ActivityView() {
 
                   {hasMore && (
                     <div className="mt-4 text-center">
-                      <button
-                        onClick={loadMore}
-                        disabled={isLoading}
-                        className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800"
-                      >
-                        {isLoading ? "Loading..." : "Load More"}
-                      </button>
+                      <Button onClick={loadMore} disabled={isLoading} variant="outline">
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More"
+                        )}
+                      </Button>
                     </div>
                   )}
                 </>

@@ -14,6 +14,8 @@ import { useTheme } from "next-themes"
 import { TenantSwitcher } from "./tenant-switcher"
 import { ActivityFeed } from "./activity-feed"
 import { KeyboardShortcutsModal } from "./keyboard-shortcuts-modal"
+import { useTeam } from "@/contexts/team-context"
+import { ErrorBoundary } from "@/components/error-boundary"
 import {
   Home,
   Users,
@@ -32,6 +34,7 @@ import {
   BarChart2,
   Key,
   Plus,
+  Loader2,
 } from "lucide-react"
 
 interface DashboardLayoutProps {
@@ -49,13 +52,37 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
   })
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
+  const { selectedTeam } = useTeam()
+  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  // Mock data for apps
-  const apps = [
-    { id: "app_1", name: "Customer Portal", icon: <Store className="h-4 w-4" /> },
-    { id: "app_2", name: "Analytics Dashboard", icon: <BarChart2 className="h-4 w-4" /> },
-    { id: "app_3", name: "License Manager", icon: <Key className="h-4 w-4" /> },
-  ]
+  // Fetch apps when the selected team changes
+  useEffect(() => {
+    const fetchApps = async () => {
+      if (!selectedTeam) return
+
+      try {
+        setLoading(true)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps`)
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch applications: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setApps(data)
+        setError(null)
+      } catch (err) {
+        console.error("Failed to fetch applications:", err)
+        setError("Failed to load applications")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchApps()
+  }, [selectedTeam])
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
@@ -104,6 +131,20 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
       setTheme(currentTheme)
     }
   }, [setTheme])
+
+  // Get app icon based on type
+  const getAppIcon = (type) => {
+    switch (type) {
+      case "web":
+        return <Store className="h-4 w-4" />
+      case "service":
+        return <Key className="h-4 w-4" />
+      case "spa":
+        return <BarChart2 className="h-4 w-4" />
+      default:
+        return <Package className="h-4 w-4" />
+    }
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background dark:bg-[#121212]">
@@ -210,23 +251,33 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
               </div>
               {sidebarOpen && expandedSections.apps && (
                 <div className="ml-4 mt-1 space-y-1">
-                  {apps.map((app) => (
-                    <NavItem
-                      key={app.id}
-                      href={`/dashboard/apps/${app.id}`}
-                      icon={app.icon}
-                      label={app.name}
-                      isActive={pathname === `/dashboard/apps/${app.id}`}
-                      isCollapsed={false}
-                      indented
-                    />
-                  ))}
+                  {loading ? (
+                    <div className="flex items-center justify-center py-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : error ? (
+                    <div className="text-xs text-red-500 p-2">Failed to load apps</div>
+                  ) : apps.length > 0 ? (
+                    apps.map((app) => (
+                      <NavItem
+                        key={app.id}
+                        href={`/dashboard/apps/${app.id}`}
+                        icon={getAppIcon(app.type)}
+                        label={app.name}
+                        isActive={pathname === `/dashboard/apps/${app.id}`}
+                        isCollapsed={false}
+                        indented
+                      />
+                    ))
+                  ) : (
+                    <div className="text-xs text-muted-foreground p-2">No apps found</div>
+                  )}
                   {userRole === "admin" && (
                     <NavItem
-                      href="/dashboard/apps/new"
+                      href="/dashboard/apps"
                       icon={<Plus className="h-4 w-4" />}
-                      label="Add New App"
-                      isActive={pathname === "/dashboard/apps/new"}
+                      label="Manage Apps"
+                      isActive={pathname === "/dashboard/apps"}
                       isCollapsed={false}
                       indented
                       className="text-muted-foreground hover:text-foreground"
@@ -312,7 +363,9 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
 
         {/* Activity Feed Sidebar */}
         {activityFeedOpen && <ActivityFeed onClose={() => setActivityFeedOpen(false)} />}

@@ -8,7 +8,7 @@ import { PermissionsTable } from "./permissions-table"
 import { RolePermissionsManager } from "./role-permissions-manager"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { getRoles, getPermissions, createRole, updateRole, deleteRole } from "@/lib/api-service"
+import { useTeam } from "@/contexts/team-context"
 import type { Role, Permission } from "@/lib/schemas"
 
 export function RolesPermissionsView() {
@@ -18,28 +18,33 @@ export function RolesPermissionsView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+  const { selectedTeam } = useTeam()
 
   // Fetch roles and permissions on component mount
   useEffect(() => {
     const fetchData = async () => {
+      if (!selectedTeam) return
+
       try {
         setLoading(true)
 
         // Fetch roles
-        const rolesResponse = await getRoles()
-        if (rolesResponse.success && rolesResponse.data) {
-          setRoles(rolesResponse.data)
-        } else {
-          setError("Failed to fetch roles")
+        const rolesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles`)
+        if (!rolesResponse.ok) {
+          throw new Error(`Failed to fetch roles: ${rolesResponse.status}`)
         }
+        const rolesData = await rolesResponse.json()
+        setRoles(rolesData)
 
         // Fetch permissions
-        const permissionsResponse = await getPermissions()
-        if (permissionsResponse.success && permissionsResponse.data) {
-          setPermissions(permissionsResponse.data)
-        } else {
-          setError("Failed to fetch permissions")
+        const permissionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permissions`)
+        if (!permissionsResponse.ok) {
+          throw new Error(`Failed to fetch permissions: ${permissionsResponse.status}`)
         }
+        const permissionsData = await permissionsResponse.json()
+        setPermissions(permissionsData)
+
+        setError(null)
       } catch (err) {
         setError("An error occurred while fetching data")
         console.error(err)
@@ -49,23 +54,35 @@ export function RolesPermissionsView() {
     }
 
     fetchData()
-  }, [])
+  }, [selectedTeam])
 
   const handleRoleSelect = (role: Role) => {
     setSelectedRole(role)
   }
 
   const handleRoleCreate = async (roleData: Omit<Role, "id">) => {
+    if (!selectedTeam) return
+
     try {
       setLoading(true)
-      const response = await createRole(roleData)
-      if (response.success && response.data) {
-        setRoles([...roles, response.data])
-        toast({
-          title: "Role created",
-          description: "The role has been created successfully.",
-        })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roleData),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create role: ${response.status}`)
       }
+
+      const data = await response.json()
+      setRoles([...roles, data])
+      toast({
+        title: "Role created",
+        description: "The role has been created successfully.",
+      })
     } catch (err) {
       toast({
         title: "Error",
@@ -79,19 +96,31 @@ export function RolesPermissionsView() {
   }
 
   const handleRoleUpdate = async (id: string, roleData: Partial<Role>) => {
+    if (!selectedTeam) return
+
     try {
       setLoading(true)
-      const response = await updateRole(id, roleData)
-      if (response.success && response.data) {
-        setRoles(roles.map((role) => (role.id === id ? response.data : role)))
-        if (selectedRole && selectedRole.id === id) {
-          setSelectedRole(response.data)
-        }
-        toast({
-          title: "Role updated",
-          description: "The role has been updated successfully.",
-        })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roleData),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update role: ${response.status}`)
       }
+
+      const data = await response.json()
+      setRoles(roles.map((role) => (role.id === id ? data : role)))
+      if (selectedRole && selectedRole.id === id) {
+        setSelectedRole(data)
+      }
+      toast({
+        title: "Role updated",
+        description: "The role has been updated successfully.",
+      })
     } catch (err) {
       toast({
         title: "Error",
@@ -105,19 +134,26 @@ export function RolesPermissionsView() {
   }
 
   const handleRoleDelete = async (id: string) => {
+    if (!selectedTeam) return
+
     try {
       setLoading(true)
-      const response = await deleteRole(id)
-      if (response.success) {
-        setRoles(roles.filter((role) => role.id !== id))
-        if (selectedRole && selectedRole.id === id) {
-          setSelectedRole(null)
-        }
-        toast({
-          title: "Role deleted",
-          description: "The role has been deleted successfully.",
-        })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete role: ${response.status}`)
       }
+
+      setRoles(roles.filter((role) => role.id !== id))
+      if (selectedRole && selectedRole.id === id) {
+        setSelectedRole(null)
+      }
+      toast({
+        title: "Role deleted",
+        description: "The role has been deleted successfully.",
+      })
     } catch (err) {
       toast({
         title: "Error",
@@ -150,6 +186,21 @@ export function RolesPermissionsView() {
 
   return (
     <div className="space-y-6">
+      {/* Team context banner */}
+      {selectedTeam && (
+        <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="font-semibold text-primary">{selectedTeam.name.charAt(0)}</span>
+            </div>
+            <div>
+              <h3 className="font-medium">Team: {selectedTeam.name}</h3>
+              <p className="text-xs text-muted-foreground">Managing roles and permissions</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Roles & Permissions</h2>
       </div>

@@ -15,3 +15,27 @@ public class Application
     public Guid DefaultKeySchema { get; set; }
     public Guid? Team { get; set; }
 }
+
+public record ApplicationDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string? Description { get; set; }
+    public Guid DefaultKeySchema { get; set; }
+    public Guid? Team { get; set; }
+}
+
+public record CreateApplicationDto
+{
+    public string Name { get; set; }
+    public string? Description { get; set; }
+    public Guid DefaultKeySchema { get; set; }
+    public Guid? Team { get; set; }
+}
+
+public record UpdateApplicationDto
+{
+    public string Name { get; set; }
+    public string? Description { get; set; }
+    public Guid DefaultKeySchema { get; set; }
+}

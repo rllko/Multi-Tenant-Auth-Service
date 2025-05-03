@@ -1,227 +1,244 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Key, BarChart3, PanelLeft, Shield, Package, Layers, AlertCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { fetchApps } from "@/lib/api-service"
+import { cn } from "@/lib/utils"
+import {
+  ActivitySquare,
+  AlertCircle,
+  BarChart3,
+  CreditCard,
+  FileText,
+  HelpCircle,
+  Home,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Users,
+} from "lucide-react"
 import type { AppSchema } from "@/lib/schemas"
 import type { z } from "zod"
+import { useTeam } from "@/contexts/team-context"
 
 interface SidebarNavigationProps {
-  isOpen: boolean
-  onToggle: () => void
   className?: string
 }
 
-// This component is for use in specific views that need a secondary sidebar
-// NOT as a main layout wrapper
-export function SidebarNavigation({ isOpen, onToggle, className }: SidebarNavigationProps) {
-  const [expandedSections, setExpandedSections] = useState({
-    team: true,
-    apps: true,
-    resources: false,
-    settings: false,
-  })
+export function SidebarNavigation({ className }: SidebarNavigationProps) {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(isOpen)
-
-  // API connection states
   const [apps, setApps] = useState<z.infer<typeof AppSchema>[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { selectedTeam } = useTeam()
 
   useEffect(() => {
     const loadApps = async () => {
+      if (!selectedTeam) {
+        console.log("No team selected, skipping app fetch")
+        return
+      }
+
+      console.log("Loading apps for team:", selectedTeam.name)
       try {
         setIsLoading(true)
-        const appsData = await fetchApps()
-        setApps(appsData)
+
+        // Real API call to fetch apps for the selected team
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps`)
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch apps: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setApps(data)
         setError(null)
+        console.log("Apps loaded successfully for team:", selectedTeam.name)
       } catch (err) {
         console.error("Failed to fetch apps:", err)
-        setError("Failed to load applications. Please try again.")
-        // Fallback to mock data in case of error
-        setApps([
-          {
-            id: "app_1",
-            name: "Customer Portal",
-            icon: "layers",
-            status: "active",
-            type: "web",
-            clientId: "",
-            clientSecret: "",
-            redirectUris: [],
-            createdAt: "",
-            updatedAt: "",
-          },
-          {
-            id: "app_2",
-            name: "Analytics Dashboard",
-            icon: "bar-chart",
-            status: "active",
-            type: "web",
-            clientId: "",
-            clientSecret: "",
-            redirectUris: [],
-            createdAt: "",
-            updatedAt: "",
-          },
-          {
-            id: "app_3",
-            name: "License Manager",
-            icon: "key",
-            status: "active",
-            type: "web",
-            clientId: "",
-            clientSecret: "",
-            redirectUris: [],
-            createdAt: "",
-            updatedAt: "",
-          },
-        ])
+        setError("Failed to load applications")
       } finally {
         setIsLoading(false)
       }
     }
 
     loadApps()
-  }, [])
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }))
-  }
-
-  // Helper function to get icon based on app type or icon property
-  const getAppIcon = (app: z.infer<typeof AppSchema>) => {
-    switch (app.icon || app.type) {
-      case "layers":
-        return <Layers className="h-4 w-4" />
-      case "bar-chart":
-        return <BarChart3 className="h-4 w-4" />
-      case "key":
-        return <Key className="h-4 w-4" />
-      case "web":
-        return <Layers className="h-4 w-4" />
-      case "native":
-        return <Package className="h-4 w-4" />
-      case "spa":
-        return <BarChart3 className="h-4 w-4" />
-      case "service":
-        return <Key className="h-4 w-4" />
-      default:
-        return <Package className="h-4 w-4" />
-    }
-  }
+  }, [selectedTeam]) // Re-fetch apps when selected team changes
 
   return (
-    <div
-      className={cn(
-        "bg-keyauth-dark border-r border-keyauth-dark-border h-full flex flex-col transition-all duration-300 ease-in-out",
-        isOpen ? "w-64" : "w-20",
-        className,
-      )}
-    >
-      <div className="h-16 border-b border-keyauth-dark-border flex items-center justify-between px-4">
-        <div className={cn("flex items-center", !isOpen && "justify-center w-full")}>
-          <div className="h-8 w-8 rounded-md bg-keyauth-blue/10 flex items-center justify-center text-keyauth-blue">
-            <Shield className="h-5 w-5" />
+    <div className={cn("pb-12", className)}>
+      <div className="space-y-4 py-4">
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Dashboard</h2>
+          <div className="space-y-1">
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Overview</span>
+            </Link>
+            <Link
+              href="/dashboard/apps"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/apps" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <Home className="mr-2 h-4 w-4" />
+              <span>Applications</span>
+            </Link>
+            <Link
+              href="/dashboard/resources/analytics"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/resources/analytics" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              <span>Analytics</span>
+            </Link>
           </div>
-          {isOpen && <span className="ml-2 text-lg font-semibold">App Menu</span>}
         </div>
-        <Button variant="ghost" size="icon" onClick={onToggle} className={!isOpen ? "hidden" : ""}>
-          <PanelLeft className="h-5 w-5" />
-        </Button>
-      </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-1">
-          {/* App Navigation Items */}
-          <NavItem
-            href="/dashboard/apps"
-            icon={<Package className="h-5 w-5" />}
-            label="All Apps"
-            isActive={pathname === "/dashboard/apps"}
-            isCollapsed={!isOpen}
-          />
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Team</h2>
+          <div className="space-y-1">
+            <Link
+              href="/dashboard/team/members"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/team/members" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              <span>Members</span>
+            </Link>
+            <Link
+              href="/dashboard/team/activity"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/team/activity" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <ActivitySquare className="mr-2 h-4 w-4" />
+              <span>Activity</span>
+            </Link>
+            <Link
+              href="/dashboard/team/roles"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/team/roles" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <KeyRound className="mr-2 h-4 w-4" />
+              <span>Roles & Permissions</span>
+            </Link>
+          </div>
+        </div>
 
-          {isOpen && <Separator className="my-2 bg-keyauth-dark-border" />}
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Resources</h2>
+          <div className="space-y-1">
+            <Link
+              href="/dashboard/resources/docs"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/resources/docs" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              <span>Documentation</span>
+            </Link>
+            <Link
+              href="/dashboard/resources/billing"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/resources/billing" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>Billing</span>
+            </Link>
+          </div>
+        </div>
 
-          {/* App List */}
-          {isOpen && <div className="text-xs text-muted-foreground mb-2 px-2">Your Applications</div>}
-
-          {/* Loading state */}
-          {isLoading && isOpen && (
-            <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">Loading apps...</div>
-          )}
-
-          {/* Error state */}
-          {error && isOpen && (
-            <div className="flex items-center text-sm text-red-500 p-2">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              <span className="text-xs">{error}</span>
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+            Applications {selectedTeam && <span className="text-xs text-muted-foreground">({selectedTeam.name})</span>}
+          </h2>
+          {isLoading ? (
+            <div className="space-y-2">
+              <div className="h-9 w-full animate-pulse rounded-md bg-muted"></div>
+              <div className="h-9 w-full animate-pulse rounded-md bg-muted"></div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center rounded-md px-3 py-2 text-sm text-red-500">
+              <AlertCircle className="mr-2 h-4 w-4" />
+              <span>Failed to load apps</span>
+            </div>
+          ) : apps.length === 0 ? (
+            <div className="flex items-center rounded-md px-3 py-2 text-sm text-muted-foreground">
+              <span>No applications found</span>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {apps.map((app) => (
+                <Link
+                  key={app.id}
+                  href={`/dashboard/apps/${app.id}`}
+                  className={cn(
+                    "flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                    pathname === `/dashboard/apps/${app.id}` ? "bg-accent text-accent-foreground" : "transparent",
+                  )}
+                >
+                  <span className="truncate">{app.name}</span>
+                  <span
+                    className={cn(
+                      "ml-2 h-2 w-2 rounded-full",
+                      app.status === "active" ? "bg-green-500" : "bg-amber-500",
+                    )}
+                  ></span>
+                </Link>
+              ))}
             </div>
           )}
-
-          {/* Apps list */}
-          {!isLoading &&
-            apps.map((app) => (
-              <NavItem
-                key={app.id}
-                href={`/dashboard/apps/${app.id}`}
-                icon={getAppIcon(app)}
-                label={app.name}
-                isActive={pathname === `/dashboard/apps/${app.id}`}
-                isCollapsed={!isOpen}
-              />
-            ))}
         </div>
-      </ScrollArea>
 
-      {/* Collapsed sidebar toggle button */}
-      {!isOpen && (
-        <Button variant="ghost" size="icon" onClick={onToggle} className="m-2">
-          <PanelLeft className="h-5 w-5 rotate-180" />
-        </Button>
-      )}
-    </div>
-  )
-}
-
-interface NavItemProps {
-  href: string
-  icon: React.ReactNode
-  label: string
-  isActive: boolean
-  isCollapsed: boolean
-  indented?: boolean
-  className?: string
-}
-
-function NavItem({ href, icon, label, isActive, isCollapsed, indented = false, className }: NavItemProps) {
-  return (
-    <Link href={href} className="block">
-      <div
-        className={cn(
-          "flex items-center p-2 rounded-md hover:bg-keyauth-dark-card cursor-pointer",
-          isActive && "bg-keyauth-blue/10 text-keyauth-blue font-medium",
-          isCollapsed && "justify-center",
-          indented && "text-sm",
-          className,
-        )}
-      >
-        <div className={indented ? "w-4 h-4 mr-2" : "w-5 h-5 mr-2"}>{icon}</div>
-        {!isCollapsed && <span className={indented ? "ml-1" : "ml-2"}>{label}</span>}
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Settings</h2>
+          <div className="space-y-1">
+            <Link
+              href="/dashboard/settings"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/settings" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              <span>General</span>
+            </Link>
+            <Link
+              href="/dashboard/help"
+              className={cn(
+                "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === "/dashboard/help" ? "bg-accent text-accent-foreground" : "transparent",
+              )}
+            >
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Help & Support</span>
+            </Link>
+            <button className="w-full flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </Link>
+    </div>
   )
 }

@@ -1,517 +1,324 @@
-// API Service functions for the KeyAuth dashboard
-import type { z } from "zod"
-import {
-  AppSchema,
-  TeamMemberSchema,
-  ActivityLogSchema,
-  DashboardStatsSchema,
-  ApiModelSchema,
-  OAuthClientSchema,
-  LicenseKeySchema,
-  SessionSchema,
-  RoleSchema,
-  PermissionSchema,
-  TenantSchema,
-} from "./schemas"
+// Define the base API URL from environment variables
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+import { withTimeout, handleApiError } from "./api-timeout"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.keyauth.io/v1"
+// Default timeout in milliseconds (10 seconds)
+const DEFAULT_TIMEOUT = 10000
 
-// Error handling helper\
-const handleApiResponse = async <T>(response: Response)
-: Promise<T> =>
-{
+// Error handling utility
+const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `API error: ${response.status}`)
+    throw new Error(errorData.message || `API Error: ${response.status}`)
   }
   return response.json()
 }
 
-// Authentication header helper
-const getAuthHeaders = () => {
-  // In a real app, you would get this from your auth context/store
-  const token = typeof window !== "undefined" ? localStorage.getItem("keyauth_token") : null
-  return {
-    Authorization: token ? `Bearer ${token}` : "",
-    "Content-Type": "application/json",
-  }
-}
-
-// Generic API request function
-const apiRequest = async <T>(
-  endpoint: string, 
-  options: RequestInit = {}, 
-  schema?: z.ZodType<T>
-)
-: Promise<T> =>
-{
+// Generic fetch function with error handling and timeout
+async function fetchApi<T>(endpoint: string, options: RequestInit = {}, timeout: number = DEFAULT_TIMEOUT): Promise<T> {
   try {
-    const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`
-    const headers = {
-      ...getAuthHeaders(),
-      ...(options.headers || {}),
-    }
-
-    const response = await fetch(url, {
+    const url = `${API_URL}${endpoint}`
+    const fetchPromise = fetch(url, {
       ...options,
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    }).then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `API Error: ${response.status}`)
+      }
+      return response.json()
     })
 
-    const data = await handleApiResponse<T>(response)
-
-    // Validate response with schema if provided
-    if (schema) {
-      return schema.parse(data)
-    }
-
-    return data
+    // Add timeout to the fetch promise
+    return await withTimeout(fetchPromise, timeout)
   } catch (error) {
-    console.error(`API request failed for ${endpoint}:`, error)
+    console.error(`API Error (${endpoint}):`, error)
+    const apiError = handleApiError(error)
+
+    // Rethrow with additional context
+    if (apiError.isTimeout) {
+      throw new Error("Request timed out. Please check your connection and try again.")
+    }
     throw error
   }
 }
 
-// Pagination parameters interface
-interface PaginationParams {
-  page?: number
-  limit?: number
-  sort?: string
-  order?: "asc" | "desc"
-}
-
-// Filter parameters interface
-interface FilterParams {
-  [key: string]: string | number | boolean | undefined
-}
-
-// Build query string from parameters
-const buildQueryString = (pagination?: PaginationParams, filters?: FilterParams): string => {
-  const params = new URLSearchParams()
-
-  if (pagination) {
-    if (pagination.page) params.append("page", pagination.page.toString())
-    if (pagination.limit) params.append("limit", pagination.limit.toString())
-    if (pagination.sort) params.append("sort", pagination.sort)
-    if (pagination.order) params.append("order", pagination.order)
-  }
-
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString())
-      }
+// Auth API
+export const authApi = {
+  login: async (email: string, password: string) => {
+    return fetchApi("/auth/tenant/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
     })
-  }
-
-  const queryString = params.toString()
-  return queryString ? `?${queryString}` : ""
-}
-
-// Apps API
-export const fetchApps = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof AppSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof AppSchema>[]>(`/apps${queryString}`, {}, AppSchema.array())
-}
-
-export const fetchAppById = async (appId: string): Promise<z.infer<typeof AppSchema>> => {
-  return apiRequest<z.infer<typeof AppSchema>>(`/apps/${appId}`, {}, AppSchema)
-}
-
-export const createApp = async (appData: Omit<z.infer<typeof AppSchema>, "id">): Promise<z.infer<typeof AppSchema>> => {
-  return apiRequest<z.infer<typeof AppSchema>>(
-    "/apps",
-    {
+  },
+  register: async (email: string, password: string, name: string) => {
+    return fetchApi("/auth/tenant/register", {
       method: "POST",
-      body: JSON.stringify(appData),
-    },
-    AppSchema,
-  )
+      body: JSON.stringify({ email, password, name }),
+    })
+  },
+  logout: async () => {
+    return fetchApi("/auth/tenant/logout", { method: "POST" })
+  },
+  getCurrentUser: async () => {
+    return fetchApi("/auth/me")
+  },
 }
 
-export const updateApp = async (
-  appId: string,
-  appData: Partial<z.infer<typeof AppSchema>>,
-): Promise<z.infer<typeof AppSchema>> => {
-  return apiRequest<z.infer<typeof AppSchema>>(
-    `/apps/${appId}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(appData),
-    },
-    AppSchema,
-  )
-}
-
-export const deleteApp = async (appId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/apps/${appId}`, {
-    method: "DELETE",
-  })
-}
-
-// Team Members API
-export const fetchTeamMembers = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof TeamMemberSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof TeamMemberSchema>[]>(`/team/members${queryString}`, {}, TeamMemberSchema.array())
-}
-
-export const fetchTeamMemberById = async (memberId: string): Promise<z.infer<typeof TeamMemberSchema>> => {
-  return apiRequest<z.infer<typeof TeamMemberSchema>>(`/team/members/${memberId}`, {}, TeamMemberSchema)
-}
-
-export const inviteTeamMember = async (memberData: { email: string; role: string; message?: string }): Promise<{
-  success: boolean
-  inviteId: string
-}> => {
-  return apiRequest<{ success: boolean; inviteId: string }>("/team/invites", {
-    method: "POST",
-    body: JSON.stringify(memberData),
-  })
-}
-
-export const updateTeamMember = async (
-  memberId: string,
-  memberData: Partial<z.infer<typeof TeamMemberSchema>>,
-): Promise<z.infer<typeof TeamMemberSchema>> => {
-  return apiRequest<z.infer<typeof TeamMemberSchema>>(
-    `/team/members/${memberId}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(memberData),
-    },
-    TeamMemberSchema,
-  )
-}
-
-export const removeTeamMember = async (memberId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/team/members/${memberId}`, {
-    method: "DELETE",
-  })
-}
-
-// Activity Logs API
-export const fetchActivityLogs = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof ActivityLogSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof ActivityLogSchema>[]>(`/activity${queryString}`, {}, ActivityLogSchema.array())
-}
-
-export const fetchActivityLogById = async (logId: string): Promise<z.infer<typeof ActivityLogSchema>> => {
-  return apiRequest<z.infer<typeof ActivityLogSchema>>(`/activity/${logId}`, {}, ActivityLogSchema)
-}
-
-export const exportActivityLogs = async (format: "csv" | "json" = "csv", filters?: FilterParams): Promise<Blob> => {
-  const queryString = buildQueryString(undefined, { ...filters, format })
-  const response = await fetch(`${API_BASE_URL}/activity/export${queryString}`, {
-    headers: getAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `API error: ${response.status}`)
-  }
-
-  return response.blob()
-}
-
-// Dashboard Stats API
-export const fetchDashboardStats = async (): Promise<z.infer<typeof DashboardStatsSchema>> => {
-  return apiRequest<z.infer<typeof DashboardStatsSchema>>("/dashboard/stats", {}, DashboardStatsSchema)
-}
-
-// API Models
-export const fetchApiModels = async (): Promise<z.infer<typeof ApiModelSchema>[]> => {
-  return apiRequest<z.infer<typeof ApiModelSchema>[]>("/api/models", {}, ApiModelSchema.array())
-}
-
-export const fetchApiModelByName = async (modelName: string): Promise<z.infer<typeof ApiModelSchema>> => {
-  return apiRequest<z.infer<typeof ApiModelSchema>>(`/api/models/${modelName}`, {}, ApiModelSchema)
-}
-
-// OAuth Clients API
-export const fetchOAuthClients = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof OAuthClientSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof OAuthClientSchema>[]>(`/oauth/clients${queryString}`, {}, OAuthClientSchema.array())
-}
-
-export const fetchOAuthClientById = async (clientId: string): Promise<z.infer<typeof OAuthClientSchema>> => {
-  return apiRequest<z.infer<typeof OAuthClientSchema>>(`/oauth/clients/${clientId}`, {}, OAuthClientSchema)
-}
-
-export const createOAuthClient = async (
-  clientData: Omit<z.infer<typeof OAuthClientSchema>, "id" | "clientId" | "clientSecret">,
-): Promise<z.infer<typeof OAuthClientSchema>> => {
-  return apiRequest<z.infer<typeof OAuthClientSchema>>(
-    "/oauth/clients",
-    {
+// Teams API
+export const teamsApi = {
+  getTeams: async () => {
+    return fetchApi("/teams")
+  },
+  getTeam: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}`)
+  },
+  createTeam: async (name: string) => {
+    return fetchApi("/teams", {
       method: "POST",
-      body: JSON.stringify(clientData),
-    },
-    OAuthClientSchema,
-  )
-}
-
-export const updateOAuthClient = async (
-  clientId: string,
-  clientData: Partial<z.infer<typeof OAuthClientSchema>>,
-): Promise<z.infer<typeof OAuthClientSchema>> => {
-  return apiRequest<z.infer<typeof OAuthClientSchema>>(
-    `/oauth/clients/${clientId}`,
-    {
+      body: JSON.stringify({ name }),
+    })
+  },
+  updateTeam: async (teamId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}`, {
       method: "PUT",
-      body: JSON.stringify(clientData),
-    },
-    OAuthClientSchema,
-  )
-}
-
-export const deleteOAuthClient = async (clientId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/oauth/clients/${clientId}`, {
-    method: "DELETE",
-  })
-}
-
-export const rotateOAuthClientSecret = async (clientId: string): Promise<{ clientSecret: string }> => {
-  return apiRequest<{ clientSecret: string }>(`/oauth/clients/${clientId}/rotate-secret`, {
-    method: "POST",
-  })
-}
-
-// License Keys API
-export const fetchLicenseKeys = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof LicenseKeySchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof LicenseKeySchema>[]>(`/licenses${queryString}`, {}, LicenseKeySchema.array())
-}
-
-export const fetchLicenseKeyById = async (keyId: string): Promise<z.infer<typeof LicenseKeySchema>> => {
-  return apiRequest<z.infer<typeof LicenseKeySchema>>(`/licenses/${keyId}`, {}, LicenseKeySchema)
-}
-
-export const createLicenseKey = async (
-  keyData: Omit<z.infer<typeof LicenseKeySchema>, "id" | "key">,
-): Promise<z.infer<typeof LicenseKeySchema>> => {
-  return apiRequest<z.infer<typeof LicenseKeySchema>>(
-    "/licenses",
-    {
+      body: JSON.stringify(data),
+    })
+  },
+  deleteTeam: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}`, { method: "DELETE" })
+  },
+  getTeamMembers: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/members`)
+  },
+  inviteTeamMember: async (teamId: string, email: string, role: string) => {
+    return fetchApi(`/teams/${teamId}/members`, {
       method: "POST",
-      body: JSON.stringify(keyData),
-    },
-    LicenseKeySchema,
-  )
-}
-
-export const updateLicenseKey = async (
-  keyId: string,
-  keyData: Partial<z.infer<typeof LicenseKeySchema>>,
-): Promise<z.infer<typeof LicenseKeySchema>> => {
-  return apiRequest<z.infer<typeof LicenseKeySchema>>(
-    `/licenses/${keyId}`,
-    {
+      body: JSON.stringify({ email, role }),
+    })
+  },
+  removeTeamMember: async (teamId: string, userId: string) => {
+    return fetchApi(`/teams/${teamId}/members/${userId}`, { method: "DELETE" })
+  },
+  updateTeamMember: async (teamId: string, userId: string, role: string) => {
+    return fetchApi(`/teams/${teamId}/members/${userId}`, {
       method: "PUT",
-      body: JSON.stringify(keyData),
-    },
-    LicenseKeySchema,
-  )
+      body: JSON.stringify({ role }),
+    })
+  },
 }
 
-export const revokeLicenseKey = async (keyId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/licenses/${keyId}/revoke`, {
-    method: "POST",
-  })
+// Applications API
+export const appsApi = {
+  getApps: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/apps`)
+  },
+  getApp: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}`)
+  },
+  createApp: async (teamId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+  updateApp: async (teamId: string, appId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+  deleteApp: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}`, { method: "DELETE" })
+  },
 }
 
-export const deleteLicenseKey = async (keyId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/licenses/${keyId}`, {
-    method: "DELETE",
-  })
+// Licenses API
+export const licensesApi = {
+  getLicenses: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/licenses`)
+  },
+  createLicense: async (teamId: string, appId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/licenses`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+  updateLicense: async (teamId: string, appId: string, licenseId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+  deleteLicense: async (teamId: string, appId: string, licenseId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, { method: "DELETE" })
+  },
 }
 
 // Sessions API
-export const fetchSessions = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof SessionSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof SessionSchema>[]>(`/sessions${queryString}`, {}, SessionSchema.array())
+export const sessionsApi = {
+  getSessions: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/sessions`)
+  },
+  terminateSession: async (teamId: string, appId: string, sessionId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/sessions/${sessionId}`, { method: "DELETE" })
+  },
 }
 
-export const fetchSessionById = async (sessionId: string): Promise<z.infer<typeof SessionSchema>> => {
-  return apiRequest<z.infer<typeof SessionSchema>>(`/sessions/${sessionId}`, {}, SessionSchema)
-}
-
-export const revokeSession = async (sessionId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/sessions/${sessionId}/revoke`, {
-    method: "POST",
-  })
-}
-
-export const revokeAllSessions = async (): Promise<{ success: boolean; count: number }> => {
-  return apiRequest<{ success: boolean; count: number }>("/sessions/revoke-all", {
-    method: "POST",
-  })
+// OAuth Clients API
+export const oauthApi = {
+  getClients: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients`)
+  },
+  createClient: async (teamId: string, appId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+  updateClient: async (teamId: string, appId: string, clientId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+  deleteClient: async (teamId: string, appId: string, clientId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, { method: "DELETE" })
+  },
 }
 
 // Roles API
-export const fetchRoles = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof RoleSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof RoleSchema>[]>(`/roles${queryString}`, {}, RoleSchema.array())
-}
-
-export const fetchRoleById = async (roleId: string): Promise<z.infer<typeof RoleSchema>> => {
-  return apiRequest<z.infer<typeof RoleSchema>>(`/roles/${roleId}`, {}, RoleSchema)
-}
-
-export const createRole = async (
-  roleData: Omit<z.infer<typeof RoleSchema>, "id">,
-): Promise<z.infer<typeof RoleSchema>> => {
-  return apiRequest<z.infer<typeof RoleSchema>>(
-    "/roles",
-    {
+export const rolesApi = {
+  getRoles: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/roles`)
+  },
+  getRole: async (teamId: string, roleId: string) => {
+    return fetchApi(`/teams/${teamId}/roles/${roleId}`)
+  },
+  createRole: async (teamId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/roles`, {
       method: "POST",
-      body: JSON.stringify(roleData),
-    },
-    RoleSchema,
-  )
-}
-
-export const updateRole = async (
-  roleId: string,
-  roleData: Partial<z.infer<typeof RoleSchema>>,
-): Promise<z.infer<typeof RoleSchema>> => {
-  return apiRequest<z.infer<typeof RoleSchema>>(
-    `/roles/${roleId}`,
-    {
+      body: JSON.stringify(data),
+    })
+  },
+  updateRole: async (teamId: string, roleId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/roles/${roleId}`, {
       method: "PUT",
-      body: JSON.stringify(roleData),
-    },
-    RoleSchema,
-  )
-}
-
-export const deleteRole = async (roleId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/roles/${roleId}`, {
-    method: "DELETE",
-  })
+      body: JSON.stringify(data),
+    })
+  },
+  deleteRole: async (teamId: string, roleId: string) => {
+    return fetchApi(`/teams/${teamId}/roles/${roleId}`, { method: "DELETE" })
+  },
 }
 
 // Permissions API
-export const fetchPermissions = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof PermissionSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof PermissionSchema>[]>(`/permissions${queryString}`, {}, PermissionSchema.array())
+export const permissionsApi = {
+  getPermissions: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/permissions`)
+  },
+  assignPermission: async (teamId: string, roleId: string, permissionId: string) => {
+    return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions`, {
+      method: "POST",
+      body: JSON.stringify({ permissionId }),
+    })
+  },
+  removePermission: async (teamId: string, roleId: string, permissionId: string) => {
+    return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions/${permissionId}`, { method: "DELETE" })
+  },
 }
 
-export const fetchPermissionById = async (permissionId: string): Promise<z.infer<typeof PermissionSchema>> => {
-  return apiRequest<z.infer<typeof PermissionSchema>>(`/permissions/${permissionId}`, {}, PermissionSchema)
+// Activity API
+export const activityApi = {
+  getActivity: async (teamId: string, filters?: any) => {
+    const queryParams = filters ? `?${new URLSearchParams(filters).toString()}` : ""
+    return fetchApi(`/teams/${teamId}/activity${queryParams}`)
+  },
+}
+
+// Analytics API
+export const analyticsApi = {
+  getStats: async (teamId: string, appId?: string, period?: string) => {
+    let endpoint = `/teams/${teamId}/analytics`
+    if (appId) {
+      endpoint = `/teams/${teamId}/apps/${appId}/analytics`
+    }
+    if (period) {
+      endpoint += `?period=${period}`
+    }
+    return fetchApi(endpoint)
+  },
+}
+
+// Settings API
+export const settingsApi = {
+  getSettings: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/settings`)
+  },
+  updateSettings: async (teamId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/settings`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
 }
 
 // Tenants API
-export const fetchTenants = async (
-  pagination?: PaginationParams,
-  filters?: FilterParams,
-): Promise<z.infer<typeof TenantSchema>[]> => {
-  const queryString = buildQueryString(pagination, filters)
-  return apiRequest<z.infer<typeof TenantSchema>[]>(`/tenants${queryString}`, {}, TenantSchema.array())
-}
-
-export const fetchTenantById = async (tenantId: string): Promise<z.infer<typeof TenantSchema>> => {
-  return apiRequest<z.infer<typeof TenantSchema>>(`/tenants/${tenantId}`, {}, TenantSchema)
-}
-
-export const createTenant = async (
-  tenantData: Omit<z.infer<typeof TenantSchema>, "id">,
-): Promise<z.infer<typeof TenantSchema>> => {
-  return apiRequest<z.infer<typeof TenantSchema>>(
-    "/tenants",
-    {
+export const tenantsApi = {
+  getTenants: async (teamId: string) => {
+    return fetchApi(`/teams/${teamId}/tenants`)
+  },
+  createTenant: async (teamId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/tenants`, {
       method: "POST",
-      body: JSON.stringify(tenantData),
-    },
-    TenantSchema,
-  )
-}
-
-export const updateTenant = async (
-  tenantId: string,
-  tenantData: Partial<z.infer<typeof TenantSchema>>,
-): Promise<z.infer<typeof TenantSchema>> => {
-  return apiRequest<z.infer<typeof TenantSchema>>(
-    `/tenants/${tenantId}`,
-    {
+      body: JSON.stringify(data),
+    })
+  },
+  updateTenant: async (teamId: string, tenantId: string, data: any) => {
+    return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, {
       method: "PUT",
-      body: JSON.stringify(tenantData),
-    },
-    TenantSchema,
-  )
+      body: JSON.stringify(data),
+    })
+  },
+  deleteTenant: async (teamId: string, tenantId: string) => {
+    return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, { method: "DELETE" })
+  },
 }
 
-export const deleteTenant = async (tenantId: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>(`/tenants/${tenantId}`, {
-    method: "DELETE",
-  })
+// Files API
+export const filesApi = {
+  getFiles: async (teamId: string, appId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/files`)
+  },
+  uploadFile: async (teamId: string, appId: string, formData: FormData) => {
+    return fetch(`${API_URL}/teams/${teamId}/apps/${appId}/files`, {
+      method: "POST",
+      body: formData,
+    }).then(handleResponse)
+  },
+  deleteFile: async (teamId: string, appId: string, fileId: string) => {
+    return fetchApi(`/teams/${teamId}/apps/${appId}/files/${fileId}`, { method: "DELETE" })
+  },
 }
 
-// Authentication API
-export const login = async (credentials: { email: string; password: string }): Promise<{
-  token: string
-  user: z.infer<typeof TeamMemberSchema>
-}> => {
-  return apiRequest<{ token: string; user: z.infer<typeof TeamMemberSchema> }>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(credentials),
-  })
+// Export all APIs
+export const apiService = {
+  auth: authApi,
+  teams: teamsApi,
+  apps: appsApi,
+  licenses: licensesApi,
+  sessions: sessionsApi,
+  oauth: oauthApi,
+  roles: rolesApi,
+  permissions: permissionsApi,
+  activity: activityApi,
+  analytics: analyticsApi,
+  settings: settingsApi,
+  tenants: tenantsApi,
+  files: filesApi,
 }
 
-export const logout = async (): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>("/auth/logout", {
-    method: "POST",
-  })
-}
-
-export const getCurrentUser = async (): Promise<z.infer<typeof TeamMemberSchema>> => {
-  return apiRequest<z.infer<typeof TeamMemberSchema>>("/auth/me", {}, TeamMemberSchema)
-}
-
-export const resetPassword = async (email: string): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>("/auth/reset-password", {
-    method: "POST",
-    body: JSON.stringify({ email }),
-  })
-}
-
-export const verifyResetToken = async (token: string): Promise<{ valid: boolean }> => {
-  return apiRequest<{ valid: boolean }>("/auth/verify-reset-token", {
-    method: "POST",
-    body: JSON.stringify({ token }),
-  })
-}
-
-export const setNewPassword = async (data: { token: string; password: string }): Promise<{ success: boolean }> => {
-  return apiRequest<{ success: boolean }>("/auth/set-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  })
-}
-
-// Health check API
-export const checkApiHealth = async (): Promise<{ status: string; version: string }> => {
-  return apiRequest<{ status: string; version: string }>("/health")
-}
+export default apiService

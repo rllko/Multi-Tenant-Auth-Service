@@ -13,3 +13,12 @@ public class Scope
     public int? ImpactLevelId { get; set; }
     public int? CategoryId { get; set; }
 }
+
+public record ScopeCreateDto(
+    string ScopeName,
+    int ScopeType,
+    string Slug,
+    Guid CreatedBy,
+    int? ImpactLevelId,
+    int? CategoryId
+);

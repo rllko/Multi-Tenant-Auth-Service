@@ -6,45 +6,39 @@ namespace Authentication.Services.Clients;
 
 public class ClientService(IDbConnectionFactory connectionFactory) : IClientService
 {
-    public async Task<Client?> GetClientByIdentifierAsync(string identifier)
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public async Task<int> CreateClientAsync(Client client)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        var sql = @"
+            INSERT INTO clients (client_identifier, client_secret, grant_type, role, team, client_uri)
+            VALUES (@ClientIdentifier, @ClientSecret, @GrantType, @Role, @Team, @ClientUri)
+            RETURNING client_id;
+        ";
 
-        var getDiscordIdQuery = @"SELECT * FROM clients WHERE client_identifier = @identifier;";
-
-        var result = await
-            connection.QueryFirstOrDefaultAsync(getDiscordIdQuery, new { identifier });
-
-        if (result != null)
-        {
-            var client = new Client
-            {
-                ClientId = result.client_id,
-                ClientIdentifier = result.client_identifier,
-                ClientSecret = result.client_secret,
-                GrantType = result.grant_type,
-                ClientUri = result.client_uri
-            };
-
-            return client;
-        }
-
-        return null;
+        using var connection = await _connectionFactory.CreateConnectionAsync();
+        return await connection.ExecuteScalarAsync<int>(sql, client);
     }
 
-    public async Task<IEnumerable<string>> GetClientScopesAsync(string identifier)
+    public async Task<Client?> GetClientByIdentifierAsync(string identifier)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        var sql = "SELECT * FROM clients WHERE client_identifier = @Identifier;";
+        using var connection = await _connectionFactory.CreateConnectionAsync();
+        return await connection.QueryFirstOrDefaultAsync<Client>(sql, new { Identifier = identifier });
+    }
 
-        var getDiscordIdQuery = @"
-        SELECT s.scope_name FROM client_scopes 
-        inner join clients c
-            on client_scopes.client_id = c.client_id 
-        inner join scopes s on client_scopes.scope_id = s.scope_id
-            WHERE client_identifier = @identifier;";
+    public async Task<IEnumerable<Client>> GetAllClientsAsync()
+    {
+        var sql = "SELECT * FROM clients;";
+        using var connection = await _connectionFactory.CreateConnectionAsync();
+        return await connection.QueryAsync<Client>(sql);
+    }
 
-        var client = await
-            connection.QueryAsync<string>(getDiscordIdQuery, new { identifier });
-        return client;
+    public async Task<bool> DeleteClientAsync(int clientId)
+    {
+        var sql = "DELETE FROM clients WHERE client_id = @Id;";
+        using var connection = await _connectionFactory.CreateConnectionAsync();
+        var rows = await connection.ExecuteAsync(sql, new { Id = clientId });
+        return rows > 0;
     }
 }
