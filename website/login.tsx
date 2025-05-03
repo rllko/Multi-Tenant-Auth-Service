@@ -32,11 +32,14 @@ export default function Login() {
   async function onSubmit(values: z.infer<typeof LoginSchema>) {
     setIsLoading(true)
     try {
-      await apiService.auth.login(values.email, values.password)
+      const response = await apiService.auth.login(values.email, values.password)
+
       toast({
         title: "Success",
         description: "You have been logged in successfully.",
       })
+      localStorage.setItem("keyauth_token",response.token)
+      localStorage.setItem("keyauth_user",response.user)
       router.push("/dashboard")
     } catch (error) {
       console.error("Login error:", error)

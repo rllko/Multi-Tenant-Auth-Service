@@ -1,14 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RolesTable } from "./roles-table"
 import { PermissionsTable } from "./permissions-table"
 import { RolePermissionsManager } from "./role-permissions-manager"
-import { Loader2 } from "lucide-react"
+import { AlertCircle, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useTeam } from "@/contexts/team-context"
+import { ApiError } from "./api-error"
 import type { Role, Permission } from "@/lib/schemas"
 
 export function RolesPermissionsView() {
@@ -17,44 +18,71 @@ export function RolesPermissionsView() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isRetrying, setIsRetrying] = useState(false)
   const { toast } = useToast()
-  const { selectedTeam } = useTeam()
+  const { selectedTeam, teamsLoaded, teams } = useTeam()
 
   // Fetch roles and permissions on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!selectedTeam) return
-
-      try {
-        setLoading(true)
-
-        // Fetch roles
-        const rolesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles`)
-        if (!rolesResponse.ok) {
-          throw new Error(`Failed to fetch roles: ${rolesResponse.status}`)
-        }
-        const rolesData = await rolesResponse.json()
-        setRoles(rolesData)
-
-        // Fetch permissions
-        const permissionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permissions`)
-        if (!permissionsResponse.ok) {
-          throw new Error(`Failed to fetch permissions: ${permissionsResponse.status}`)
-        }
-        const permissionsData = await permissionsResponse.json()
-        setPermissions(permissionsData)
-
-        setError(null)
-      } catch (err) {
-        setError("An error occurred while fetching data")
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    if (!selectedTeam) {
+      setLoading(false)
+      return
     }
 
-    fetchData()
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Simulate API call with a timeout to test error handling
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request timed out")), 15000)
+      })
+
+      // Fetch roles
+      const rolesFetchPromise = fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/roles`).then(
+        (response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch roles: ${response.status}`)
+          }
+          return response.json()
+        },
+      )
+
+      // Race between fetch and timeout
+      const rolesData = (await Promise.race([rolesFetchPromise, timeoutPromise])) as Role[]
+      setRoles(rolesData)
+
+      // Fetch permissions
+      const permissionsFetchPromise = fetch(`${process.env.NEXT_PUBLIC_API_URL}/permissions`).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch permissions: ${response.status}`)
+        }
+        return response.json()
+      })
+
+      // Race between fetch and timeout
+      const permissionsData = (await Promise.race([permissionsFetchPromise, timeoutPromise])) as Permission[]
+      setPermissions(permissionsData)
+    } catch (err) {
+      console.error("Error fetching data:", err)
+      setError("Failed to load roles and permissions. Please check your connection and try again.")
+      // Clear data on error
+      setRoles([])
+      setPermissions([])
+    } finally {
+      setLoading(false)
+      setIsRetrying(false)
+    }
   }, [selectedTeam])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const handleRetry = () => {
+    setIsRetrying(true)
+    fetchData()
+  }
 
   const handleRoleSelect = (role: Role) => {
     setSelectedRole(role)
@@ -166,24 +194,6 @@ export function RolesPermissionsView() {
     }
   }
 
-  if (loading && roles.length === 0 && permissions.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading roles and permissions...</span>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
-        <h3 className="font-bold">Error</h3>
-        <p>{error}</p>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       {/* Team context banner */}
@@ -201,48 +211,76 @@ export function RolesPermissionsView() {
         </div>
       )}
 
+      {/* No team selected message */}
+      {teamsLoaded && !selectedTeam && !loading && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md flex items-center">
+          <AlertCircle className="h-5 w-5 mr-2" />
+          <div>
+            <p className="font-medium">No team selected</p>
+            <p className="text-sm">
+              {teams.length === 0
+                ? "You don't have any teams yet. Create a team to get started."
+                : "Please select a team to manage roles and permissions."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Always show error if present */}
+      {error && <ApiError message={error} onRetry={handleRetry} isRetrying={isRetrying} />}
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Roles & Permissions</h2>
       </div>
 
-      <Tabs defaultValue="roles" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="roles">Roles</TabsTrigger>
-          <TabsTrigger value="permissions">Permissions</TabsTrigger>
-          <TabsTrigger value="matrix" disabled={!selectedRole}>
-            Role-Permission Matrix
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="roles" className="space-y-4">
-          <RolesTable
-            roles={roles}
-            onRoleSelect={handleRoleSelect}
-            onRoleCreate={handleRoleCreate}
-            onRoleUpdate={handleRoleUpdate}
-            onRoleDelete={handleRoleDelete}
-            loading={loading}
-          />
-        </TabsContent>
-        <TabsContent value="permissions" className="space-y-4">
-          <PermissionsTable permissions={permissions} loading={loading} />
-        </TabsContent>
-        <TabsContent value="matrix" className="space-y-4">
-          {selectedRole ? (
-            <RolePermissionsManager
-              role={selectedRole}
-              permissions={permissions}
+      {/* Show loading indicator only if not retrying and no error */}
+      {loading && !isRetrying && !error && roles.length === 0 && permissions.length === 0 && (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading roles and permissions...</span>
+        </div>
+      )}
+
+      {teamsLoaded && selectedTeam && !error && (!loading || roles.length > 0 || permissions.length > 0) && (
+        <Tabs defaultValue="roles" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="roles">Roles</TabsTrigger>
+            <TabsTrigger value="permissions">Permissions</TabsTrigger>
+            <TabsTrigger value="matrix" disabled={!selectedRole}>
+              Role-Permission Matrix
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="roles" className="space-y-4">
+            <RolesTable
+              roles={roles}
+              onRoleSelect={handleRoleSelect}
+              onRoleCreate={handleRoleCreate}
               onRoleUpdate={handleRoleUpdate}
+              onRoleDelete={handleRoleDelete}
               loading={loading}
             />
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">Select a role to manage permissions</p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+          <TabsContent value="permissions" className="space-y-4">
+            <PermissionsTable permissions={permissions} loading={loading} />
+          </TabsContent>
+          <TabsContent value="matrix" className="space-y-4">
+            {selectedRole ? (
+              <RolePermissionsManager
+                role={selectedRole}
+                permissions={permissions}
+                onRoleUpdate={handleRoleUpdate}
+                loading={loading}
+              />
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-center text-muted-foreground">Select a role to manage permissions</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   )
 }

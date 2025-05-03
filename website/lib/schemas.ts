@@ -16,7 +16,6 @@ export type User = z.infer<typeof UserSchema>
 export const TeamSchema = z.object({
   id: z.string(),
   name: z.string(),
-  slug: z.string(),
   logo: z.string().url().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons"
+import { AlertCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -32,7 +33,7 @@ import { useTeam } from "@/contexts/team-context"
 export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const { teams, selectedTeam, setSelectedTeam, isLoading } = useTeam()
+  const { teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded } = useTeam()
 
   if (isLoading) {
     return (
@@ -42,6 +43,15 @@ export function TenantSwitcher() {
       </Button>
     )
   }
+  !isLoading && teamsLoaded && teams.length === 0 && (
+    <div className="px-2 py-1.5 text-sm">
+      <div className="flex items-center gap-2 text-amber-600">
+        <AlertCircle className="h-4 w-4" />
+        <span>No teams available</span>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">Create a team to get started</p>
+    </div>
+  )
 
   return (
     <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>

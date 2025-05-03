@@ -15,6 +15,7 @@ public class Team
 public class TeamCreateDto
 {
     public string Name { get; set; }
+    public Guid? CreatedBy { get; set; }
 }
 
 public class TeamUpdateDto
