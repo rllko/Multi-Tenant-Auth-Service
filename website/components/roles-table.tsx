@@ -10,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -21,173 +20,309 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Edit, MoreHorizontal, Plus, Shield, Trash, Users } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Edit, Loader2, MoreHorizontal, Plus, Shield, Trash, Users } from "lucide-react"
+import type { Role } from "@/lib/schemas"
 
-const roles = [
-  {
-    id: "role_1",
-    name: "Administrator",
-    description: "Full system access with all permissions",
-    userCount: 3,
-    createdAt: "2023-01-15",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "role_2",
-    name: "Developer",
-    description: "Access to development resources and API keys",
-    userCount: 12,
-    createdAt: "2023-02-20",
-    organization: "Acme Inc.",
-  },
-  {
-    id: "role_3",
-    name: "Analyst",
-    description: "Read-only access to analytics and reports",
-    userCount: 8,
-    createdAt: "2023-03-10",
-    organization: "Globex Corporation",
-  },
-  {
-    id: "role_4",
-    name: "Support",
-    description: "Access to user management and support tools",
-    userCount: 5,
-    createdAt: "2023-04-05",
-    organization: "Initech",
-  },
-]
+interface RolesTableProps {
+  roles: Role[]
+  onRoleSelect: (role: Role) => void
+  onRoleCreate: (role: Omit<Role, "id">) => void
+  onRoleUpdate: (id: string, role: Partial<Role>) => void
+  onRoleDelete: (id: string) => void
+  loading: boolean
+}
 
-export function RolesTable({ onManageApiPermissions, selectedOrganization }) {
+export function RolesTable({
+  roles,
+  onRoleSelect,
+  onRoleCreate,
+  onRoleUpdate,
+  onRoleDelete,
+  loading,
+}: RolesTableProps) {
   const [open, setOpen] = useState(false)
-  const [editRole, setEditRole] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const handleEdit = (role) => {
-    setEditRole(role)
+  // Filter roles based on search query
+  const filteredRoles = roles.filter(
+    (role) =>
+      role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      role.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const handleEdit = (role: Role) => {
+    setSelectedRole(role)
     setOpen(true)
   }
 
-  const handleClose = () => {
-    setEditRole(null)
+  const handleCreate = () => {
+    setSelectedRole(null)
+    setOpen(true)
+  }
+
+  const handleSave = (formData: FormData) => {
+    const roleData = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      scopes: [],
+      isDefault: formData.get("isDefault") === "on",
+      isCustom: true,
+    }
+
+    if (selectedRole) {
+      onRoleUpdate(selectedRole.id, roleData)
+    } else {
+      onRoleCreate(roleData as Omit<Role, "id">)
+    }
     setOpen(false)
   }
 
-  // Filter roles by selected organization
-  const filteredRoles = roles.filter((role) => role.organization === selectedOrganization.name)
+  const handleDelete = () => {
+    if (selectedRole) {
+      onRoleDelete(selectedRole.id)
+      setConfirmDelete(false)
+      setSelectedRole(null)
+    }
+  }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center">
-        <div className="space-y-1.5">
-          <CardTitle>Roles</CardTitle>
-          <CardDescription>Manage user roles in {selectedOrganization.name}.</CardDescription>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="ml-auto" size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Role
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editRole ? "Edit Role" : "Create New Role"}</DialogTitle>
-              <DialogDescription>
-                {editRole ? "Update the role details below." : "Fill in the details to create a new role."}
-              </DialogDescription>
-            </DialogHeader>
+    <>
+      <Card className="shadow-sm border-border">
+        <CardHeader className="flex flex-row items-center justify-between bg-secondary/50 rounded-t-lg">
+          <div className="space-y-1.5">
+            <CardTitle>Roles</CardTitle>
+            <CardDescription>Manage user roles and their permissions.</CardDescription>
+          </div>
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Role
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="relative flex items-center mb-4">
+            <Input
+              type="search"
+              placeholder="Search roles..."
+              className="max-w-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-sm">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
+
+            <Table>
+              <TableHeader className="bg-muted">
+                <TableRow>
+                  <TableHead>Role Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRoles.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No roles found. Create a new role to get started.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredRoles.map((role) => (
+                    <TableRow
+                      key={role.id}
+                      className="hover:bg-muted/50 cursor-pointer"
+                      onClick={() => onRoleSelect(role)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{role.name}</span>
+                          {role.isDefault && (
+                            <Badge variant="outline" className="ml-2">
+                              Default
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{role.description}</TableCell>
+                      <TableCell>
+                        <Badge variant={role.isSystemRole ? "secondary" : "outline"}>
+                          {role.isSystemRole ? "System" : "Custom"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-secondary">
+                          <Users className="mr-1 h-3 w-3" />
+                          {role.scopes.length}
+                        </Badge>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(role)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Role
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => {
+                                setSelectedRole(role)
+                                setConfirmDelete(true)
+                              }}
+                              disabled={role.isSystemRole}
+                            >
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete Role
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Role Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>{selectedRole ? "Edit Role" : "Create Role"}</DialogTitle>
+            <DialogDescription>{selectedRole ? "Update role details." : "Configure a new role."}</DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSave(new FormData(e.currentTarget))
+            }}
+          >
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Role Name</Label>
-                <Input id="name" defaultValue={editRole?.name || ""} placeholder="e.g. Administrator" />
+                <Input
+                  id="name"
+                  name="name"
+                  defaultValue={selectedRole?.name || ""}
+                  placeholder="e.g. Admin, Editor, Viewer"
+                  required
+                  disabled={selectedRole?.isSystemRole}
+                />
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  defaultValue={editRole?.description || ""}
-                  placeholder="Describe the role's purpose and access level"
+                  name="description"
+                  defaultValue={selectedRole?.description || ""}
+                  placeholder="Describe the purpose of this role"
+                  required
+                  disabled={selectedRole?.isSystemRole}
                 />
               </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  name="isDefault"
+                  defaultChecked={selectedRole?.isDefault || false}
+                  className="rounded border-gray-300"
+                  disabled={selectedRole?.isSystemRole}
+                />
+                <Label htmlFor="isDefault" className="font-normal">
+                  Set as default role for new users
+                </Label>
+              </div>
+
+              {selectedRole?.isSystemRole && (
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-md text-amber-800 text-sm">
+                  This is a system role and cannot be modified. You can only view its details.
+                </div>
+              )}
             </div>
+
             <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>
+              <Button variant="outline" type="button" onClick={() => setOpen(false)} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit">{editRole ? "Update Role" : "Create Role"}</Button>
+              <Button type="submit" disabled={loading || selectedRole?.isSystemRole}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {selectedRole ? "Updating..." : "Creating..."}
+                  </>
+                ) : selectedRole ? (
+                  "Update Role"
+                ) : (
+                  "Create Role"
+                )}
+              </Button>
             </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRoles.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  No roles found in this organization.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredRoles.map((role) => (
-                <TableRow key={role.id}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{role.description}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>{role.userCount}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{role.createdAt}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEdit(role)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Role
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onManageApiPermissions(role)}>
-                          <Shield className="mr-2 h-4 w-4" />
-                          API Permissions
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Users className="mr-2 h-4 w-4" />
-                          Manage Users
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash className="mr-2 h-4 w-4" />
-                          Delete Role
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Role Dialog */}
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the role "{selectedRole?.name}"? This action cannot be undone and will
+              remove this role from all users who have it assigned.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Role"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

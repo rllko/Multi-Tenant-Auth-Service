@@ -1,16 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Authentication.Models.Entities.Discord;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Authentication.Services;
 
 namespace Authentication.Models.Entities;
 
 [Table("licenses")]
 public class License
 {
-    [Key] [Column("id")] public long Id { get; init; }
+    public long Id { get; init; }
 
-    [Column("license")]
-    [StringLength(150)]
     public Guid Value { get; init; }
 
     public string? Password { get; set; }
@@ -26,6 +23,25 @@ public class License
     public bool Paused { get; set; }
     public bool Activated { get; set; }
     public DiscordUser? Discord { get; set; }
+
+    public LicenseDto MapToDto()
+    {
+        return new LicenseDto
+        {
+            Value = Guider.ToStringFromGuid(Value),
+            Email = Email,
+            ExpirationDate = ExpiresAt,
+            Activated = Activated,
+            Paused = Paused,
+            CreationDate = CreationDate.ToUnixTimeSeconds(),
+            Discord = DiscordId
+        };
+    }
+
+    public string MapToString()
+    {
+        return Guider.ToStringFromGuid(Value);
+    }
 }
 
 public class LicenseDto

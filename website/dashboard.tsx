@@ -14,6 +14,8 @@ import { TeamAccessView } from "./components/team-access-view"
 import { FilesView } from "./components/files-view"
 import { Toaster } from "./components/ui/toaster"
 import { DashboardView } from "./components/dashboard-view"
+import { AppTeamPermissions } from "./components/app-team-permissions"
+import { MultiTenantTeamManagement } from "./components/multi-tenant-team-management"
 
 export default function Dashboard() {
   const [activeView, setActiveView] = useState("dashboard")
@@ -44,8 +46,9 @@ export default function Dashboard() {
     }
   }, [activeView, isMobile])
 
+  // Update the main container to have a fixed height and better overflow handling
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
+    <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
       {/* Overlay for mobile when sidebar is open */}
       {sidebarOpen && isMobile && (
         <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
@@ -63,11 +66,11 @@ export default function Dashboard() {
       />
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col min-w-0 w-full">
+      <div className="flex flex-1 flex-col min-w-0 w-full overflow-hidden">
         <DashboardHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} isSidebarOpen={sidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6">
-          <div className="mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl p-2 sm:p-3 md:p-4 lg:p-6">
             {activeView === "dashboard" && (
               <>
                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">Dashboard</h1>
@@ -75,12 +78,21 @@ export default function Dashboard() {
               </>
             )}
 
-            {(activeView === "users" || activeView === "roles") && (
+            {activeView === "users" && (
               <>
                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">
                   Team & Access Management
                 </h1>
-                <TeamAccessView initialTab={activeTab} />
+                <MultiTenantTeamManagement />
+              </>
+            )}
+
+            {activeView === "roles" && (
+              <>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">
+                  Roles & Permissions
+                </h1>
+                <TeamAccessView initialTab="roles" />
               </>
             )}
 
@@ -88,6 +100,15 @@ export default function Dashboard() {
               <>
                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">Applications</h1>
                 <ApplicationsView />
+              </>
+            )}
+
+            {activeView === "app_permissions" && (
+              <>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">
+                  Application Permissions
+                </h1>
+                <AppTeamPermissions />
               </>
             )}
 

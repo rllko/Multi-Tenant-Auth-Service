@@ -1,11 +1,10 @@
-﻿using Authentication.Common;
-using Authentication.Endpoints;
-using Authentication.Endpoints.Authorization;
-using Authentication.Endpoints.Token;
+﻿using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
+using Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
+using Authentication.Misc;
 using Authentication.Models;
-using Authentication.OauthResponse;
+using Authentication.Models.OAuth;
+using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.CodeStorage;
-using Authentication.Services.Authentication.OAuthAccessToken;
 using Authentication.Services.Clients;
 using FluentValidation;
 using FluentValidation.Results;
@@ -15,14 +14,14 @@ namespace Authentication.Services.Authentication.AuthorizeResult;
 public class AuthorizeResultService(
     IValidator<AuthorizeRequest> validator,
     IValidator<TokenRequest> tokenRequestValidator,
-    ICodeStorageService codeStoreService,
-    IAccessTokenStorageService accessTokenStorageService,
+    ICodeService codeStoreService,
+    IAccessTokenService accessTokenService,
     IClientService clientService
 ) : IAuthorizeResultService
 {
     // used to generate token
-    private readonly IAccessTokenStorageService _accessTokenStorageService = accessTokenStorageService;
-    private readonly ICodeStorageService _codeStoreService = codeStoreService;
+    private readonly IAccessTokenService _accessTokenService = accessTokenService;
+    private readonly ICodeService _codeStoreService = codeStoreService;
 
     public async Task<Result<AuthorizeResponse, ValidationFailed>> AuthorizeRequestAsync(HttpContext httpContext,
         AuthorizeRequest authorizeRequest)
@@ -43,7 +42,7 @@ public class AuthorizeResultService(
 
         var authoCode = new AuthorizationCodeRequest
         {
-            ClientIdentifier = clientResult.ClientIdentifier
+            ClientId = clientResult.ClientIdentifier
         };
 
         var code = await _codeStoreService.CreateAuthorizationCodeAsync(authoCode);
@@ -70,10 +69,7 @@ public class AuthorizeResultService(
         if (!validationResult.IsValid)
             return new ValidationFailed(validationResult.Errors);
 
-        // add validator here
-        // check code from the Concurrent Dictionary
-
-        if (_codeStoreService.GetClientCode(tokenRequest.code.ToString(), out var clientCode) is false)
+        if (await _codeStoreService.GetClientCode(tokenRequest.code.ToString()) is null)
         {
             var error = new ValidationFailure(
                 ErrorTypeEnum.InvalidClient.GetEnumDescription(),
@@ -83,8 +79,9 @@ public class AuthorizeResultService(
 
         var tokenResponse = new TokenResponse
         {
-            AccessToken = _accessTokenStorageService.Generate(tokenRequest.code!)
+            AccessToken = await _accessTokenService.Generate(tokenRequest.code!)
         };
+
 
         return tokenResponse;
     }
@@ -93,7 +90,6 @@ public class AuthorizeResultService(
         bool checkWithSecret = false,
         string? clientSecret = null)
     {
-        // check if client exists
         var storedClient = await clientService.GetClientByIdentifierAsync(clientIdentifier);
 
         if (storedClient == null) return null;

@@ -9,4 +9,4 @@ builder.Services.AddSingleton(_ => new DatabaseInitializer(
 var app = builder.Build();
 
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
-await databaseInitializer.InitializeAsync();
+databaseInitializer.InitializeAsync();

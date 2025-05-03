@@ -1,4 +1,4 @@
-﻿namespace Authentication.Models;
+﻿namespace Authentication.Models.OAuth;
 
 public class AuthCode
 {

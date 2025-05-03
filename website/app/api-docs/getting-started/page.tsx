@@ -17,68 +17,103 @@ export default function GettingStartedPage() {
         {/* Sidebar Navigation */}
         <aside className="md:w-64 lg:w-72 shrink-0">
           <div className="sticky top-24">
-            <h3 className="font-medium mb-4">On This Page</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#introduction" className="text-muted-foreground hover:text-foreground">
-                  Introduction
-                </a>
-              </li>
-              <li>
-                <a href="#authentication" className="text-muted-foreground hover:text-foreground">
-                  Authentication
-                </a>
-              </li>
-              <li>
-                <a href="#installation" className="text-muted-foreground hover:text-foreground">
-                  Installation
-                </a>
-              </li>
-              <li>
-                <a href="#making-requests" className="text-muted-foreground hover:text-foreground">
-                  Making Requests
-                </a>
-              </li>
-              <li>
-                <a href="#error-handling" className="text-muted-foreground hover:text-foreground">
-                  Error Handling
-                </a>
-              </li>
-              <li>
-                <a href="#next-steps" className="text-muted-foreground hover:text-foreground">
-                  Next Steps
-                </a>
-              </li>
-            </ul>
+            <div className="bg-card rounded-lg border shadow-sm p-4">
+              <h3 className="font-semibold mb-4 text-foreground">On This Page</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#introduction"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Introduction
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#authentication"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Authentication
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#installation"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Installation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#making-requests"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Making Requests
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#error-handling"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Error Handling
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#next-steps"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Next Steps
+                  </a>
+                </li>
+              </ul>
 
-            <h3 className="font-medium mt-8 mb-4">Getting Started</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/api-docs/getting-started" className="text-primary font-medium">
-                  Overview
-                </Link>
-              </li>
-              <li>
-                <Link href="/api-docs/authentication" className="text-muted-foreground hover:text-foreground">
-                  Authentication
-                </Link>
-              </li>
-              <li>
-                <Link href="/api-docs/endpoints" className="text-muted-foreground hover:text-foreground">
-                  Endpoints
-                </Link>
-              </li>
-              <li>
-                <Link href="/api-docs/sdks" className="text-muted-foreground hover:text-foreground">
-                  SDKs
-                </Link>
-              </li>
-              <li>
-                <Link href="/api-docs/examples" className="text-muted-foreground hover:text-foreground">
-                  Examples
-                </Link>
-              </li>
-            </ul>
+              <h3 className="font-semibold mt-8 mb-4 text-foreground">Getting Started</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="/api-docs/getting-started"
+                    className="text-primary font-medium flex py-1 px-2 rounded bg-primary/10"
+                  >
+                    Overview
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/api-docs/authentication"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Authentication
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/api-docs/endpoints"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Endpoints
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/api-docs/sdks"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    SDKs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/api-docs/examples"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
+                  >
+                    Examples
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </aside>
 

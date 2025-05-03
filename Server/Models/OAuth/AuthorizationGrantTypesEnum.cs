@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Authentication.Models;
+namespace Authentication.Models.OAuth;
 
 internal enum AuthorizationGrantTypesEnum : byte
 {

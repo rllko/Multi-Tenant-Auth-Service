@@ -1,8 +1,11 @@
-using Authentication.Endpoints.Authorization;
+using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 
 namespace Authentication.Services.Clients;
 
 public interface IClientService
 {
-    public Task<Client?> GetClientByIdentifierAsync(string id);
+    Task<int> CreateClientAsync(Client client);
+    Task<Client?> GetClientByIdentifierAsync(string identifier);
+    Task<IEnumerable<Client>> GetAllClientsAsync();
+    Task<bool> DeleteClientAsync(int clientId);
 }

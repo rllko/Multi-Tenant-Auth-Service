@@ -1,4 +1,4 @@
-namespace Authentication;
+namespace Authentication.Services;
 
 public readonly struct Result<TValue, TError>
 {

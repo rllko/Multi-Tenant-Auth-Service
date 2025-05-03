@@ -7,7 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Shield } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Search, Shield, Check, AlertCircle } from "lucide-react"
+import { permissionGroups } from "./permissions-manager"
 
 const roles = [
   { id: "role_1", name: "Administrator", organization: "Acme Inc." },
@@ -16,33 +19,34 @@ const roles = [
   { id: "role_4", name: "Support", organization: "Initech" },
 ]
 
-const permissionsByCategory = {
-  Users: [
-    { id: "perm_1", name: "users:read", description: "View user information" },
-    { id: "perm_2", name: "users:write", description: "Create and update users" },
-    { id: "perm_3", name: "users:delete", description: "Delete users from the system" },
-  ],
-  "API Keys": [
-    { id: "perm_4", name: "keys:read", description: "View API keys" },
-    { id: "perm_5", name: "keys:write", description: "Create and update API keys" },
-    { id: "perm_6", name: "keys:delete", description: "Revoke and delete API keys" },
-  ],
-  Administration: [{ id: "perm_7", name: "roles:manage", description: "Manage roles and permissions" }],
-  Analytics: [{ id: "perm_8", name: "analytics:view", description: "View analytics and reports" }],
-}
-
 // Mock role permissions mapping
 const rolePermissions = {
-  role_1: ["perm_1", "perm_2", "perm_3", "perm_4", "perm_5", "perm_6", "perm_7", "perm_8"], // Admin has all
-  role_2: ["perm_1", "perm_4", "perm_5", "perm_8"], // Developer
-  role_3: ["perm_1", "perm_8"], // Analyst
-  role_4: ["perm_1", "perm_2"], // Support
+  role_1: [
+    "user.retrieve_all",
+    "user.create",
+    "user.delete",
+    "user.ban",
+    "license.retrieve_all",
+    "license.create",
+    "license.delete",
+    "session.retrieve_all",
+    "session.end_all",
+    "subscription.retrieve_all",
+    "subscription.create",
+    "log.retrieve_all",
+    "global.check_blacklist",
+  ],
+  role_2: ["user.retrieve_all", "license.retrieve_all", "session.retrieve_all", "log.retrieve_all"],
+  role_3: ["user.retrieve_all", "license.retrieve_all"],
+  role_4: ["user.retrieve_all", "user.retrieve_data", "license.retrieve_all", "session.check"],
 }
 
 export function RolePermissionsManager({ selectedOrganization }) {
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedPermissions, setSelectedPermissions] = useState([])
   const [filteredRoles, setFilteredRoles] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [activeTab, setActiveTab] = useState("user")
 
   // Filter roles by selected organization and set initial selected role
   useEffect(() => {
@@ -73,25 +77,86 @@ export function RolePermissionsManager({ selectedOrganization }) {
     })
   }
 
+  // Filter permissions based on search query
+  const filterPermissions = (permissions) => {
+    if (!searchQuery) return permissions
+    return permissions.filter(
+      (permission) =>
+        permission.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        permission.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+  }
+
+  const handleSelectAllInCategory = (categoryId, isSelected) => {
+    const category = permissionGroups.find((g) => g.id === categoryId)
+    if (!category) return
+
+    if (isSelected) {
+      // Add all permissions from this category
+      const permissionIds = category.permissions.map((p) => p.id)
+      setSelectedPermissions((prev) => [...new Set([...prev, ...permissionIds])])
+    } else {
+      // Remove all permissions from this category
+      setSelectedPermissions((prev) => prev.filter((id) => !category.permissions.some((p) => p.id === id)))
+    }
+  }
+
+  const isCategorySelected = (categoryId) => {
+    const category = permissionGroups.find((g) => g.id === categoryId)
+    if (!category) return false
+    return category.permissions.every((p) => selectedPermissions.includes(p.id))
+  }
+
+  const isCategoryIndeterminate = (categoryId) => {
+    const category = permissionGroups.find((g) => g.id === categoryId)
+    if (!category) return false
+    const selectedCount = category.permissions.filter((p) => selectedPermissions.includes(p.id)).length
+    return selectedCount > 0 && selectedCount < category.permissions.length
+  }
+
+  const getPermissionCount = (categoryId) => {
+    const category = permissionGroups.find((g) => g.id === categoryId)
+    if (!category) return 0
+
+    const totalPerms = category.permissions.length
+    const selectedPerms = category.permissions.filter((p) => selectedPermissions.includes(p.id)).length
+
+    return `${selectedPerms}/${totalPerms}`
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Role Permissions</CardTitle>
-        <CardDescription>Assign permissions to roles in {selectedOrganization.name}</CardDescription>
+    <Card className="bg-[#1a1d24] border-[#2a2f38] shadow-lg">
+      <CardHeader className="border-b border-[#2a2f38]">
+        <CardTitle className="text-white flex items-center">
+          <Shield className="mr-2 h-5 w-5 text-[#1a73e8]" />
+          Role Permissions
+        </CardTitle>
+        <CardDescription className="text-gray-400">
+          Assign permissions to roles in {selectedOrganization.name}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-4 sm:px-6 pt-6">
         <div className="space-y-2">
-          <Label htmlFor="role-select">Select Role</Label>
+          <Label htmlFor="role-select" className="text-gray-300">
+            Select Role
+          </Label>
           {filteredRoles.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No roles available in this organization.</div>
+            <div className="text-sm text-gray-400">No roles available in this organization.</div>
           ) : (
             <Select value={selectedRole} onValueChange={handleRoleChange}>
-              <SelectTrigger id="role-select">
+              <SelectTrigger
+                id="role-select"
+                className="w-full sm:w-[250px] bg-[#0f1117] border-[#2a2f38] text-white focus:border-[#1a73e8] focus:ring-[#1a73e8]"
+              >
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#1a1d24] border-[#2a2f38] text-white">
                 {filteredRoles.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
+                  <SelectItem
+                    key={role.id}
+                    value={role.id}
+                    className="hover:bg-[#2a2f38] focus:bg-[#2a2f38] text-gray-300"
+                  >
                     {role.name}
                   </SelectItem>
                 ))}
@@ -101,56 +166,130 @@ export function RolePermissionsManager({ selectedOrganization }) {
         </div>
 
         {selectedRole && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Permissions</h3>
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="relative w-full sm:w-[250px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Search permissions..."
+                  className="pl-8 bg-[#0f1117] border-[#2a2f38] text-white focus:border-[#1a73e8] focus:ring-[#1a73e8]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setSelectedPermissions(
-                    Object.values(permissionsByCategory)
-                      .flat()
-                      .map((p) => p.id),
-                  )
-                }
+                className="border-[#2a2f38] text-gray-300 hover:bg-[#2a2f38] hover:text-white"
+                onClick={() => {
+                  const allPermissions = permissionGroups.flatMap((g) => g.permissions.map((p) => p.id))
+                  setSelectedPermissions(allPermissions)
+                }}
               >
-                Select All
+                Select All Permissions
               </Button>
             </div>
 
-            {Object.entries(permissionsByCategory).map(([category, permissions]) => (
-              <div key={category} className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Shield className="mr-2 h-4 w-4" />
-                  {category}
-                </h4>
-                <div className="grid gap-2 pl-6">
-                  {permissions.map((permission) => (
-                    <div key={permission.id} className="flex items-start space-x-2">
-                      <Checkbox
-                        id={permission.id}
-                        checked={selectedPermissions.includes(permission.id)}
-                        onCheckedChange={() => handlePermissionToggle(permission.id)}
-                      />
-                      <div className="grid gap-0.5 leading-none">
-                        <Label htmlFor={permission.id} className="text-sm font-medium cursor-pointer font-mono">
-                          {permission.name}
-                        </Label>
-                        <p className="text-xs text-muted-foreground">{permission.description}</p>
-                      </div>
-                    </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="mb-2">
+                <h3 className="text-sm font-medium mb-2 text-gray-300">Permission Categories</h3>
+                <TabsList className="flex flex-wrap h-auto bg-[#0f1117] border border-[#2a2f38] p-1">
+                  {permissionGroups.map((group) => (
+                    <TabsTrigger
+                      key={group.id}
+                      value={group.id}
+                      className="text-xs relative flex-grow sm:flex-grow-0 py-1.5 px-3 data-[state=active]:bg-[#1a73e8]/10 data-[state=active]:text-[#1a73e8] text-gray-400"
+                    >
+                      {group.name}
+                      <span className="ml-1.5 text-[10px] font-medium rounded-full bg-[#2a2f38] px-1.5 py-0.5 text-gray-300">
+                        {getPermissionCount(group.id)}
+                      </span>
+                    </TabsTrigger>
                   ))}
-                </div>
-                <Separator className="my-2" />
+                </TabsList>
               </div>
-            ))}
-          </div>
-        )}
 
-        <Button className="w-full" disabled={!selectedRole}>
-          Save Permissions
-        </Button>
+              {permissionGroups.map((group) => (
+                <TabsContent key={group.id} value={group.id} className="space-y-4 mt-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Checkbox
+                          id={`select-all-${group.id}`}
+                          checked={isCategorySelected(group.id)}
+                          onCheckedChange={(checked) => handleSelectAllInCategory(group.id, !!checked)}
+                          data-state={isCategoryIndeterminate(group.id) ? "indeterminate" : ""}
+                          className={`${isCategoryIndeterminate(group.id) ? "opacity-70" : ""} border-[#2a2f38] text-[#1a73e8]`}
+                        />
+                        {isCategoryIndeterminate(group.id) && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-[2px] w-[8px] bg-current"></div>
+                          </div>
+                        )}
+                      </div>
+                      <Label htmlFor={`select-all-${group.id}`} className="font-medium text-gray-300">
+                        Select All {group.name}
+                      </Label>
+                    </div>
+                    <span className="text-sm text-gray-400">{getPermissionCount(group.id)} permissions selected</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {filterPermissions(group.permissions).map((permission) => (
+                      <div
+                        key={permission.id}
+                        className={`flex items-start space-x-2 p-2 rounded-md ${
+                          selectedPermissions.includes(permission.id)
+                            ? "bg-[#1a73e8]/10 border border-[#1a73e8]/20"
+                            : "hover:bg-[#0f1117] border border-transparent"
+                        }`}
+                      >
+                        <Checkbox
+                          id={permission.id}
+                          checked={selectedPermissions.includes(permission.id)}
+                          onCheckedChange={() => handlePermissionToggle(permission.id)}
+                          className="border-[#2a2f38] text-[#1a73e8]"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <Label
+                            htmlFor={permission.id}
+                            className="font-medium cursor-pointer text-sm block truncate text-gray-300"
+                          >
+                            {permission.name}
+                          </Label>
+                          <p className="text-xs text-gray-400 font-mono truncate">{permission.id}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {filterPermissions(group.permissions).length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <AlertCircle className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-gray-400">No permissions found matching your search.</p>
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
+
+            <Separator className="my-4 bg-[#2a2f38]" />
+
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-2">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto border-[#2a2f38] text-gray-300 hover:bg-[#2a2f38] hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button className="w-full sm:w-auto bg-[#1a73e8] hover:bg-[#1565c0] text-white">
+                <Check className="mr-2 h-4 w-4" />
+                Save Permissions
+              </Button>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )

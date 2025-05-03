@@ -5,8 +5,6 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{51B32E44-544D-4D4C-B981-D063682BC2E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{FBEF6C1D-FF90-4021-A8E7-8BBECDC09878}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigrationUtility", "MigrationUtility\MigrationUtility.csproj", "{D42D7407-D709-423D-9E6A-398DACB65635}"
 EndProject
 Global

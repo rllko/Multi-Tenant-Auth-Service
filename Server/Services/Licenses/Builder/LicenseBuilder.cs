@@ -1,5 +1,4 @@
 using System.Data;
-using Authentication.Contracts;
 using Authentication.Database;
 using Authentication.Models.Entities;
 using Dapper;

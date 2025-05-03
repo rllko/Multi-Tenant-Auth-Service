@@ -1,6 +1,5 @@
-﻿using Authentication.Endpoints;
-using Authentication.Endpoints.Authorization;
-using Authentication.Endpoints.Token;
+﻿using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
+using Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 
 namespace Authentication.Services.Authentication.AuthorizeResult;
 

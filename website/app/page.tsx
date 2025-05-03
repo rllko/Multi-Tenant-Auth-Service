@@ -1,5 +1,5 @@
-import Login from "@/login"
+import { redirect } from "next/navigation"
 
 export default function Home() {
-  return <Login />
+  redirect("/login")
 }
