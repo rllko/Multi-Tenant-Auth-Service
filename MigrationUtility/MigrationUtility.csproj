@@ -70,7 +70,6 @@
         <None Remove="Database\Scripts\000011 - create_scopes_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000011 - create_scopes_table.up.sql"/>
         <None Remove="Database\Scripts\000002 - create_serilog_database.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000002 - create_serilog_database.up.sql"/>
         <None Remove="Database\Scripts\000021 - insert_scope_types_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000021 - insert_scope_types_table.up.sql"/>
         <None Remove="Database\Scripts\000022 - insert_initial_scopes_table.up.sql"/>

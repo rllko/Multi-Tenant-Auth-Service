@@ -1,12 +1,12 @@
-insert into discords (discord_id, date_linked)
-values (0,NOW());
+-- Ensure pgcrypto extension is enabled (you only need this once in your migrations)
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-insert into tenants (discordid, email, name, password, creation_date)
-values ((select discord_id from discords where discord_id = 0),
+-- Insert with a generated UUID
+INSERT INTO tenants (id, discordid, email, name, password, activated_at)
+VALUES (gen_random_uuid(),
+        0,
         'admin@authio.com',
         'admin',
-        '$2a$10$JRYnq1pyvoFXIe1x2FvmC.6F/QxI.V0JlbvYAXlJJPQwqIXvdJwYe',  -- its 'admin'
-        extract(epoch from now() at time zone 'utc'));
-
-
-update public.tenants set activated_at = extract(epoch from now() at time zone 'utc');
+        '\$2a\$10\$JRYnq1pyvoFXIe1x2FvmC.6F/QxI.V0JlbvYAXlJJPQwqIXvdJwYe',
+        NOW())
+ON CONFLICT DO NOTHING;

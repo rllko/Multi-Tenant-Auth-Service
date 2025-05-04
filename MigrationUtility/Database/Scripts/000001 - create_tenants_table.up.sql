@@ -4,9 +4,9 @@ CREATE TABLE IF NOT EXISTS tenants
     discordId     BIGINT,
     email         varchar(64),
     name          VARCHAR(255) UNIQUE,
-    creation_date bigint NOT NULL,
+    creation_date timestamp        DEFAULT NOW(),
     password      VARCHAR(255)     DEFAULT NULL,
-    activated_at  bigint
+    activated_at  timestamp
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS tenant_login_index on tenants (email, password);
