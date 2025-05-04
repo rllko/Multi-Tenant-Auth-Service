@@ -54,11 +54,11 @@
         <None Remove="Database\Scripts\oauth\000017 - insert_auth_data.sql"/>
         <None Remove="Database\Scripts\000004 - create_license_session_table.up.sql"/>
         <None Remove="Database\Scripts\oauth\000015 - create_clients_table.up.sql"/>
+        <None Remove="init-database.sh"/>
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Endpoints\Authentication\"/>
-        <Folder Include="Endpoints\TeamsEndpoints\" />
     </ItemGroup>
 
 </Project>

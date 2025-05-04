@@ -9,7 +9,10 @@ public interface ITeamService
     Task<Option<Team>> GetTeamByIdAsync(Guid teamId);
     Task<Option<IEnumerable<Team>>> GetTeamsForUserAsync(Guid userId);
     Task<IEnumerable<Team>> GetAllTeamsAsync();
-    Task<Team> CreateTeamAsync(TeamCreateDto teamDto, IDbTransaction? transaction = null);
+
+    Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto teamDto, Guid createdBy,
+        IDbTransaction? transaction = null);
+
     Task<bool> UpdateTeamAsync(Guid teamId, TeamUpdateDto teamDto, IDbTransaction? transaction = null);
     Task<bool> DeleteTeamAsync(Guid teamId, IDbTransaction? transaction = null);
     Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);

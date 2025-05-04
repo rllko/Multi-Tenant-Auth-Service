@@ -1,5 +1,4 @@
 using Authentication.Models;
-using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
 using FastEndpoints;
@@ -20,24 +19,12 @@ public class TenantTeamsEndpoint(ITeamService teamsService) : EndpointWithoutReq
     }
 
     public override async Task HandleAsync(CancellationToken ct)
-    { 
+    {
         var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
-        if (session == null)
-        {
-            ThrowError("Session not found");
-        }
-        
         var result = await teamsService.GetTeamsForUserAsync(session.TenantId);
 
-        await SendAsync(result.Match(team =>
-            {
-                return team;
-            },
-            () =>
-            {
-                return [];
-            }), cancellation: ct);
-        
+        await SendAsync(result.Match(team => { return team; },
+            () => { return []; }), cancellation: ct);
     }
 }

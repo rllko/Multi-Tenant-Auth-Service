@@ -13,11 +13,13 @@ export interface Team {
 
 interface TeamContextType {
   teams: Team[]
+  setTeams: (teams: Team[]) => void
   selectedTeam: Team | null
   setSelectedTeam: (team: Team) => void
   isLoading: boolean
   teamsLoaded: boolean
   error: string | null
+  refreshTeams: () => Promise<void>
 }
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined)
@@ -31,107 +33,107 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [teamsLoaded, setTeamsLoaded] = useState(false)
 
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        setIsLoading(true)
+  const fetchTeams = async () => {
+    try {
+      setIsLoading(true)
 
-        // Get the auth token from localStorage
-        const token = localStorage.getItem("keyauth_token")
+      // Get the auth token from localStorage
+      const token = localStorage.getItem("authToken")
 
-        if (!token) {
-          const errorMessage = "Authentication required"
-          setError(errorMessage)
-          setTeamsLoaded(true)
-          setIsLoading(false)
-
-          // Show toast notification
-          toast({
-            title: "Authentication Error",
-            description: "Please log in to access this page",
-            variant: "destructive",
-          })
-
-          // Redirect to login page
-          router.push("/login")
-          return
-        }
-
-        // Real API call to fetch teams with authorization header
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-
-        if (!response.ok) {
-          let errorMessage = `Failed to fetch teams: ${response.status}`
-
-          // Handle specific status codes
-          if (response.status === 401) {
-            errorMessage = "Your session has expired. Please log in again."
-            localStorage.removeItem("authToken")
-            router.push("/login")
-          } else if (response.status === 403) {
-            errorMessage = "You don't have permission to access teams."
-          } else if (response.status === 404) {
-            errorMessage = "Teams resource not found."
-          } else if (response.status >= 500) {
-            errorMessage = "Server error. Please try again later."
-          }
-
-          throw new Error(errorMessage)
-        }
-
-        const data = await response.json()
-        setTeams(data)
-        setTeamsLoaded(true)
-
-        // Try to get selected team from localStorage
-        const savedTeamId = localStorage.getItem("selectedTeamId")
-        if (savedTeamId && data.length > 0) {
-          const savedTeam = data.find((team: Team) => team.id === savedTeamId)
-          if (savedTeam) {
-            setSelectedTeam(savedTeam)
-          } else {
-            setSelectedTeam(data[0])
-            localStorage.setItem("selectedTeamId", data[0].id)
-          }
-        } else if (data.length > 0) {
-          setSelectedTeam(data[0])
-          localStorage.setItem("selectedTeamId", data[0].id)
-        } else {
-          // No teams available
-          setSelectedTeam(null)
-          localStorage.removeItem("selectedTeamId")
-
-          // Show toast notification for no teams
-          toast({
-            title: "No Teams Available",
-            description: "You don't have any teams. Please create a team to continue.",
-            variant: "default",
-          })
-        }
-
-        setError(null)
-      } catch (err) {
-        console.error("Error fetching teams:", err)
-        const errorMessage = err instanceof Error ? err.message : "Failed to load teams"
+      if (!token) {
+        const errorMessage = "Authentication required"
         setError(errorMessage)
         setTeamsLoaded(true)
+        setIsLoading(false)
 
-        // Show toast notification for the error
+        // Show toast notification
         toast({
-          title: "Error Loading Teams",
-          description: errorMessage,
+          title: "Authentication Error",
+          description: "Please log in to access this page",
           variant: "destructive",
         })
-      } finally {
-        setIsLoading(false)
-      }
-    }
 
+        // Redirect to login page
+        router.push("/login")
+        return
+      }
+
+      // Real API call to fetch teams with authorization header
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        let errorMessage = `Failed to fetch teams: ${response.status}`
+
+        // Handle specific status codes
+        if (response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again."
+          localStorage.removeItem("authToken")
+          router.push("/login")
+        } else if (response.status === 403) {
+          errorMessage = "You don't have permission to access teams."
+        } else if (response.status === 404) {
+          errorMessage = "Teams resource not found."
+        } else if (response.status >= 500) {
+          errorMessage = "Server error. Please try again later."
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      setTeams(data)
+      setTeamsLoaded(true)
+
+      // Try to get selected team from localStorage
+      const savedTeamId = localStorage.getItem("selectedTeamId")
+      if (savedTeamId && data.length > 0) {
+        const savedTeam = data.find((team: Team) => team.id === savedTeamId)
+        if (savedTeam) {
+          setSelectedTeam(savedTeam)
+        } else {
+          setSelectedTeam(data[0])
+          localStorage.setItem("selectedTeamId", data[0].id)
+        }
+      } else if (data.length > 0) {
+        setSelectedTeam(data[0])
+        localStorage.setItem("selectedTeamId", data[0].id)
+      } else {
+        // No teams available
+        setSelectedTeam(null)
+        localStorage.removeItem("selectedTeamId")
+
+        // Show toast notification for no teams
+        toast({
+          title: "No Teams Available",
+          description: "You don't have any teams. Please create a team to continue.",
+          variant: "default",
+        })
+      }
+
+      setError(null)
+    } catch (err) {
+      console.error("Error fetching teams:", err)
+      const errorMessage = err instanceof Error ? err.message : "Failed to load teams"
+      setError(errorMessage)
+      setTeamsLoaded(true)
+
+      // Show toast notification for the error
+      toast({
+        title: "Error Loading Teams",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
     // Only fetch teams if we're not on the login or register page
     const pathname = window.location.pathname
     if (pathname !== "/login" && pathname !== "/register") {
@@ -154,19 +156,26 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     console.log("Team switched to:", team.name)
   }
 
+  // Function to refresh teams list
+  const refreshTeams = async () => {
+    await fetchTeams()
+  }
+
   return (
-      <TeamContext.Provider
-          value={{
-            teams,
-            selectedTeam,
-            setSelectedTeam: handleSetSelectedTeam,
-            isLoading,
-            teamsLoaded,
-            error,
-          }}
-      >
-        {children}
-      </TeamContext.Provider>
+    <TeamContext.Provider
+      value={{
+        teams,
+        setTeams,
+        selectedTeam,
+        setSelectedTeam: handleSetSelectedTeam,
+        isLoading,
+        teamsLoaded,
+        error,
+        refreshTeams,
+      }}
+    >
+      {children}
+    </TeamContext.Provider>
   )
 }
 

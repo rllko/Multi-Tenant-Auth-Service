@@ -2,6 +2,7 @@ using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities;
 using Dapper;
+using FluentValidation.Results;
 using LanguageExt;
 
 namespace Authentication.Services.Teams;
@@ -35,54 +36,35 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
     public async Task<IEnumerable<Team>> GetAllTeamsAsync()
     {
         var sql = "SELECT * FROM teams;";
-        
+
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         return await conn.QueryAsync<Team>(sql);
-    }
-
-    public async Task<Team> CreateTeamAsync(TeamCreateDto dto, IDbTransaction? transaction = null)
-    {
-        var sql = @"
-            INSERT INTO teams (name,created_by)
-            VALUES (@Name, @CreatedBy)
-            RETURNING *;
-        ";
-
-        using var conn = await connectionFactory.CreateConnectionAsync();
-        
-        var transact = transaction ?? conn.BeginTransaction();
-        
-        var team = await conn.QuerySingleAsync<Team>(sql, dto);
-        
-        transact.Commit();
-        
-        return team;
     }
 
     public async Task<bool> UpdateTeamAsync(Guid teamId, TeamUpdateDto dto, IDbTransaction? transaction = null)
     {
         var sql = "UPDATE teams SET name = @Name WHERE id = @Id;";
-        
+
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         var transact = transaction ?? conn.BeginTransaction();
-        
+
         var rows = await conn.ExecuteAsync(sql, new { dto.Name, Id = teamId });
-        
+
         return rows > 0;
     }
 
     public async Task<bool> DeleteTeamAsync(Guid teamId, IDbTransaction? transaction = null)
     {
         var sql = "DELETE FROM teams WHERE id = @Id;";
-        
+
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         var transact = transaction ?? conn.BeginTransaction();
-        
+
         var rows = await conn.ExecuteAsync(sql, new { Id = teamId });
-        
+
         return rows > 0;
     }
 
@@ -95,24 +77,24 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        
+
         var rows = await conn.ExecuteAsync(sql, new { UserId = userId, TeamId = teamId, Now = now });
-        
+
         return rows > 0;
     }
 
     public async Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null)
     {
         var sql = "DELETE FROM team_tenants WHERE team = @TeamId AND tenant = @UserId;";
-        
+
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         var transact = transaction ?? conn.BeginTransaction();
-        
+
         var rows = await conn.ExecuteAsync(sql, new { TeamId = teamId, UserId = userId });
-        
+
         return rows > 0;
     }
 
@@ -126,7 +108,42 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
-        
+
         return await conn.QueryAsync<Tenant>(sql, new { TeamId = teamId });
     }
+
+    public async Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto dto, Guid createdBy,
+        IDbTransaction? transaction = null)
+    {
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var transact = transaction ?? conn.BeginTransaction();
+
+        var sql = @"
+            INSERT INTO teams (name,created_by)
+            VALUES (@Name, @CreatedBy)
+            RETURNING *;
+        ";
+
+        var team = await conn.QuerySingleAsync<Team>(sql, new { dto.Name, CreatedBy = createdBy }, transact);
+
+        var teamTenantsql = @"
+            INSERT INTO team_tenants (invited_by, tenant, team, role,created_at)
+            VALUES (@InvitedBy, @Tenant, @Team, @Role,NOW());
+        ";
+
+        var insertedRegisters = await conn.ExecuteAsync(teamTenantsql, dto, transact);
+
+        if (insertedRegisters is 0)
+        {
+            transact.Rollback();
+            return new ValidationFailed(new ValidationFailure("err_association", "something went wrong!"));
+        }
+
+        transact.Commit();
+
+        return team.ToDto();
+    }
+    
+    
 }

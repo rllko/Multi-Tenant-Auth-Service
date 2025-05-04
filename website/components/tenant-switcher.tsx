@@ -3,6 +3,7 @@
 import * as React from "react"
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons"
 import { AlertCircle } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -29,11 +30,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useTeam } from "@/contexts/team-context"
+import { useState } from "react"
+import { toast } from "@/components/ui/use-toast"
+import {CreateTeamModal} from "@/components/create-team-modal";
 
 export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const { teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded } = useTeam()
+  const { teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded, setTeams } = useTeam()
+  const [newTeamName, setNewTeamName] = useState("")
+  const [isCreatingTeam, setIsCreatingTeam] = useState(false)
 
   if (isLoading) {
     return (
@@ -52,6 +58,74 @@ export function TenantSwitcher() {
       <p className="text-xs text-muted-foreground mt-1">Create a team to get started</p>
     </div>
   )
+
+  const handleCreateTeam = async (e) => {
+    e.preventDefault()
+    if (!newTeamName.trim()) {
+      toast({
+        title: "Error",
+        description: "Team name cannot be empty",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsCreatingTeam(true)
+
+      // Get the auth token from localStorage
+      const token = localStorage.getItem("authToken")
+
+      if (!token) {
+        toast({
+          title: "Authentication Error",
+          description: "Please log in to create a team",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newTeamName,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create team: ${response.status}`)
+      }
+
+      const newTeam = await response.json()
+
+      // Update the teams list and select the new team
+      setTeams([...teams, newTeam])
+      setSelectedTeam(newTeam)
+      localStorage.setItem("selectedTeamId", newTeam.id)
+
+      // Close the modal and reset the form
+      setOpen(false)
+      setNewTeamName("")
+
+      toast({
+        title: "Team Created",
+        description: `${newTeam.name} has been created successfully`,
+      })
+    } catch (error) {
+      console.error("Error creating team:", error)
+      toast({
+        title: "Error Creating Team",
+        description: error instanceof Error ? error.message : "Failed to create team",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreatingTeam(false)
+    }
+  }
 
   return (
     <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
@@ -109,6 +183,7 @@ export function TenantSwitcher() {
               </CommandGroup>
             </CommandList>
             <CommandSeparator />
+            <CreateTeamModal triggerIcon={true} triggerText="Create Team" />
             <CommandList>
               <CommandGroup>
                 <DialogTrigger asChild>
@@ -118,8 +193,7 @@ export function TenantSwitcher() {
                       setShowNewTeamDialog(true)
                     }}
                   >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
+
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -136,7 +210,12 @@ export function TenantSwitcher() {
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
               <Label htmlFor="name">Team name</Label>
-              <Input id="name" placeholder="Acme Inc." />
+              <Input
+                id="name"
+                placeholder="Acme Inc."
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="plan">Subscription plan</Label>
@@ -155,7 +234,16 @@ export function TenantSwitcher() {
           <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
             Cancel
           </Button>
-          <Button type="submit">Continue</Button>
+          <Button type="submit" className="w-full" disabled={isCreatingTeam} onClick={handleCreateTeam}>
+            {isCreatingTeam ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Team"
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

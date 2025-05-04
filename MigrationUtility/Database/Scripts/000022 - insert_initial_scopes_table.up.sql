@@ -18,6 +18,7 @@ SELECT data.scope_name,
            ELSE NULL
            END
 FROM SCOPE s
+         CROSS JOIN scope_type
          CROSS JOIN (VALUES
                          -- CRITICAL IMPACT
                          ('Delete All Licenses', 'license.delete_all', 'CRITICAL'),
@@ -32,7 +33,7 @@ FROM SCOPE s
                          ('Create A New User Using A License', 'license.create_user', 'HIGH'),
                          ('Assign A License To A User', 'license.assign_to_user', 'HIGH'),
                          ('Create A New License', 'license.create', 'HIGH'),
-                         
+
                          -- MEDIUM IMPACT
                          ('Unban A License', 'license.unban', 'MEDIUM'),
                          ('Blacklist License', 'license.blacklist', 'MEDIUM'),
@@ -40,15 +41,15 @@ FROM SCOPE s
 
                          -- LOW IMPACT
                          ('Verify License Exists', 'license.verify_exists', 'LOW'),
-                         ('Retrieve License Information', 'license.retrieve_info','LOW')
-                        ) AS data(scope_name, slug, impact_level)
+                         ('Retrieve License Information', 'license.retrieve_info',
+                          'LOW')) AS data(scope_name, slug, impact_level)
 ON CONFLICT DO NOTHING;
 
-WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'APPLICATION_SCOPE')            AS type,
-                      (SELECT id FROM scope_categories WHERE slug = 'SESSION_MANAGEMENT') AS category,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')      AS low_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT')   AS medium_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')     AS high_impact)
+WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'APPLICATION_SCOPE')          AS type,
+                      (SELECT id FROM scope_categories WHERE slug = 'SESSION_MANAGEMENT')    AS category,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')    AS low_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT') AS medium_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')   AS high_impact)
 INSERT
 INTO scopes (scope_name, scope_type, slug, category_id, impact_level_id)
 SELECT data.scope_name,
@@ -69,6 +70,5 @@ FROM SCOPE s
 
                          -- LOW IMPACT
                          ('Retrieve All Sessions', 'session.retrieve_all', 'LOW'),
-                         ('Check Session', 'session.check', 'LOW')
-) AS data(scope_name, slug, impact_level)
+                         ('Check Session', 'session.check', 'LOW')) AS data(scope_name, slug, impact_level)
 ON CONFLICT DO NOTHING;

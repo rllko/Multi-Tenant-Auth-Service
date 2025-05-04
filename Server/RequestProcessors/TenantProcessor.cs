@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 using FluentValidation.Results;
@@ -10,7 +9,7 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
     public async Task PreProcessAsync(IPreProcessorContext<TRequest> ctx, CancellationToken ct)
     {
         var tenantService = ctx.HttpContext.RequestServices.GetRequiredService<ITenantService>();
-        
+
         var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token");
 
         if (token is null)

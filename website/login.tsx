@@ -33,13 +33,13 @@ export default function Login() {
     setIsLoading(true)
     try {
       const response = await apiService.auth.login(values.email, values.password)
-
+      console.log(response.user)
       toast({
         title: "Success",
         description: "You have been logged in successfully.",
       })
-      localStorage.setItem("keyauth_token",response.token)
-      localStorage.setItem("keyauth_user",response.user)
+      localStorage.setItem("authToken",response.token)
+      localStorage.setItem("keyauth_user",JSON.stringify(response.user))
       router.push("/dashboard")
     } catch (error) {
       console.error("Login error:", error)
