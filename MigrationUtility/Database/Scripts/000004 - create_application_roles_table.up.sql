@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS application_role_scopes
 (
-    int            serial primary key,
+    id             serial primary key,
     role_id        INT REFERENCES roles (role_id) ON DELETE CASCADE,
     application_id INT REFERENCES applications (id) ON DELETE CASCADE
 );

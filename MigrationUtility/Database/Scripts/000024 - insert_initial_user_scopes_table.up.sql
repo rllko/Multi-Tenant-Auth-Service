@@ -139,31 +139,6 @@ FROM SCOPE s
 ON CONFLICT DO NOTHING;
 
 WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'TEAM_SCOPE')                 AS type,
-                      (SELECT id FROM scope_categories WHERE slug = 'LOGS_MANAGEMENT')       AS category,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')    AS low_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT') AS medium_impact)
-INSERT
-INTO scopes (scope_name, scope_type, slug, category_id, impact_level_id)
-SELECT distinct data.scope_name,
-                s.type,
-                data.slug,
-                s.category,
-                CASE data.impact_level
-                    WHEN 'MEDIUM' THEN s.medium_impact
-                    WHEN 'LOW' THEN s.low_impact
-                    END
-FROM SCOPE s
-         CROSS JOIN (VALUES
-                         -- MEDIUM IMPACT
-                         ('Delete All Logs', 'log.delete_all', 'MEDIUM'),
-                         ('Log', 'log.create', 'MEDIUM'),
-
-                         -- LOW IMPACT
-                         ('Retrieve All Logs', 'log.retrieve_all', 'LOW'))
-    AS data(scope_name, slug, impact_level)
-ON CONFLICT DO NOTHING;
-
-WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'TEAM_SCOPE')                 AS type,
                       (SELECT id FROM scope_categories WHERE slug = 'GLOBAL_MANAGEMENT')     AS category,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')   AS high_impact,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')    AS low_impact,
