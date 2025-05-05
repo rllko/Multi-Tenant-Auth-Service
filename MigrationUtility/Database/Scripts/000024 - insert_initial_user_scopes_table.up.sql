@@ -164,17 +164,16 @@ FROM SCOPE s
                          ('Download File', 'global.retrieve_variable', 'MEDIUM'),
 
                          -- LOW IMPACT
-                         ('Check Blacklist', 'global.check_blacklist', 'LOW'),
-                         ('Fetch Online Users', 'global.fetch_online_users', 'LOW'),
-                         ('Retrieve Global Variable', 'global.retrieve_variable', 'LOW'))
+                         ('Fetch Online Users', 'global.fetch_online_users', 'LOW'))
     AS data(scope_name, slug, impact_level)
 ON CONFLICT DO NOTHING;
 
-WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'TEAM_SCOPE')                 AS type,
-                      (SELECT id FROM scope_categories WHERE slug = 'GLOBAL_MANAGEMENT')     AS category,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')   AS high_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')    AS low_impact,
-                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT') AS medium_impact)
+WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'TEAM_SCOPE')                   AS type,
+                      (SELECT id FROM scope_categories WHERE slug = 'GLOBAL_MANAGEMENT')       AS category,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')     AS high_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT')   AS medium_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')      AS low_impact,
+                      (SELECT id FROM permission_impact_levels WHERE slug = 'CRITICAL_IMPACT') AS critical_impact)
 INSERT
 INTO scopes (scope_name, scope_type, slug, category_id, impact_level_id)
 SELECT distinct data.scope_name,
@@ -184,20 +183,23 @@ SELECT distinct data.scope_name,
                 CASE data.impact_level
                     WHEN 'HIGH' THEN s.high_impact
                     WHEN 'MEDIUM' THEN s.medium_impact
+                    WHEN 'CRITICAL' THEN s.critical_impact
                     WHEN 'LOW' THEN s.low_impact
                     END
 FROM SCOPE s
          CROSS JOIN (VALUES
+                         -- CRITICAL IMPACT
+                         ('Delete team', 'team.delete', 'CRITICAL'),
+
                          -- HIGH IMPACT
-                         ('Disable 2FA', 'global.check_blacklist', 'HIGH'),
-                         ('Enable 2FA', 'global.fetch_online_users', 'HIGH'),
+                         ('Assign team roles', 'team.assign_roles', 'HIGH'),
+                         ('Remove team roles', 'team.remove_roles', 'HIGH'),
+                         ('Kick team members', 'team.kick', 'HIGH'),
 
                          -- MEDIUM IMPACT
-                         ('Download File', 'global.retrieve_variable', 'MEDIUM'),
+                         ('Invite team members', 'team.invite', 'MEDIUM'),
 
                          -- LOW IMPACT
-                         ('Check Blacklist', 'global.check_blacklist', 'LOW'),
-                         ('Fetch Online Users', 'global.fetch_online_users', 'LOW'),
-                         ('Retrieve Global Variable', 'global.retrieve_variable', 'LOW'))
-    AS data(scope_name, slug, impact_level)
+                         ('Fetch Team members', 'team.fetch_team_members', 'LOW'))
+    AS data (scope_name, slug, impact_level)
 ON CONFLICT DO NOTHING;
