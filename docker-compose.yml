@@ -29,7 +29,7 @@ services:
       - store_database_data:/var/lib/postgresql/data
       - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: [ "CMD-SHELL", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -81,7 +81,7 @@ services:
       - nginx-network
       - database_network
       - redis_network
-        
+  
   migration:
     build: ./MigrationUtility
     container_name: migration_utility_c
@@ -92,18 +92,18 @@ services:
     restart: no
     networks:
       - database_network
-
-#  webapp:
-#    build:
-#      context: ./website
-#      dockerfile: Dockerfile
-#    environment:
-#      - NODE_ENV=production
-#    networks:
-#      - nginx-network
-#    depends_on:
-#      - nginx
-#    #  - server
+  
+  #  webapp:
+  #    build:
+  #      context: ./website
+  #      dockerfile: Dockerfile
+  #    environment:
+  #      - NODE_ENV=production
+  #    networks:
+  #      - nginx-network
+  #    depends_on:
+  #      - nginx
+  #    #  - server
 
   webapp:
     build:
@@ -116,7 +116,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true 
+      - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     networks:
       - nginx-network
@@ -127,8 +127,8 @@ volumes:
   store_database_data:
   secrets:
   redis:
-      driver: local
-    
+    driver: local
+
 networks:
   nginx-network:
     driver: bridge

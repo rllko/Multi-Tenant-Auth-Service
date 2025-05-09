@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS role_scopes
 (
     id         serial primary key,
-    role_id    INT REFERENCES roles (role_id) ON DELETE CASCADE,
-    scope_id   INT REFERENCES scopes (scope_id) ON DELETE CASCADE,
+    role_id    INT REFERENCES roles (role_id) ON DELETE CASCADE   NOT NULL,
+    scope_id   INT REFERENCES scopes (scope_id) ON DELETE CASCADE NOT NULL,
     scope_type int references scope_types (id) ON DELETE CASCADE
 );
 

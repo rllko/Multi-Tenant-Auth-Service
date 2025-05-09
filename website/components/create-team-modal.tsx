@@ -67,7 +67,7 @@ export function CreateTeamModal({
         return
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

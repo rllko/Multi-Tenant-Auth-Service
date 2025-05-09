@@ -15,6 +15,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         using var conn = await connectionFactory.CreateConnectionAsync();
 
         var team = await conn.QueryFirstOrDefaultAsync<Team>(sql, new { Id = teamId });
+
         return team == null ? Option<Team>.None : Option<Team>.Some(team);
     }
 
@@ -98,7 +99,54 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         return rows > 0;
     }
 
-    public async Task<IEnumerable<Tenant>> GetTenantsInTeamAsync(Guid teamId)
+    public async Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto dto, Guid createdBy,
+        IDbTransaction? transaction = null)
+    {
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var transact = transaction ?? conn.BeginTransaction();
+
+        try
+        {
+            var sql = @"
+            INSERT INTO teams (name,created_by)
+            VALUES (@Name, @CreatedBy)
+            RETURNING *;
+        ";
+
+            var team = await conn.QuerySingleAsync<Team>(sql, new { dto.Name, CreatedBy = createdBy }, transact);
+
+            var roleID = await conn.QuerySingleAsync<int>("SELECT role_id from roles where slug = 'TEAM_ADMIN'");
+
+            var teamTenantsql = @"
+            INSERT INTO team_tenants (invited_by, tenant, team, role,created_at)
+            VALUES (@InvitedBy, @Tenant, @Team, @Role,NOW());
+        ";
+
+            var insertedRegisters =
+                await conn.ExecuteAsync(teamTenantsql,
+                    new { InvitedBy = createdBy, Tenant = createdBy, Team = team.Id, Role = roleID }, transact);
+
+            if (insertedRegisters is 0)
+            {
+                transact.Rollback();
+
+                return new ValidationFailed(new ValidationFailure("err_association", "something went wrong!"));
+            }
+
+            transact.Commit();
+
+            return team.ToDto();
+        }
+        catch (Exception e)
+        {
+            transact.Rollback();
+
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<TenantDto>> GetTenantsInTeamAsync(Guid teamId)
     {
         var sql = @"
             SELECT ten.*
@@ -109,41 +157,8 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
 
         using var conn = await connectionFactory.CreateConnectionAsync();
 
-        return await conn.QueryAsync<Tenant>(sql, new { TeamId = teamId });
+        var tenants = await conn.QueryAsync<Tenant>(sql, new { TeamId = teamId });
+
+        return tenants.Select(tenant => tenant.ToDto()).ToList();
     }
-
-    public async Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto dto, Guid createdBy,
-        IDbTransaction? transaction = null)
-    {
-        using var conn = await connectionFactory.CreateConnectionAsync();
-
-        var transact = transaction ?? conn.BeginTransaction();
-
-        var sql = @"
-            INSERT INTO teams (name,created_by)
-            VALUES (@Name, @CreatedBy)
-            RETURNING *;
-        ";
-
-        var team = await conn.QuerySingleAsync<Team>(sql, new { dto.Name, CreatedBy = createdBy }, transact);
-
-        var teamTenantsql = @"
-            INSERT INTO team_tenants (invited_by, tenant, team, role,created_at)
-            VALUES (@InvitedBy, @Tenant, @Team, @Role,NOW());
-        ";
-
-        var insertedRegisters = await conn.ExecuteAsync(teamTenantsql, dto, transact);
-
-        if (insertedRegisters is 0)
-        {
-            transact.Rollback();
-            return new ValidationFailed(new ValidationFailure("err_association", "something went wrong!"));
-        }
-
-        transact.Commit();
-
-        return team.ToDto();
-    }
-    
-    
 }

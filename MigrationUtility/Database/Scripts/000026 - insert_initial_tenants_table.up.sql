@@ -1,7 +1,5 @@
--- Ensure pgcrypto extension is enabled (you only need this once in your migrations)
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Insert with a generated UUID
 INSERT INTO tenants (id, discordid, email, name, password, activated_at)
 VALUES (gen_random_uuid(),
         0,

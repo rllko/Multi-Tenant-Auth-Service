@@ -15,7 +15,7 @@ const handleResponse = async (response: Response) => {
 }
 
 // Generic fetch function with error handling and timeout
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}, timeout: number = DEFAULT_TIMEOUT): Promise<T> {
+async function fetchApi<T>(endpoint: string, options: RequestInit = {}, timeout: number = DEFAULT_TIMEOUT,jsonResponse:boolean = true): Promise<T> {
   try {
     const url = `${API_URL}${endpoint}`
     const fetchPromise = fetch(url, {
@@ -27,10 +27,14 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}, timeout:
     }).then(async (response) => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `API Error: ${response.status}`)
+        throw new Error(errorData[0].errorMessage || `API Error: ${response.status}`)
       }
-      return response.json()
+
+      if(jsonResponse){
+        return response.json();
+      }
     })
+
 
     // Add timeout to the fetch promise
     return await withTimeout(fetchPromise, timeout)
@@ -54,11 +58,11 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     })
   },
-  register: async (email: string, password: string, name: string) => {
+  register: async (email: string, password: string, name: string) : Promise<void> => {
     return fetchApi("/auth/tenant/register", {
       method: "POST",
       body: JSON.stringify({ email, password, name }),
-    })
+    },5000,false)
   },
   logout: async () => {
     return fetchApi("/auth/tenant/logout", { method: "POST" })

@@ -17,5 +17,5 @@ public interface ITeamService
     Task<bool> DeleteTeamAsync(Guid teamId, IDbTransaction? transaction = null);
     Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);
     Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);
-    Task<IEnumerable<Tenant>> GetTenantsInTeamAsync(Guid teamId);
+    Task<IEnumerable<TenantDto>> GetTenantsInTeamAsync(Guid teamId);
 }

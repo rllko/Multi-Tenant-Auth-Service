@@ -7,5 +7,6 @@ public enum AuthEventType
     TokenIssued,
     TokenRefreshed,
     TokenRevoked,
+    AccountCreated,
     Logout
 }

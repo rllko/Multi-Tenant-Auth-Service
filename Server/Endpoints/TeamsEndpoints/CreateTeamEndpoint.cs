@@ -13,10 +13,13 @@ public class CreateTeamEndpoint(ITeamService teamsService) : EndpointWithoutRequ
     {
         Claims("access_token");
         Post("/teams");
+        DontThrowIfValidationFails();
+
         Throttle(
             20,
             60
         );
+
         PreProcessor<TenantProcessor<EmptyRequest>>();
     }
 
@@ -25,11 +28,13 @@ public class CreateTeamEndpoint(ITeamService teamsService) : EndpointWithoutRequ
         var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
         var req = await HttpContext.Request.ReadFromJsonAsync<TeamCreateDto>(ct);
+        req.CreatedBy = session!.TenantId;
 
         if (req is null) ThrowError("invalid payload");
 
         var result = await teamsService.CreateTeamAsync(req, session!.TenantId);
-        var response = result.Match<IResult>(authResponse => TypedResults.Ok<TeamDto>(authResponse),
+
+        var response = result.Match<IResult>(authResponse => TypedResults.Ok(authResponse),
             failed => TypedResults.BadRequest(failed));
 
         return response switch

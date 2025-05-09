@@ -58,8 +58,15 @@ export function TeamProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Real API call to fetch teams with authorization header
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
+      // Ensure we're using the absolute API URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
+      if (!apiUrl) {
+        console.error("API URL is not defined in environment variables")
+        throw new Error("API configuration error")
+      }
+
+      // Use the absolute URL for the API request
+      const response = await fetch(`${apiUrl}/teams`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -162,20 +169,20 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <TeamContext.Provider
-      value={{
-        teams,
-        setTeams,
-        selectedTeam,
-        setSelectedTeam: handleSetSelectedTeam,
-        isLoading,
-        teamsLoaded,
-        error,
-        refreshTeams,
-      }}
-    >
-      {children}
-    </TeamContext.Provider>
+      <TeamContext.Provider
+          value={{
+            teams,
+            setTeams,
+            selectedTeam,
+            setSelectedTeam: handleSetSelectedTeam,
+            isLoading,
+            teamsLoaded,
+            error,
+            refreshTeams,
+          }}
+      >
+        {children}
+      </TeamContext.Provider>
   )
 }
 
