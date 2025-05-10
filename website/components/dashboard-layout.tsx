@@ -342,11 +342,13 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
 
             {/* Logout */}
             <div
+
               className={cn(
                 "flex items-center p-2 rounded-md hover:bg-destructive/10 hover:text-destructive cursor-pointer mt-4",
                 !sidebarOpen && "justify-center",
               )}
             >
+              <LogOut/>
               <LogOut className="h-5 w-5" />
               {sidebarOpen && <span className="ml-2">Logout</span>}
             </div>

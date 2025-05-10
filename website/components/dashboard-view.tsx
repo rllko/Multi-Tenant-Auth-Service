@@ -6,13 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StatsCards } from "./stats-cards"
 import { ActivityFeed } from "./activity-feed"
 import { useTeam } from "@/contexts/team-context"
-import { Loader2 } from "lucide-react"
+import { AlertCircle, Loader2 } from "lucide-react"
 import { RequireTeam } from "./require-team"
 import { CreateTeamModal } from "./create-team-modal"
 
 export function DashboardView() {
   const [stats, setStats] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { selectedTeam } = useTeam()
 
   useEffect(() => {
@@ -21,6 +22,9 @@ export function DashboardView() {
 
       try {
         setIsLoading(true)
+        console.log("Fetching dashboard stats for team:", selectedTeam.name)
+
+        // Real API call to fetch dashboard stats
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/dashboard`)
 
         if (!response.ok) {
@@ -29,15 +33,17 @@ export function DashboardView() {
 
         const data = await response.json()
         setStats(data)
+        setError(null)
       } catch (err) {
         console.error("Failed to fetch dashboard stats:", err)
+        setError("Failed to load dashboard statistics")
       } finally {
         setIsLoading(false)
       }
     }
 
     loadStats()
-  }, [selectedTeam])
+  }, [selectedTeam]) // Re-fetch when selected team changes
 
   return (
     <div className="flex flex-col gap-5">
@@ -52,6 +58,13 @@ export function DashboardView() {
       </div>
 
       <RequireTeam>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            <span>{error}</span>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

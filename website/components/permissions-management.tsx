@@ -2,380 +2,1040 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus, Trash2, Edit } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search, Plus, Edit, Trash, MoreHorizontal, Loader2, RefreshCw, AlertTriangle, Info } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import { PermissionEditorModal } from "./permission-editor-modal"
-import apiService from "@/lib/api-service"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CONSTANTS } from "@/app/const"
 
-interface Permission {
-  id: string
-  name: string
-  description?: string
-  resource: string
-  action: string
-  impact?: string
-}
+const DEFAULT_PERMISSIONS = [
+    {
+        id: "user.read",
+        name: "View Users",
+        description: "Can view user profiles",
+        resource: "user",
+        action: "read",
+        impact: "low",
+        createdBy: null,
+    },
+    {
+        id: "user.write",
+        name: "Edit Users",
+        description: "Can edit user profiles",
+        resource: "user",
+        action: "write",
+        impact: "medium",
+        createdBy: null,
+    },
+    {
+        id: "license.read",
+        name: "View Licenses",
+        description: "Can view license details",
+        resource: "license",
+        action: "read",
+        impact: "low",
+        createdBy: null,
+    },
+    {
+        id: "license.write",
+        name: "Manage Licenses",
+        description: "Can create and modify licenses",
+        resource: "license",
+        action: "write",
+        impact: "medium",
+        createdBy: null,
+    },
+    {
+        id: "app.read",
+        name: "View Applications",
+        description: "Can view application details",
+        resource: "app",
+        action: "read",
+        impact: "low",
+        createdBy: null,
+    },
+    {
+        id: "app.write",
+        name: "Manage Applications",
+        description: "Can create and modify applications",
+        resource: "app",
+        action: "write",
+        impact: "medium",
+        createdBy: null,
+    },
+    {
+        id: "team.read",
+        name: "View Team",
+        description: "Can view team details",
+        resource: "team",
+        action: "read",
+        impact: "low",
+        createdBy: null,
+    },
+    {
+        id: "team.write",
+        name: "Manage Team",
+        description: "Can modify team settings",
+        resource: "team",
+        action: "write",
+        impact: "medium",
+        createdBy: null,
+    },
+    {
+        id: "analytics.read",
+        name: "View Analytics",
+        description: "Can view analytics data",
+        resource: "analytics",
+        action: "read",
+        impact: "low",
+        createdBy: null,
+    },
+    {
+        id: "analytics.export",
+        name: "Export Analytics",
+        description: "Can export analytics data",
+        resource: "analytics",
+        action: "export",
+        impact: "medium",
+        createdBy: null,
+    },
+]
+
+const RESOURCES = [
+    "user",
+    "license",
+    "app",
+    "team",
+    "analytics",
+    "role",
+    "permission",
+    "session",
+    CONSTANTS.TOKEN_NAME,
+    "file",
+    "tenant",
+    "other",
+]
+
+const ACTIONS = ["read", "write", "create", "update", "delete", "export", "import", "execute", "manage", "admin"]
+
+const IMPACT_LEVELS = ["low", "medium", "high", "critical"]
 
 interface PermissionsManagementProps {
-  teamId: string
-  onRefresh?: () => void
-  isRefreshing?: boolean
+    teamId: string
+    onRefresh?: () => void
+    isRefreshing?: boolean
 }
 
 export function PermissionsManagement({ teamId, onRefresh, isRefreshing = false }: PermissionsManagementProps) {
-  const [permissions, setPermissions] = useState<Permission[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null)
-  const { toast } = useToast()
+    const [permissions, setPermissions] = useState<any[]>([])
+    const [categories, setCategories] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [showCreateDialog, setShowCreateDialog] = useState(false)
+    const [showEditDialog, setShowEditDialog] = useState(false)
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+    const [selectedPermission, setSelectedPermission] = useState<any | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [selectedTab, setSelectedTab] = useState("categories")
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
-  const [newPermission, setNewPermission] = useState<Omit<Permission, "id">>({
-    name: "",
-    description: "",
-    resource: "",
-    action: "read",
-    impact: "low",
-  })
+    const { toast } = useToast()
 
-  const fetchPermissions = async () => {
-    if (!teamId) {
-      setError("Team ID is required to fetch permissions")
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const data = await apiService.permissions.getPermissions(teamId)
-      setPermissions(data)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load permissions"
-      setError(errorMessage)
-
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleCreatePermission = async () => {
-    if (!teamId) {
-      toast({
-        title: "Error",
-        description: "Team ID is required to create a permission",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      setIsLoading(true)
-
-      const id = `${newPermission.resource}.${newPermission.action}`.toLowerCase().replace(/\s+/g, "-")
-
-      await apiService.permissions.createPermission(teamId, {
-        id,
-        ...newPermission,
-      })
-
-      toast({
-        title: "Permission created",
-        description: `Permission "${newPermission.name}" has been created successfully.`,
-      })
-
-      setNewPermission({
+    const [formState, setFormState] = useState({
         name: "",
         description: "",
-        resource: "",
+        resource: "user",
         action: "read",
         impact: "low",
-      })
-      setShowCreateModal(false)
+    })
 
-      fetchPermissions()
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create permission"
+    const fetchPermissionsAndCategories = async () => {
+        if (!teamId) return
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+        try {
+            setIsLoading(true)
+            setError(null)
+
+            console.log(`Fetching permissions for team: ${teamId}`)
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
+                },
+            })
+
+            console.log("Permissions response status:", response.status)
+            if (!response.ok) {
+                throw new Error(`Failed to fetch permissions: ${response.status}`)
+            }
+
+            const data = await response.json()
+            console.log("Permissions data:", data)
+
+            if (Array.isArray(data) && data.length === 0) {
+                setPermissions(DEFAULT_PERMISSIONS)
+
+                const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
+                const categoriesData = uniqueResources.map((resource) => ({
+                    id: resource,
+                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
+                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
+                    count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
+                }))
+
+                setCategories(categoriesData)
+
+                if (!selectedCategory && categoriesData.length > 0) {
+                    setSelectedCategory(categoriesData[0].id)
+                }
+            } else {
+                setPermissions(data)
+
+                const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
+                const categoriesData = uniqueResources.map((resource) => ({
+                    id: resource,
+                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
+                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
+                    count: data.filter((p) => p.resource === resource).length,
+                }))
+
+                setCategories(categoriesData)
+
+                if (!selectedCategory && categoriesData.length > 0) {
+                    setSelectedCategory(categoriesData[0].id)
+                }
+            }
+        } catch (err) {
+            console.error("Error fetching permissions:", err)
+            setPermissions(DEFAULT_PERMISSIONS)
+
+            const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
+            const categoriesData = uniqueResources.map((resource) => ({
+                id: resource,
+                name: resource.charAt(0).toUpperCase() + resource.slice(1),
+                description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
+                count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
+            }))
+
+            setCategories(categoriesData)
+
+            if (!selectedCategory && categoriesData.length > 0) {
+                setSelectedCategory(categoriesData[0].id)
+            }
+
+            setError("Failed to load permissions. Using default values.")
+        } finally {
+            setIsLoading(false)
+        }
     }
-  }
 
-  const handleDeletePermission = async (permissionId: string) => {
-    if (!teamId) {
-      toast({
-        title: "Error",
-        description: "Team ID is required to delete a permission",
-        variant: "destructive",
-      })
-      return
+    useEffect(() => {
+        fetchPermissionsAndCategories()
+    }, [teamId])
+
+    const filteredPermissions = permissions.filter((p) => {
+        const matchesSearch = searchQuery
+            ? (p.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (p.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (p.resource?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (p.action?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            : true
+
+        const matchesCategory =
+            selectedTab === "categories" ? selectedCategory === null || p.resource === selectedCategory : true
+
+        return matchesSearch && matchesCategory
+    })
+
+    const handleCreatePermission = async () => {
+        if (!teamId) return
+
+        try {
+            setIsSubmitting(true)
+
+            const id = `${formState.resource}.${formState.action}`
+
+            const newPermission = {
+                id,
+                name: formState.name,
+                description: formState.description,
+                resource: formState.resource,
+                action: formState.action,
+                impact: formState.impact,
+            }
+
+            console.log("Creating permission:", newPermission)
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
+                },
+                body: JSON.stringify(newPermission),
+            })
+
+            if (!response.ok) {
+                throw new Error(`Failed to create permission: ${response.status}`)
+            }
+
+            toast({
+                title: "Permission created",
+                description: `Permission "${formState.name}" has been created successfully.`,
+            })
+
+            setFormState({
+                name: "",
+                description: "",
+                resource: "user",
+                action: "read",
+                impact: "low",
+            })
+            setShowCreateDialog(false)
+
+            fetchPermissionsAndCategories()
+        } catch (error) {
+            console.error("Error creating permission:", error)
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to create permission. Please try again.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
-    if (!confirm("Are you sure you want to delete this permission? This action cannot be undone.")) {
-      return
+    const handleEditPermission = async () => {
+        if (!teamId || !selectedPermission) return
+
+        try {
+            setIsSubmitting(true)
+
+            const id = `${formState.resource}.${formState.action}`
+
+            const updatedPermission = {
+                id,
+                name: formState.name,
+                description: formState.description,
+                resource: formState.resource,
+                action: formState.action,
+                impact: formState.impact,
+            }
+
+            console.log("Updating permission:", updatedPermission)
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions/${selectedPermission.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
+                    },
+                    body: JSON.stringify(updatedPermission),
+                },
+            )
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.message || `Failed to update permission: ${response.status}`)
+            }
+
+            const updatedData = await response.json()
+            console.log("Permission updated successfully:", updatedData)
+
+            toast({
+                title: "Permission updated",
+                description: `Permission "${formState.name}" has been updated successfully.`,
+            })
+
+            setFormState({
+                name: "",
+                description: "",
+                resource: "user",
+                action: "read",
+                impact: "low",
+            })
+            setSelectedPermission(null)
+            setShowEditDialog(false)
+
+            fetchPermissionsAndCategories()
+        } catch (error) {
+            console.error("Error updating permission:", error)
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to update permission. Please try again.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
-    try {
-      setIsLoading(true)
+    const handleDeletePermission = async () => {
+        if (!teamId || !selectedPermission) return
 
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions/${permissionId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+        try {
+            setIsSubmitting(true)
 
-      toast({
-        title: "Permission deleted",
-        description: "The permission has been deleted successfully.",
-      })
+            console.log("Deleting permission:", selectedPermission)
 
-      fetchPermissions()
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to delete permission"
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions/${selectedPermission.id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
+                    },
+                },
+            )
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.message || `Failed to delete permission: ${response.status}`)
+            }
+
+            toast({
+                title: "Permission deleted",
+                description: `Permission "${selectedPermission.name}" has been deleted successfully.`,
+            })
+
+            setShowDeleteDialog(false)
+
+            fetchPermissionsAndCategories()
+        } catch (error) {
+            console.error("Error deleting permission:", error)
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to delete permission. Please try again.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
-  }
 
-  const handleEditPermission = (permission: Permission) => {
-    setSelectedPermission(permission)
-    setShowEditModal(true)
-  }
+    const openEditDialog = async (permission: any) => {
+        if (permission.createdBy === null) {
+            toast({
+                title: "Cannot Edit",
+                description: "System-defined permissions cannot be modified.",
+                variant: "destructive",
+            })
+            return
+        }
 
-  useEffect(() => {
-    if (teamId) {
-      fetchPermissions()
+        setSelectedPermission(permission)
+        setIsSubmitting(true)
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${teamId}/permissions/${permission.id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
+                },
+            })
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch permission details: ${response.status}`)
+            }
+
+            const permissionData = await response.json()
+
+            setFormState({
+                name: permissionData.name || "",
+                description: permissionData.description || "",
+                resource: permissionData.resource || "user",
+                action: permissionData.action || "read",
+                impact: permissionData.impact || "low",
+            })
+        } catch (error) {
+            console.error("Error fetching permission details:", error)
+            toast({
+                title: "Error",
+                description: "Failed to fetch permission details. Using cached data.",
+                variant: "destructive",
+            })
+
+            setFormState({
+                name: permission.name || "",
+                description: permission.description || "",
+                resource: permission.resource || "user",
+                action: permission.action || "read",
+                impact: permission.impact || "low",
+            })
+        } finally {
+            setIsSubmitting(false)
+            setShowEditDialog(true)
+        }
     }
-  }, [teamId])
 
-  useEffect(() => {
-    if (isRefreshing && onRefresh) {
-      fetchPermissions()
+    const openDeleteDialog = (permission: any) => {
+        if (permission.createdBy === null) {
+            toast({
+                title: "Cannot Delete",
+                description: "System-defined permissions cannot be deleted.",
+                variant: "destructive",
+            })
+            return
+        }
+
+        setSelectedPermission(permission)
+        setShowDeleteDialog(true)
     }
-  }, [isRefreshing, onRefresh])
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">System Permissions</h3>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Permission
-        </Button>
-      </div>
+    const getImpactColor = (impact: string) => {
+        const colors = {
+            critical: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+            high: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
+            medium: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+            low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+        }
+        return colors[impact?.toLowerCase()] || colors.medium
+    }
 
-      {isLoading ? (
-        <div className="flex justify-center items-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : error ? (
-        <div className="rounded-md bg-destructive/15 p-4">
-          <h2 className="text-lg font-semibold text-destructive">Error Loading Permissions</h2>
-          <p className="mt-2 text-sm">{error}</p>
-          <Button onClick={fetchPermissions} className="mt-4" variant="outline">
-            Try Again
-          </Button>
-        </div>
-      ) : permissions.length === 0 ? (
-        <div className="text-center py-8 border rounded-md">
-          <h3 className="text-lg font-medium mb-2">No permissions found</h3>
-          <p className="text-muted-foreground mb-4">Create your first permission to get started.</p>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Permission
-          </Button>
-        </div>
-      ) : (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Resource</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Impact</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {permissions.map((permission) => (
-                <TableRow key={permission.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{permission.name}</div>
-                      {permission.description && (
-                        <div className="text-sm text-muted-foreground">{permission.description}</div>
-                      )}
+    return (
+        <div className="space-y-4">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-end md:justify-between md:space-y-0">
+                <div className="flex-1 space-y-2 md:max-w-md">
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search permissions..."
+                            className="pl-8"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                  </TableCell>
-                  <TableCell>{permission.resource}</TableCell>
-                  <TableCell>{permission.action}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        permission.impact === "high"
-                          ? "destructive"
-                          : permission.impact === "medium"
-                            ? "default"
-                            : "outline"
-                      }
-                    >
-                      {permission.impact || "low"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditPermission(permission)}
-                        title="Edit permission"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeletePermission(permission.id)}
-                        title="Delete permission"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                </div>
+                <Button onClick={() => setShowCreateDialog(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Permission
+                </Button>
+            </div>
+
+            {isLoading ? (
+                <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                    <span>Loading permissions...</span>
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                    <AlertTriangle className="h-8 w-8 mb-2" />
+                    <p>{error}</p>
+                    <Button variant="outline" onClick={fetchPermissionsAndCategories} className="mt-4">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Retry
+                    </Button>
+                </div>
+            ) : (
+                <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+                    <TabsList>
+                        <TabsTrigger value="categories">By Category</TabsTrigger>
+                        <TabsTrigger value="all">All Permissions</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="categories" className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {categories.map((category) => (
+                                <Card
+                                    key={category.id}
+                                    className={`cursor-pointer hover:border-blue-200 transition-colors ${
+                                        selectedCategory === category.id ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : ""
+                                    }`}
+                                    onClick={() => setSelectedCategory(category.id)}
+                                >
+                                    <CardHeader className="pb-2">
+                                        <CardTitle>{category.name}</CardTitle>
+                                        <CardDescription>{category.description}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Badge variant="secondary">{category.count} permissions</Badge>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+
+                        {selectedCategory && (
+                            <div className="mt-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-medium">
+                                        {categories.find((c) => c.id === selectedCategory)?.name} Permissions
+                                    </h3>
+                                </div>
+
+                                <ScrollArea className="h-[400px] rounded-md border">
+                                    <div className="p-4 space-y-4">
+                                        {filteredPermissions.length === 0 ? (
+                                            <div className="text-center py-8 text-muted-foreground">
+                                                {searchQuery ? "No permissions found matching your search." : "No permissions available."}
+                                            </div>
+                                        ) : (
+                                            filteredPermissions.map((permission) => (
+                                                <div
+                                                    key={permission.id}
+                                                    className={`flex items-start justify-between p-3 rounded-lg border hover:bg-muted/50 ${
+                                                        permission.createdBy === null ? "border-blue-200 bg-blue-50/30 dark:bg-blue-950/30" : ""
+                                                    }`}
+                                                >
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-medium">{permission.name}</h4>
+                                                            {permission.createdBy === null && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200"
+                                                                >
+                                                                    System
+                                                                </Badge>
+                                                            )}
+                                                            <Badge className={getImpactColor(permission.impact)}>
+                                                                {permission.impact?.charAt(0).toUpperCase() + permission.impact?.slice(1)}
+                                                            </Badge>
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Info className="h-4 w-4 text-muted-foreground" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p className="max-w-xs">{permission.description}</p>
+                                                                        {permission.createdBy === null && (
+                                                                            <p className="max-w-xs mt-2 text-blue-600">
+                                                                                This is a system-defined permission and cannot be modified.
+                                                                            </p>
+                                                                        )}
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground">{permission.description}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <Badge variant="outline">{permission.resource}</Badge>
+                                                            <Badge variant="secondary">{permission.action}</Badge>
+                                                        </div>
+                                                    </div>
+
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                                <span className="sr-only">Open menu</span>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem
+                                                                onClick={() => openEditDialog(permission)}
+                                                                disabled={permission.createdBy === null}
+                                                                className={permission.createdBy === null ? "cursor-not-allowed opacity-50" : ""}
+                                                            >
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                {permission.createdBy === null ? "System Permission (Cannot Edit)" : "Edit Permission"}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-red-600"
+                                                                onClick={() => openDeleteDialog(permission)}
+                                                                disabled={permission.createdBy === null}
+                                                            >
+                                                                <Trash className="mr-2 h-4 w-4" />
+                                                                {permission.createdBy === null
+                                                                    ? "System Permission (Cannot Delete)"
+                                                                    : "Delete Permission"}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="all">
+                        <div className="border rounded-md">
+                            <div className="grid grid-cols-12 gap-4 p-4 border-b bg-muted/50 text-sm font-medium">
+                                <div className="col-span-3">Permission</div>
+                                <div className="col-span-4">Description</div>
+                                <div className="col-span-2">Resource</div>
+                                <div className="col-span-1">Action</div>
+                                <div className="col-span-1">Impact</div>
+                                <div className="col-span-1"></div>
+                            </div>
+
+                            {filteredPermissions.length === 0 ? (
+                                <div className="p-8 text-center text-muted-foreground">
+                                    {searchQuery ? "No permissions found matching your search." : "No permissions available."}
+                                </div>
+                            ) : (
+                                filteredPermissions.map((permission) => (
+                                    <div
+                                        key={permission.id}
+                                        className={`grid grid-cols-12 gap-4 p-4 border-b last:border-0 items-center ${
+                                            permission.createdBy === null ? "bg-blue-50/30 dark:bg-blue-950/30" : ""
+                                        }`}
+                                    >
+                                        <div className="col-span-3 font-medium">
+                                            <div className="flex items-center gap-2">
+                                                {permission.name}
+                                                {permission.createdBy === null && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200"
+                                                    >
+                                                        System
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="col-span-4 text-sm text-muted-foreground">{permission.description}</div>
+                                        <div className="col-span-2">
+                                            <Badge variant="outline">{permission.resource}</Badge>
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Badge variant="secondary">{permission.action}</Badge>
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Badge className={getImpactColor(permission.impact)}>
+                                                {permission.impact?.charAt(0).toUpperCase() + permission.impact?.slice(1)}
+                                            </Badge>
+                                        </div>
+                                        <div className="col-span-1 text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Open menu</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem
+                                                        onClick={() => openEditDialog(permission)}
+                                                        disabled={permission.createdBy === null}
+                                                        className={permission.createdBy === null ? "cursor-not-allowed opacity-50" : ""}
+                                                    >
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        {permission.createdBy === null ? "System Permission (Cannot Edit)" : "Edit Permission"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-red-600"
+                                                        onClick={() => openDeleteDialog(permission)}
+                                                        disabled={permission.createdBy === null}
+                                                    >
+                                                        <Trash className="mr-2 h-4 w-4" />
+                                                        {permission.createdBy === null ? "System Permission (Cannot Delete)" : "Delete Permission"}
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            )}
+
+            {/* Create Permission Dialog */}
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogContent className="sm:max-w-[550px]">
+                    <DialogHeader>
+                        <DialogTitle>Create Permission</DialogTitle>
+                        <DialogDescription>Add a new permission that can be assigned to roles.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Permission Name</Label>
+                            <Input
+                                id="name"
+                                value={formState.name}
+                                onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                                placeholder="e.g. View Users, Manage Licenses"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                value={formState.description}
+                                onChange={(e) => setFormState({ ...formState, description: e.target.value })}
+                                placeholder="Describe what this permission allows"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="resource">Resource</Label>
+                                <Select
+                                    value={formState.resource}
+                                    onValueChange={(value) => setFormState({ ...formState, resource: value })}
+                                >
+                                    <SelectTrigger id="resource">
+                                        <SelectValue placeholder="Select resource" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {RESOURCES.map((resource) => (
+                                            <SelectItem key={resource} value={resource}>
+                                                {resource.charAt(0).toUpperCase() + resource.slice(1)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="action">Action</Label>
+                                <Select
+                                    value={formState.action}
+                                    onValueChange={(value) => setFormState({ ...formState, action: value })}
+                                >
+                                    <SelectTrigger id="action">
+                                        <SelectValue placeholder="Select action" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ACTIONS.map((action) => (
+                                            <SelectItem key={action} value={action}>
+                                                {action.charAt(0).toUpperCase() + action.slice(1)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="impact">Impact Level</Label>
+                            <Select value={formState.impact} onValueChange={(value) => setFormState({ ...formState, impact: value })}>
+                                <SelectTrigger id="impact">
+                                    <SelectValue placeholder="Select impact level" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {IMPACT_LEVELS.map((level) => (
+                                        <SelectItem key={level} value={level}>
+                                            {level.charAt(0).toUpperCase() + level.slice(1)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground">
+                                Impact level determines the potential risk of this permission.
+                            </p>
+                        </div>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowCreateDialog(false)}
+                            disabled={isSubmitting}
+                            className="mr-2"
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleCreatePermission} disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Permission"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Permission Dialog */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent className="sm:max-w-[550px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Permission</DialogTitle>
+                        <DialogDescription>Update permission details.</DialogDescription>
+                    </DialogHeader>
+
+                    {isSubmitting ? (
+                        <div className="flex items-center justify-center p-8">
+                            <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                            <span>Loading permission data...</span>
+                        </div>
+                    ) : (
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-name">Permission Name</Label>
+                                <Input
+                                    id="edit-name"
+                                    value={formState.name}
+                                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                                    placeholder="e.g. View Users, Manage Licenses"
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-description">Description</Label>
+                                <Textarea
+                                    id="edit-description"
+                                    value={formState.description}
+                                    onChange={(e) => setFormState({ ...formState, description: e.target.value })}
+                                    placeholder="Describe what this permission allows"
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-resource">Resource</Label>
+                                    <Select
+                                        value={formState.resource}
+                                        onValueChange={(value) => setFormState({ ...formState, resource: value })}
+                                    >
+                                        <SelectTrigger id="edit-resource">
+                                            <SelectValue placeholder="Select resource" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {RESOURCES.map((resource) => (
+                                                <SelectItem key={resource} value={resource}>
+                                                    {resource.charAt(0).toUpperCase() + resource.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-action">Action</Label>
+                                    <Select
+                                        value={formState.action}
+                                        onValueChange={(value) => setFormState({ ...formState, action: value })}
+                                    >
+                                        <SelectTrigger id="edit-action">
+                                            <SelectValue placeholder="Select action" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {ACTIONS.map((action) => (
+                                                <SelectItem key={action} value={action}>
+                                                    {action.charAt(0).toUpperCase() + action.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-impact">Impact Level</Label>
+                                <Select
+                                    value={formState.impact}
+                                    onValueChange={(value) => setFormState({ ...formState, impact: value })}
+                                >
+                                    <SelectTrigger id="edit-impact">
+                                        <SelectValue placeholder="Select impact level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {IMPACT_LEVELS.map((level) => (
+                                            <SelectItem key={level} value={level}>
+                                                {level.charAt(0).toUpperCase() + level.slice(1)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-sm text-muted-foreground">
+                                    Impact level determines the potential risk of this permission.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowEditDialog(false)} disabled={isSubmitting} className="mr-2">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleEditPermission} disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Updating...
+                                </>
+                            ) : (
+                                "Update Permission"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Permission Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Permission</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete the permission "{selectedPermission?.name}"? This action cannot be undone
+                            and will remove this permission from all roles that have it assigned.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeletePermission}
+                            className="bg-destructive text-destructive-foreground"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                "Delete Permission"
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
-      )}
-
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Permission</DialogTitle>
-            <DialogDescription>Add a new permission to the system.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={newPermission.name}
-                onChange={(e) => setNewPermission({ ...newPermission, name: e.target.value })}
-                placeholder="View Users"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={newPermission.description}
-                onChange={(e) => setNewPermission({ ...newPermission, description: e.target.value })}
-                placeholder="Allows viewing the list of users"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="resource">Resource</Label>
-              <Input
-                id="resource"
-                value={newPermission.resource}
-                onChange={(e) => setNewPermission({ ...newPermission, resource: e.target.value })}
-                placeholder="users"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="action">Action</Label>
-              <Select
-                value={newPermission.action}
-                onValueChange={(value) => setNewPermission({ ...newPermission, action: value })}
-              >
-                <SelectTrigger id="action">
-                  <SelectValue placeholder="Select an action" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="read">Read</SelectItem>
-                  <SelectItem value="write">Write</SelectItem>
-                  <SelectItem value="create">Create</SelectItem>
-                  <SelectItem value="update">Update</SelectItem>
-                  <SelectItem value="delete">Delete</SelectItem>
-                  <SelectItem value="manage">Manage</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="impact">Impact</Label>
-              <Select
-                value={newPermission.impact}
-                onValueChange={(value) => setNewPermission({ ...newPermission, impact: value })}
-              >
-                <SelectTrigger id="impact">
-                  <SelectValue placeholder="Select impact level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreatePermission} disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Create
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {selectedPermission && (
-        <PermissionEditorModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          permission={selectedPermission}
-          teamId={teamId}
-          onPermissionUpdated={fetchPermissions}
-        />
-      )}
-    </div>
-  )
+    )
 }

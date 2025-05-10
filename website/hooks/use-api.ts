@@ -42,7 +42,7 @@ export function useFetch<T>(
           variant: "destructive",
         })
 
-        localStorage.removeItem("token")
+        localStorage.removeItem(EN_NAME)
 
         setTimeout(() => {
           window.location.href = "/login"

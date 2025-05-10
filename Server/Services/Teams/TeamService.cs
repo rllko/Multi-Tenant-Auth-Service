@@ -194,7 +194,11 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
     public async Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId)
     {
         var sql = @"
-            SELECT r.*
+            SELECT r.role_id as RoleId,
+                   r.role_name as RoleName,
+                   r.role_type as RoleType,
+                   r.created_by as CreatedBy,
+                   r.slug as Slug
             FROM teams t
                  RIGHT JOIN roles r on r.created_by = t.id
                  JOIN role_types on r.role_type = role_types.id

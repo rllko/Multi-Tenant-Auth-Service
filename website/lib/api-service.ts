@@ -1,3 +1,5 @@
+import {CONSTANTS} from '@/app/const'
+
 // Define the base API URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -6,18 +8,18 @@ import { withTimeout, handleApiError, DEFAULT_TIMEOUT } from "./api-timeout"
 
 const getAuthHeader = () => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token") || localStorage.getItem("authToken")
+    const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
     if (token) {
       return { Authorization: `Bearer ${token}` }
     }
-    return {}
+    throw new Error("No token provided")
   }
   return {}
 }
 
 export const isAuthenticated = () => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
     if (!token) return false
     return true
   }
@@ -41,12 +43,12 @@ export const refreshToken = async () => {
     const data = await response.json()
 
     if (data.token && typeof window !== "undefined") {
-      localStorage.setItem("token", data.token)
+      localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)
       return true
     }
 
     return false
-  } catch (error) {
+  } catch {
     return false
   }
 }
@@ -56,7 +58,7 @@ const handleResponse = async (response: Response) => {
     const refreshed = await refreshToken()
 
     if (!refreshed && typeof window !== "undefined") {
-      localStorage.removeItem("token")
+      localStorage.removeItem(CONSTANTS.TOKEN_NAME)
       window.location.href = "/login"
       throw new Error("Authentication failed. Please log in again.")
     }
@@ -73,14 +75,14 @@ const handleResponse = async (response: Response) => {
 }
 
 export async function fetchApi<T>(
-  endpoint: string,
-  options: RequestInit = {},
-  timeout: number = DEFAULT_TIMEOUT,
+    endpoint: string,
+    options: RequestInit = {},
+    timeout: number = DEFAULT_TIMEOUT,
 ): Promise<T> {
   try {
-    if (endpoint.includes("${")) {
-      const match = endpoint.match(/\${([^}]+)}/)
-      const variableName = match ? match[1] : "unknown"
+    const templateMatch = endpoint.match(/\${([^}]+)}/)
+    if (templateMatch) {
+      const variableName = templateMatch[1]
       throw new Error(`API endpoint contains uninterpolated template: ${variableName} is undefined`)
     }
 
@@ -88,18 +90,20 @@ export async function fetchApi<T>(
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers || {}),
     }
 
-    if (
-      endpoint.includes("/teams") ||
-      endpoint.includes("/auth/tenant/me") ||
-      endpoint.startsWith("/apps") ||
-      endpoint.includes("/settings")
-    ) {
+    const needsAuth = [
+      "/teams",
+      "/auth/tenant/me",
+      "/apps",
+      "/settings",
+    ].some(path => endpoint.startsWith(path) || endpoint.includes(path))
+
+    if (needsAuth) {
       const authHeaders = getAuthHeader()
-      if (authHeaders.Authorization) {
-        headers.Authorization = authHeaders.Authorization
+      if (authHeaders?.Authorization) {
+        headers["Authorization"] = authHeaders.Authorization
       }
     }
 
@@ -111,11 +115,10 @@ export async function fetchApi<T>(
     return await withTimeout(fetchPromise, timeout)
   } catch (error) {
     const apiError = handleApiError(error)
-
     if (apiError.isTimeout) {
       throw new Error("Request timed out. Please check your connection and try again.")
     }
-    throw error
+    throw apiError
   }
 }
 

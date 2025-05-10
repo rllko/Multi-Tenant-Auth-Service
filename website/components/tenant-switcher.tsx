@@ -32,6 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useTeam } from "@/contexts/team-context"
 import { useState } from "react"
 import { toast } from "@/components/ui/use-toast"
+import {CONSTANTS} from "@/app/const";
 
 export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
@@ -73,7 +74,7 @@ export function TenantSwitcher() {
       setIsCreatingTeam(true)
 
       // Get the auth token from localStorage
-      const token = localStorage.getItem("authToken")
+      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
 
       if (!token) {
         toast({

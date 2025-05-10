@@ -56,7 +56,7 @@ export function ApplicationsView() {
   const [secretVisibility, setSecretVisibility] = useState({})
   const [viewMode, setViewMode] = useState("grid")
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const { selectedTeam } = useTeam()
   const [newApp, setNewApp] = useState({

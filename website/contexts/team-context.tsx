@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import {CONSTANTS} from "@/app/const";
 
 export interface Team {
   id: string
@@ -37,7 +38,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true)
 
-      const token = localStorage.getItem("authToken")
+      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
 
       if (!token) {
         const errorMessage = "Authentication required"
@@ -67,7 +68,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
 
         if (response.status === 401) {
           errorMessage = "Your session has expired. Please log in again."
-          localStorage.removeItem("authToken")
+          localStorage.removeItem(CONSTANTS.TOKEN_NAME)
           router.push("/login")
         } else if (response.status === 403) {
           errorMessage = "You don't have permission to access teams."

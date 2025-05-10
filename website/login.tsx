@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import {CONSTANTS} from "@/app/const";
 
 export default function Login() {
   const router = useRouter()
@@ -44,7 +45,7 @@ export default function Login() {
       }
 
       if (data.token) {
-        localStorage.setItem("token", data.token)
+        localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)
         toast({
           title: "Login successful",
           description: "You have been logged in successfully.",

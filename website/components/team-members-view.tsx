@@ -47,6 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {CONSTANTS} from "@/app/const";
 
 const roleBadgeColors = {
   admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
@@ -119,7 +120,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
       }
       setError(null)
 
-      const token = localStorage.getItem("token") || localStorage.getItem("authToken")
+      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
       if (!token) {
         throw new Error("Authentication required. Please log in again.")
       }
@@ -206,7 +207,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
     try {
       setIsInviting(true)
 
-      const token = localStorage.getItem("authToken")
+      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
       if (!token) {
         throw new Error("Authentication required")
       }
@@ -250,7 +251,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
     try {
       setIsDeleting(true)
 
-      const token = localStorage.getItem("authToken")
+      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
       if (!token) {
         throw new Error("Authentication required")
       }
