@@ -31,7 +31,6 @@ interface RolePermissionsModalProps {
     onPermissionsUpdated: () => void
 }
 
-// Default permissions for when API fails
 const DEFAULT_PERMISSIONS = [
     {
         id: "user.read",
@@ -134,26 +133,22 @@ export function RolePermissionsModal({
 
     const {toast} = useToast()
 
-    // Fetch permissions when modal opens
     useEffect(() => {
         if (!isOpen || !role) return
 
         setIsLoading(true)
         setError(null)
 
-        // Set initial permissions if available
         if (role.scopes) {
             setSelectedPermissions(role.scopes)
         } else {
             setSelectedPermissions([])
         }
 
-        // Check if we have a teamId
         if (!teamId) {
             console.error("No teamId available, using default data")
             setPermissions(DEFAULT_PERMISSIONS)
 
-            // Extract categories from default permissions
             const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
             const categoriesData = uniqueResources.map((resource) => ({
                 id: resource,
@@ -385,7 +380,6 @@ export function RolePermissionsModal({
         }
     }
 
-    // Select all permissions in a category
     const selectAllInCategory = (categoryId: string) => {
         const categoryPermissionIds = permissions.filter((p) => p.resource === categoryId).map((p) => p.id)
 
@@ -395,14 +389,12 @@ export function RolePermissionsModal({
         })
     }
 
-    // Deselect all permissions in a category
     const deselectAllInCategory = (categoryId: string) => {
         const categoryPermissionIds = permissions.filter((p) => p.resource === categoryId).map((p) => p.id)
 
         setSelectedPermissions((prev) => prev.filter((id) => !categoryPermissionIds.includes(id)))
     }
 
-    // Check if all permissions in a category are selected
     const isAllCategorySelected = (categoryId: string) => {
         const categoryPermissionIds = permissions.filter((p) => p.resource === categoryId).map((p) => p.id)
 

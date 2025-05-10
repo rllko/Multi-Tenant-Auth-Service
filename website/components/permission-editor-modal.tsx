@@ -25,7 +25,6 @@ interface PermissionEditorModalProps {
     type: "team" | "app"
 }
 
-// Default roles for when API fails
 const DEFAULT_ROLES = [
     {
         id: "admin",
@@ -53,19 +52,16 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
 
     const {toast} = useToast()
 
-    // Fetch roles when modal opens
     useEffect(() => {
         if (!isOpen) return
 
         setIsLoading(true)
         setError(null)
 
-        // Set initial role if available
         if (member?.role) {
             setSelectedRole(member.role)
         }
 
-        // Check if we have a teamId
         if (!teamId) {
             console.error("No teamId available, using default data")
             setRoles(DEFAULT_ROLES)
@@ -89,12 +85,10 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
 
     }, [isOpen, member, teamId])
 
-    // Handle role change
     const handleRoleChange = (roleId: string) => {
         setSelectedRole(roleId)
     }
 
-    // Handle save - update member's role
     const handleSave = async () => {
         if (!member?.id || !teamId || !selectedRole) {
             onClose()
@@ -124,7 +118,6 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
         }
     }
 
-    // Refresh roles
     const handleRefresh = async () => {
         if (!teamId) return
 

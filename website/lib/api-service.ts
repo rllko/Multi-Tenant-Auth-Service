@@ -1,8 +1,8 @@
 import {CONSTANTS} from '@/app/const'
-// Import the timeout utilities
+
 import {DEFAULT_TIMEOUT, handleApiError, withTimeout} from "./api-timeout"
 
-// Define the base API URL from environment variables
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const getAuthHeader = () => {

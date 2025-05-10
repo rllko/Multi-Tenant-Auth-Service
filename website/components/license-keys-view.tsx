@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast"
 import { useTeam } from "@/contexts/team-context"
 import type { LicenseKey } from "@/lib/schemas"
 
-// Plans for license keys - these could come from an API in the future
 const plans = [
   { id: "basic", name: "Basic" },
   { id: "pro", name: "Pro" },
@@ -34,16 +33,13 @@ export function LicenseKeysView() {
     applicationId: "",
   })
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(5)
 
-  // Reset to first page when changing filters
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, statusFilter, planFilter, selectedApplicationId])
 
-  // Fetch license keys when component mounts or application ID changes
   useEffect(() => {
     const fetchLicenseKeys = async () => {
       if (!selectedTeam || !selectedApplicationId) return
@@ -73,25 +69,21 @@ export function LicenseKeysView() {
     fetchLicenseKeys()
   }, [selectedApplicationId, selectedTeam])
 
-  // Filter license keys based on search query, filters
   const filteredKeys = licenses.filter((key) => {
-    // Search filter
+
     const matchesSearch =
       searchQuery === "" ||
       key.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (key.assignedTo && key.assignedTo.toLowerCase().includes(searchQuery.toLowerCase())) ||
       key.notes.toLowerCase().includes(searchQuery.toLowerCase())
 
-    // Status filter
     const matchesStatus = statusFilter === "all" || key.status === statusFilter
 
-    // Plan filter
     const matchesPlan = planFilter === "all" || key.plan.toLowerCase() === planFilter.toLowerCase()
 
     return matchesSearch && matchesStatus && matchesPlan
   })
 
-  // Calculate pagination
   const totalPages = Math.ceil(filteredKeys.length / itemsPerPage)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -136,7 +128,6 @@ export function LicenseKeysView() {
       setLoading(true)
 
       if (selectedKey) {
-        // Update existing license
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps/${selectedApplicationId}/licenses/${selectedKey.id}`,
           {
@@ -166,7 +157,6 @@ export function LicenseKeysView() {
           description: "The license has been updated successfully.",
         })
       } else {
-        // Create new license
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps/${selectedApplicationId}/licenses`,
           {
@@ -240,7 +230,7 @@ export function LicenseKeysView() {
     for (let i = 0; i < 4; i++) {
       segments.push(Math.random().toString(36).substring(2, 6).toUpperCase())
     }
-    return `KEYAUTH-${segments.join("-")}`
+    return `AUTHIO-${segments.join("-")}`
   }
 
   const copyToClipboard = (text) => {

@@ -24,7 +24,6 @@ export function DashboardView() {
             try {
                 setIsLoading(true)
 
-                // Real API call to fetch dashboard stats
                 const data = await dashboardApi.getDashboard(selectedTeam.id);
 
                 setStats(data)
@@ -38,7 +37,7 @@ export function DashboardView() {
         }
 
         loadStats()
-    }, [selectedTeam]) // Re-fetch when selected team changes
+    }, [selectedTeam])
 
     return (
         <div className="flex flex-col gap-5">

@@ -47,7 +47,6 @@ export function RolesPermissionsView({
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [activeTab, setActiveTab] = useState("roles")
 
-    // Handle role selection
     const handleRoleSelect = (role: Role) => {
         setSelectedRole(role)
         toast({
@@ -56,11 +55,10 @@ export function RolesPermissionsView({
         })
     }
 
-    // Handle role creation
     const handleRoleCreate = async (role: Omit<Role, "id">) => {
         setIsSubmitting(true)
         try {
-            // Call API to create role
+             Call API to create role
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles`, {
                 method: "POST",
                 headers: {
@@ -79,7 +77,6 @@ export function RolesPermissionsView({
                 description: `Role "${role.name}" has been created successfully.`,
             })
 
-            // Refresh roles list
             if (onRefresh) {
                 onRefresh()
             }
@@ -95,11 +92,9 @@ export function RolesPermissionsView({
         }
     }
 
-    // Handle role update
     const handleRoleUpdate = async (id: string, role: Partial<Role>) => {
         setIsSubmitting(true)
         try {
-            // Call API to update role
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles/${id}`, {
                 method: "PATCH",
                 headers: {
@@ -118,7 +113,6 @@ export function RolesPermissionsView({
                 description: `Role "${role.name}" has been updated successfully.`,
             })
 
-            // Refresh roles list
             if (onRefresh) {
                 onRefresh()
             }
@@ -134,11 +128,9 @@ export function RolesPermissionsView({
         }
     }
 
-    // Handle role deletion
     const handleRoleDelete = async (id: string) => {
         setIsSubmitting(true)
         try {
-            // Call API to delete role
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles/${id}`, {
                 method: "DELETE",
                 headers: {
@@ -155,7 +147,6 @@ export function RolesPermissionsView({
                 description: "The role has been deleted successfully.",
             })
 
-            // Refresh roles list
             if (onRefresh) {
                 onRefresh()
             }

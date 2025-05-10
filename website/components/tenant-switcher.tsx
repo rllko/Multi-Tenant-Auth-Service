@@ -9,22 +9,22 @@ import {cn} from "@/lib/utils"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {Button} from "@/components/ui/button"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    CommandSeparator,
 } from "@/components/ui/command"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
@@ -73,7 +73,6 @@ export function TenantSwitcher() {
         try {
             setIsCreatingTeam(true)
 
-            // Get the auth token from localStorage
             const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
 
             if (!token) {
@@ -87,12 +86,10 @@ export function TenantSwitcher() {
 
             const newTeam = await teamsApi.createTeam(newTeamName);
 
-            // Update the teams list and select the new team
             setTeams([...teams, newTeam])
             setSelectedTeam(newTeam)
             localStorage.setItem("selectedTeamId", newTeam.id)
 
-            // Close the modal and reset the form
             setOpen(false)
             setNewTeamName("")
 

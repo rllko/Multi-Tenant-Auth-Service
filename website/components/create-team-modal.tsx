@@ -4,13 +4,13 @@ import type React from "react"
 import {useState} from "react"
 import {Button} from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
@@ -69,7 +69,6 @@ export function CreateTeamModal({
 
             const newTeam = await teamsApi.createTeam(newTeamName)
 
-            // Close the modal and reset the form
             setOpen(false)
             setNewTeamName("")
 
@@ -78,10 +77,8 @@ export function CreateTeamModal({
                 description: `${newTeam.name} has been created successfully`,
             })
 
-            // Refresh the teams list to include the new team
             await refreshTeams()
 
-            // Call the onTeamCreated callback if provided
             if (onTeamCreated) {
                 onTeamCreated()
             }
