@@ -106,10 +106,98 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
+  // Remove the roles and permissions state and fetching logic from TeamMembersView
+  // Remove these state variables
+  // const [roles, setRoles] = useState<any[]>([])
+  // const [permissions, setPermissions] = useState<any[]>([])
+  // const [isLoadingRoles, setIsLoadingRoles] = useState(true)
+  // const [isLoadingPermissions, setIsLoadingPermissions] = useState(true)
+  // const [rolesError, setRolesError] = useState<string | null>(null)
+  // const [permissionsError, setPermissionsError] = useState<string | null>(null)
+
   // Fetch team members
   useEffect(() => {
     fetchMembers()
   }, [teamId])
+
+  // Remove the useEffect hooks that fetch roles and permissions
+  // Fetch roles
+  // useEffect(() => {
+  //   const fetchRoles = async () => {
+  //     if (!teamId) return
+
+  //     try {
+  //       setIsLoadingRoles(true)
+  //       setRolesError(null)
+
+  //       const token = localStorage.getItem("authToken")
+  //       if (!token) {
+  //         throw new Error("Authentication required")
+  //       }
+
+  //       console.log(`Fetching roles for team: ${teamId}`)
+
+  //       // Use the API service to fetch roles
+  //       const data = await apiService.roles.getRoles(teamId)
+  //       console.log("Roles data received:", data)
+
+  //       setRoles(data)
+  //     } catch (err) {
+  //       console.error("Error fetching roles:", err)
+  //       const errorMessage = err instanceof Error ? err.message : "Failed to load roles"
+  //       setRolesError(errorMessage)
+
+  //       toast({
+  //         title: "Error",
+  //         description: `Failed to load roles: ${errorMessage}`,
+  //         variant: "destructive",
+  //       })
+  //     } finally {
+  //       setIsLoadingRoles(false)
+  //     }
+  //   }
+
+  //   fetchRoles()
+  // }, [teamId, toast])
+
+  // // Fetch permissions
+  // useEffect(() => {
+  //   const fetchPermissions = async () => {
+  //     if (!teamId) return
+
+  //     try {
+  //       setIsLoadingPermissions(true)
+  //       setPermissionsError(null)
+
+  //       const token = localStorage.getItem("authToken")
+  //       if (!token) {
+  //         throw new Error("Authentication required")
+  //       }
+
+  //       console.log(`Fetching permissions for team: ${teamId}`)
+
+  //       // Use the API service to fetch permissions
+  //       const data = await apiService.permissions.getPermissions(teamId)
+  //       console.log("Permissions data received:", data)
+
+  //       setPermissions(data)
+  //     } catch (err) {
+  //       console.error("Error fetching permissions:", err)
+  //       const errorMessage = err instanceof Error ? err.message : "Failed to load permissions"
+  //       setPermissionsError(errorMessage)
+
+  //       toast({
+  //         title: "Error",
+  //         description: `Failed to load permissions: ${errorMessage}`,
+  //         variant: "destructive",
+  //       })
+  //     } finally {
+  //       setIsLoadingPermissions(false)
+  //     }
+  //   }
+
+  //   fetchPermissions()
+  // }, [teamId, toast])
 
   const fetchMembers = async (showRefreshing = false) => {
     if (!teamId) return
@@ -122,12 +210,13 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
       }
       setError(null)
 
-      const token = localStorage.getItem("authToken")
+      // Check if we have a token before making the request
+      const token = localStorage.getItem("token") || localStorage.getItem("authToken")
       if (!token) {
-        throw new Error("Authentication required")
+        throw new Error("Authentication required. Please log in again.")
       }
 
-      console.log(`Fetching members for team: ${teamId}`)
+      console.log(`Fetching members for team: ${teamId} with auth token`)
 
       // Use the API service to fetch team members
       const data = await apiService.teams.getTeamMembers(teamId)
@@ -145,6 +234,25 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
       console.error("Error fetching team members:", err)
       const errorMessage = err instanceof Error ? err.message : "Failed to load team members"
       setError(errorMessage)
+
+      // Check if it's an authentication error
+      if (
+          errorMessage.includes("Authentication required") ||
+          errorMessage.includes("401") ||
+          errorMessage.includes("unauthorized")
+      ) {
+        toast({
+          title: "Authentication Error",
+          description: "Please log in again to continue.",
+          variant: "destructive",
+        })
+
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          window.location.href = "/login"
+        }, 1500)
+        return
+      }
 
       toast({
         title: "Error",
@@ -179,6 +287,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
     setPermissionModalOpen(true)
   }
 
+  // Update the handleRefresh function to remove roles and permissions fetching
   const handleRefresh = () => {
     fetchMembers(true)
     if (onRefresh) {
@@ -512,12 +621,10 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
                 description="Try adjusting your search or filters, or invite a new team member."
                 icon={<UserPlus className="h-10 w-10" />}
                 action={
-                  <DialogTrigger asChild>
-                    <Button onClick={() => setInviteDialogOpen(true)}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Member
-                    </Button>
-                  </DialogTrigger>
+                  <Button onClick={() => setInviteDialogOpen(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite Member
+                  </Button>
                 }
             />
         ) : viewMode === "grid" ? (
@@ -674,6 +781,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
         )}
 
         {/* Permission Editor Modal */}
+        {/* Update the PermissionEditorModal props to remove roles and permissions */}
         <PermissionEditorModal
             isOpen={permissionModalOpen}
             onClose={() => {
@@ -682,6 +790,7 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
               fetchMembers()
             }}
             member={selectedMember}
+            teamId={teamId}
             type="team"
         />
 

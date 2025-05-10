@@ -1,16 +1,15 @@
 using Authentication.Models;
-using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.TeamsEndpoints;
 
-public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantDto>>
+public class TeamCreateRoleEndpoint : EndpointWithoutRequest
 {
     private readonly ITeamService _teamService;
 
-    public GetTeamMembersEndpoint(ITeamService teamService)
+    public TeamCreateRoleEndpoint(ITeamService teamService)
     {
         _teamService = teamService;
     }
@@ -18,7 +17,7 @@ public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantD
     public override void Configure()
     {
 #warning add permission here
-        Get("/teams/{teamId:guid}/members");
+        Post("/teams/{teamId:guid}/roles");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         AllowAnonymous();
@@ -26,12 +25,18 @@ public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantD
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var articleID = Route<Guid>("teamId");
+        var teamId = Route<Guid>("teamId");
         var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
-        var tenants = await _teamService.GetTenantsInTeamAsync(articleID);
-        await SendOkAsync(tenants, ct);
+        var teams = await _teamService.GetTeamRolesAsync(teamId);
+
+        teams.Match(
+            async roles => await SendOkAsync(ct),
+            async () =>
+            {
+                AddError("Something went wrong.");
+                await SendErrorsAsync(cancellation: ct);
+            }
+        );
     }
 }
-
-public record GetTeamMembersRequest(Guid TeamId);

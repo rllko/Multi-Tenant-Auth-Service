@@ -1,4 +1,5 @@
 using System.Data;
+using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models.Entities;
 using LanguageExt;
 
@@ -15,6 +16,8 @@ public interface ITeamService
 
     Task<bool> UpdateTeamAsync(Guid teamId, TeamUpdateDto teamDto, IDbTransaction? transaction = null);
     Task<bool> DeleteTeamAsync(Guid teamId, IDbTransaction? transaction = null);
+    Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId);
+    Task<Option<IEnumerable<ScopeDto>>> GetTeamScopesAsync(Guid teamId);
     Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);
     Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);
     Task<IEnumerable<TenantDto>> GetTenantsInTeamAsync(Guid teamId);

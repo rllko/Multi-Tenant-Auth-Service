@@ -1,5 +1,6 @@
 using System.Data;
 using Authentication.Database;
+using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models.Entities;
 using Dapper;
 using FluentValidation.Results;
@@ -67,6 +68,34 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         var rows = await conn.ExecuteAsync(sql, new { Id = teamId });
 
         return rows > 0;
+    }
+
+    public async Task<Option<IEnumerable<ScopeDto>>> GetTeamScopesAsync(Guid teamId)
+    {
+        var sql = @"
+            SELECT s.scope_name,
+                   'todo' as description,
+                   s.created_by,
+                   permission_impact_levels.name as impact,
+                   scope_categories.name as resource
+            FROM teams t
+                 RIGHT JOIN scopes s on s.created_by = t.id
+                 JOIN permission_impact_levels on s.impact_level_id = permission_impact_levels.id
+                 JOIN scope_categories on s.category_id = scope_categories.id
+                 JOIN role_types on s.scope_type = role_types.id
+            WHERE s.created_by = @TeamId or s.created_by is null
+            ORDER BY permission_impact_levels.name;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var scopes = await conn.QueryAsync<dynamic>(sql, new { TeamId = teamId });
+
+        var response = scopes.Select(result => new ScopeDto(result.scope_name, result.description,
+            result.created_by, result.impact,
+            result.resource)).ToList();
+
+        return scopes.Any() ? Option<IEnumerable<ScopeDto>>.Some(response) : Option<IEnumerable<ScopeDto>>.None;
     }
 
     public async Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null)
@@ -160,5 +189,21 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         var tenants = await conn.QueryAsync<Tenant>(sql, new { TeamId = teamId });
 
         return tenants.Select(tenant => tenant.ToDto()).ToList();
+    }
+
+    public async Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId)
+    {
+        var sql = @"
+            SELECT r.*
+            FROM teams t
+                 RIGHT JOIN roles r on r.created_by = t.id
+                 JOIN role_types on r.role_type = role_types.id
+            WHERE r.created_by = @TeamId or r.created_by is null;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+        var roles = (await conn.QueryAsync<Role>(sql, new { TeamId = teamId })).ToList();
+
+        return roles.Any() ? Option<IEnumerable<Role>>.Some(roles) : Option<IEnumerable<Role>>.None;
     }
 }

@@ -4,8 +4,8 @@ namespace Authentication.Models.Entities;
 
 public class Scope
 {
-    [Key]
-    public int ScopeId { get; set; }
+    [Key] public int ScopeId { get; set; }
+
     public string ScopeName { get; set; }
     public int ScopeType { get; set; }
     public string Slug { get; set; }

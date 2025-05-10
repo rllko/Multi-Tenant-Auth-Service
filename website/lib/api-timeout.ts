@@ -1,5 +1,5 @@
 // Default timeout in milliseconds (10 seconds)
-const DEFAULT_TIMEOUT = 10000
+export const DEFAULT_TIMEOUT = 10000
 
 /**
  * Creates a promise that rejects after a specified timeout
