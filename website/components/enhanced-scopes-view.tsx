@@ -54,7 +54,6 @@ export function EnhancedScopesView() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  // New scope form state
   const [newScope, setNewScope] = useState<Partial<Scope>>({
     name: "",
     description: "",
@@ -63,7 +62,6 @@ export function EnhancedScopesView() {
     permissions: [],
   })
 
-  // Filter scopes based on search query and filters
   const filteredScopes = scopes.filter((scope) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -77,7 +75,6 @@ export function EnhancedScopesView() {
     return matchesSearch && matchesCategory && matchesImpact
   })
 
-  // Group scopes by category
   const scopesByCategory = filteredScopes.reduce(
     (acc, scope) => {
       const category = scope.category
@@ -91,7 +88,6 @@ export function EnhancedScopesView() {
   )
 
   const handleCreateScope = () => {
-    // Generate ID from name
     const id = `${newScope.category}.${newScope.name?.toLowerCase().replace(/\s+/g, "_")}`
 
     const scopeToAdd: Scope = {
@@ -298,7 +294,6 @@ export function EnhancedScopesView() {
         )}
       </div>
 
-      {/* View/Edit Scope Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -456,7 +451,6 @@ export function EnhancedScopesView() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Scope Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -579,7 +573,6 @@ export function EnhancedScopesView() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

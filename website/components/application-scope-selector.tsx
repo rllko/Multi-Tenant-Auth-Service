@@ -37,7 +37,6 @@ export function ApplicationScopeSelector({
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [showRoleWarning, setShowRoleWarning] = useState(false)
 
-  // Group scopes by category for the UI
   const getScopesByCategory = () => {
     return scopes.reduce(
       (acc, scope) => {
@@ -54,7 +53,6 @@ export function ApplicationScopeSelector({
 
   const scopesByCategory = getScopesByCategory()
 
-  // Handle scope toggle
   const handleScopeToggle = (scopeId: string) => {
     const updatedScopes = selectedScopes.includes(scopeId)
       ? selectedScopes.filter((id) => id !== scopeId)
@@ -63,14 +61,12 @@ export function ApplicationScopeSelector({
     onScopesChange(updatedScopes)
   }
 
-  // Apply role's scopes
   const handleApplyRole = () => {
     if (!selectedRole) return
 
     const role = roles.find((r) => r.id === selectedRole)
     if (!role) return
 
-    // Check if this would override existing scopes
     if (selectedScopes.length > 0 && !showRoleWarning) {
       setShowRoleWarning(true)
       return
@@ -81,7 +77,6 @@ export function ApplicationScopeSelector({
     setSelectedRole("")
   }
 
-  // Get the highest impact level from selected scopes
   const getHighestImpact = (): ScopeImpactLevel => {
     const selectedScopeObjects = scopes.filter((scope) => selectedScopes.includes(scope.id))
     if (selectedScopeObjects.some((scope) => scope.impact === "critical")) return "critical"

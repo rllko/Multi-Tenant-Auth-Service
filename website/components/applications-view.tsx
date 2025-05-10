@@ -1,7 +1,6 @@
 "use client"
 
 import { Label } from "@/components/ui/label"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -70,7 +69,6 @@ export function ApplicationsView() {
     roleTemplate: "",
   })
 
-  // Role templates - these could also come from an API
   const roleTemplates = [
     {
       id: "admin",
@@ -98,7 +96,6 @@ export function ApplicationsView() {
     },
   ]
 
-  // Fetch applications when component mounts or team changes
   useEffect(() => {
     const fetchApps = async () => {
       if (!selectedTeam) return
@@ -132,7 +129,7 @@ export function ApplicationsView() {
       type: app.type,
       redirectUris: app.redirectUris.join("\n"),
       scopes: app.scopes || [],
-      keyFormat: "guid", // Default, since existing apps don't have this property
+      keyFormat: "guid",
       keyLength: 16,
       roleTemplate: "",
     })
@@ -173,7 +170,6 @@ export function ApplicationsView() {
       setLoading(true)
 
       if (selectedApp) {
-        // Update existing app
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps/${selectedApp.id}`,
           {
@@ -202,7 +198,6 @@ export function ApplicationsView() {
           description: `The client "${newApp.name}" has been updated successfully.`,
         })
       } else {
-        // Create new app
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps`, {
           method: "POST",
           headers: {
@@ -414,7 +409,6 @@ export function ApplicationsView() {
     }
   }
 
-  // Filter applications based on search query
   const filteredApps = apps.filter((app) => {
     return (
       searchQuery === "" ||
@@ -426,7 +420,6 @@ export function ApplicationsView() {
   return (
     <RequireTeam>
       <div className="space-y-6">
-        {/* Organization Context Banner */}
         {selectedTeam && (
           <Card className="bg-primary/5 border-primary/10">
             <CardContent className="p-4">
@@ -736,7 +729,6 @@ export function ApplicationsView() {
           </CardContent>
         </Card>
 
-        {/* Create/Edit Application Dialog */}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
@@ -848,7 +840,6 @@ export function ApplicationsView() {
 
               <TabsContent value="advanced" className="space-y-4 py-4">
                 <div className="grid gap-4">
-                  {/* Key Format Options */}
                   <div className="grid gap-2">
                     <Label>Client ID Format</Label>
                     <RadioGroup
@@ -942,7 +933,6 @@ export function ApplicationsView() {
           </DialogContent>
         </Dialog>
 
-        {/* Manage Scopes Dialog */}
         <Dialog open={scopesDialogOpen} onOpenChange={setScopesDialogOpen} className="max-w-4xl">
           <DialogContent className="max-w-4xl p-0">
             <ApplicationScopeSelector

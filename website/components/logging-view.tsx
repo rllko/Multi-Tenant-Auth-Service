@@ -23,7 +23,6 @@ import {
   Globe,
 } from "lucide-react"
 
-// Mock data for logs
 const logs = [
   {
     id: "log_1",
@@ -212,28 +211,21 @@ export function LoggingView() {
   const [severityFilter, setSeverityFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all")
 
-  // Get unique actions for filter
   const uniqueActions = [...new Set(logs.map((log) => log.action))]
 
-  // Filter logs based on search query and filters
   const filteredLogs = logs.filter((log) => {
-    // Search filter
     const matchesSearch =
       searchQuery === "" ||
       log.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.entity.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.user.toLowerCase().includes(searchQuery.toLowerCase())
 
-    // Type filter
     const matchesType = typeFilter === "all" || log.type === typeFilter
 
-    // Action filter
     const matchesAction = actionFilter === "all" || log.action === actionFilter
 
-    // Severity filter
     const matchesSeverity = severityFilter === "all" || log.severity === severityFilter
 
-    // Date filter (simplified for demo)
     let matchesDate = true
     if (dateFilter === "today") {
       const today = new Date().toISOString().split("T")[0]
@@ -249,13 +241,11 @@ export function LoggingView() {
     return matchesSearch && matchesType && matchesAction && matchesSeverity && matchesDate
   })
 
-  // Format timestamp to readable format
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp)
     return date.toLocaleString()
   }
 
-  // Get icon for log type
   const getLogTypeIcon = (type, action) => {
     switch (type) {
       case "license":
@@ -269,7 +259,6 @@ export function LoggingView() {
     }
   }
 
-  // Get badge for log severity
   const getSeverityBadge = (severity) => {
     switch (severity) {
       case "info":

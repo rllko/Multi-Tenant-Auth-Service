@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
@@ -17,13 +16,11 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
 
   useEffect(() => {
     const handleError = (error: ErrorEvent) => {
-      console.error("Global error caught:", error)
       setError(error.error || new Error("An unknown error occurred"))
       setHasError(true)
     }
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error("Unhandled promise rejection:", event)
       setError(event.reason || new Error("An unhandled promise rejection occurred"))
       setHasError(true)
     }

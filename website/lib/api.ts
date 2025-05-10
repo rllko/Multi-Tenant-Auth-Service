@@ -1,9 +1,7 @@
 import { z } from "zod"
 
-// Base API configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.keyauth.com/v1"
 
-// API error schema
 export const ApiErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -12,7 +10,6 @@ export const ApiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof ApiErrorSchema>
 
-// Generic API response wrapper
 export const ApiResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
   z.object({
     success: z.boolean(),
@@ -20,7 +17,6 @@ export const ApiResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
     error: ApiErrorSchema.optional(),
   })
 
-// API client with error handling
 export async function apiClient<T extends z.ZodType>(
   endpoint: string,
   options: RequestInit = {},
@@ -42,7 +38,6 @@ export async function apiClient<T extends z.ZodType>(
     const data = await response.json()
 
     if (!response.ok) {
-      // Try to parse as API error
       const parsedError = ApiErrorSchema.safeParse(data)
       if (parsedError.success) {
         throw new Error(parsedError.data.message)
@@ -50,16 +45,13 @@ export async function apiClient<T extends z.ZodType>(
       throw new Error(`API Error: ${response.status} ${response.statusText}`)
     }
 
-    // Validate response against schema
     const parsedData = schema.safeParse(data)
     if (!parsedData.success) {
-      console.error("API response validation error:", parsedData.error)
       throw new Error("Invalid API response format")
     }
 
     return parsedData.data
   } catch (error) {
-    console.error("API request failed:", error)
     throw error
   }
 }

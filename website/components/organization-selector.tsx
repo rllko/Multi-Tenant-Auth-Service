@@ -23,14 +23,12 @@ export function OrganizationSelector({ organizations, selectedOrganization, onOr
   const [editOrgName, setEditOrgName] = useState("")
 
   const handleCreateOrg = () => {
-    // In a real app, this would create a new organization
     console.log("Creating organization:", newOrgName)
     setCreateDialogOpen(false)
     setNewOrgName("")
   }
 
   const handleEditOrg = () => {
-    // In a real app, this would update the organization
     console.log("Updating organization:", selectedOrganization.id, editOrgName)
     setEditDialogOpen(false)
   }
@@ -115,7 +113,6 @@ export function OrganizationSelector({ organizations, selectedOrganization, onOr
         </CardContent>
       </Card>
 
-      {/* Create Organization Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -144,7 +141,6 @@ export function OrganizationSelector({ organizations, selectedOrganization, onOr
         </DialogContent>
       </Dialog>
 
-      {/* Edit Organization Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

@@ -32,7 +32,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useTeam } from "@/contexts/team-context"
 import { useState } from "react"
 import { toast } from "@/components/ui/use-toast"
-import {CreateTeamModal} from "@/components/create-team-modal";
 
 export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
@@ -183,7 +182,6 @@ export function TenantSwitcher() {
               </CommandGroup>
             </CommandList>
             <CommandSeparator />
-            <CreateTeamModal triggerIcon={true} triggerText="Create Team" />
             <CommandList>
               <CommandGroup>
                 <DialogTrigger asChild>
@@ -193,7 +191,8 @@ export function TenantSwitcher() {
                       setShowNewTeamDialog(true)
                     }}
                   >
-
+                    <PlusCircledIcon className="mr-2 h-5 w-5" />
+                    Create Team
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>

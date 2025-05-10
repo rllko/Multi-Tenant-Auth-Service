@@ -32,16 +32,16 @@ export default function TeamMembersPage() {
 
   if (isLoading) {
     return (
-        <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-          <span className="text-lg">Loading team members...</span>
-        </div>
+      <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+        <span className="text-lg">Loading team members...</span>
+      </div>
     )
   }
 
   return (
-      <div className="p-6">
-        <TeamMembersView teamId={selectedTeam.id} />
-      </div>
+    <div className="p-6">
+      <TeamMembersView teamId={selectedTeam.id} />
+    </div>
   )
 }

@@ -48,15 +48,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-// Role badge colors
 const roleBadgeColors = {
   admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
   editor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   viewer: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-  member: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300", // Alias for editor
+  member: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
 }
 
-// Status badge variants
 const statusBadgeVariants = {
   active: "default",
   pending: "outline",
@@ -106,98 +104,9 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
-  // Remove the roles and permissions state and fetching logic from TeamMembersView
-  // Remove these state variables
-  // const [roles, setRoles] = useState<any[]>([])
-  // const [permissions, setPermissions] = useState<any[]>([])
-  // const [isLoadingRoles, setIsLoadingRoles] = useState(true)
-  // const [isLoadingPermissions, setIsLoadingPermissions] = useState(true)
-  // const [rolesError, setRolesError] = useState<string | null>(null)
-  // const [permissionsError, setPermissionsError] = useState<string | null>(null)
-
-  // Fetch team members
   useEffect(() => {
     fetchMembers()
   }, [teamId])
-
-  // Remove the useEffect hooks that fetch roles and permissions
-  // Fetch roles
-  // useEffect(() => {
-  //   const fetchRoles = async () => {
-  //     if (!teamId) return
-
-  //     try {
-  //       setIsLoadingRoles(true)
-  //       setRolesError(null)
-
-  //       const token = localStorage.getItem("authToken")
-  //       if (!token) {
-  //         throw new Error("Authentication required")
-  //       }
-
-  //       console.log(`Fetching roles for team: ${teamId}`)
-
-  //       // Use the API service to fetch roles
-  //       const data = await apiService.roles.getRoles(teamId)
-  //       console.log("Roles data received:", data)
-
-  //       setRoles(data)
-  //     } catch (err) {
-  //       console.error("Error fetching roles:", err)
-  //       const errorMessage = err instanceof Error ? err.message : "Failed to load roles"
-  //       setRolesError(errorMessage)
-
-  //       toast({
-  //         title: "Error",
-  //         description: `Failed to load roles: ${errorMessage}`,
-  //         variant: "destructive",
-  //       })
-  //     } finally {
-  //       setIsLoadingRoles(false)
-  //     }
-  //   }
-
-  //   fetchRoles()
-  // }, [teamId, toast])
-
-  // // Fetch permissions
-  // useEffect(() => {
-  //   const fetchPermissions = async () => {
-  //     if (!teamId) return
-
-  //     try {
-  //       setIsLoadingPermissions(true)
-  //       setPermissionsError(null)
-
-  //       const token = localStorage.getItem("authToken")
-  //       if (!token) {
-  //         throw new Error("Authentication required")
-  //       }
-
-  //       console.log(`Fetching permissions for team: ${teamId}`)
-
-  //       // Use the API service to fetch permissions
-  //       const data = await apiService.permissions.getPermissions(teamId)
-  //       console.log("Permissions data received:", data)
-
-  //       setPermissions(data)
-  //     } catch (err) {
-  //       console.error("Error fetching permissions:", err)
-  //       const errorMessage = err instanceof Error ? err.message : "Failed to load permissions"
-  //       setPermissionsError(errorMessage)
-
-  //       toast({
-  //         title: "Error",
-  //         description: `Failed to load permissions: ${errorMessage}`,
-  //         variant: "destructive",
-  //       })
-  //     } finally {
-  //       setIsLoadingPermissions(false)
-  //     }
-  //   }
-
-  //   fetchPermissions()
-  // }, [teamId, toast])
 
   const fetchMembers = async (showRefreshing = false) => {
     if (!teamId) return
@@ -210,22 +119,15 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
       }
       setError(null)
 
-      // Check if we have a token before making the request
       const token = localStorage.getItem("token") || localStorage.getItem("authToken")
       if (!token) {
         throw new Error("Authentication required. Please log in again.")
       }
 
-      console.log(`Fetching members for team: ${teamId} with auth token`)
-
-      // Use the API service to fetch team members
       const data = await apiService.teams.getTeamMembers(teamId)
-      console.log("Members data received:", data)
 
-      // Transform data if needed to match our component's expected format
       const formattedMembers = data.map((member) => ({
         ...member,
-        // Add default tenants if not provided by API
         tenants: member.tenants || [{ id: "tenant_1", name: "Default Tenant", color: "#4f46e5" }],
       }))
 
@@ -235,11 +137,10 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load team members"
       setError(errorMessage)
 
-      // Check if it's an authentication error
       if (
-          errorMessage.includes("Authentication required") ||
-          errorMessage.includes("401") ||
-          errorMessage.includes("unauthorized")
+        errorMessage.includes("Authentication required") ||
+        errorMessage.includes("401") ||
+        errorMessage.includes("unauthorized")
       ) {
         toast({
           title: "Authentication Error",
@@ -247,7 +148,6 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
           variant: "destructive",
         })
 
-        // Redirect to login after a short delay
         setTimeout(() => {
           window.location.href = "/login"
         }, 1500)
@@ -265,19 +165,18 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
     }
   }
 
-  // Filter team members
   const filteredMembers = members.filter((member) => {
     const matchesSearch =
-        searchQuery === "" ||
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchQuery.toLowerCase())
+      searchQuery === "" ||
+      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || member.status === statusFilter
 
     const matchesRole = roleFilter === "all" || member.role === roleFilter
 
     const matchesTenant =
-        tenantFilter === "all" || (member.tenants && member.tenants.some((tenant) => tenant.id === tenantFilter))
+      tenantFilter === "all" || (member.tenants && member.tenants.some((tenant) => tenant.id === tenantFilter))
 
     return matchesSearch && matchesStatus && matchesRole && matchesTenant
   })
@@ -287,7 +186,6 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
     setPermissionModalOpen(true)
   }
 
-  // Update the handleRefresh function to remove roles and permissions fetching
   const handleRefresh = () => {
     fetchMembers(true)
     if (onRefresh) {
@@ -313,7 +211,6 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
         throw new Error("Authentication required")
       }
 
-      // Use the API service to invite a team member
       await apiService.teams.inviteTeamMember(teamId, inviteEmail, inviteRole)
 
       toast({
@@ -321,14 +218,12 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
         description: `Invitation sent to ${inviteEmail}`,
       })
 
-      // Reset form and close dialog
       setInviteEmail("")
       setInviteRole("viewer")
       setInviteTenant("")
       setInviteMessage("")
       setInviteDialogOpen(false)
 
-      // Refresh the members list
       fetchMembers()
     } catch (err) {
       console.error("Error inviting team member:", err)
@@ -360,7 +255,6 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
         throw new Error("Authentication required")
       }
 
-      // Use the API service to remove a team member
       await apiService.teams.removeTeamMember(teamId, memberToDelete.id)
 
       toast({
@@ -368,7 +262,6 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
         description: `${memberToDelete.name} has been removed from the team`,
       })
 
-      // Close dialog and refresh the members list
       setDeleteDialogOpen(false)
       setMemberToDelete(null)
       fetchMembers()
@@ -388,443 +281,439 @@ export function TeamMembersView({ teamId, onRefresh }: TeamMembersViewProps) {
 
   if (error && !isRefreshing && members.length === 0) {
     return (
-        <div className="rounded-md bg-destructive/15 p-4">
-          <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 mr-3" />
-            <div>
-              <h3 className="font-medium text-destructive">Error loading team members</h3>
-              <p className="text-sm text-destructive/90 mt-1">{error}</p>
-              <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3 border-destructive/50 text-destructive hover:bg-destructive/10"
-                  onClick={handleRefresh}
-              >
-                Try again
-              </Button>
-            </div>
+      <div className="rounded-md bg-destructive/15 p-4">
+        <div className="flex items-start">
+          <AlertCircle className="h-5 w-5 text-destructive mt-0.5 mr-3" />
+          <div>
+            <h3 className="font-medium text-destructive">Error loading team members</h3>
+            <p className="text-sm text-destructive/90 mt-1">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 border-destructive/50 text-destructive hover:bg-destructive/10"
+              onClick={handleRefresh}
+            >
+              Try again
+            </Button>
           </div>
         </div>
+      </div>
     )
   }
 
   return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Team Members</h1>
-            <p className="text-muted-foreground">Manage team members and their permissions</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Team Members</h1>
+          <p className="text-muted-foreground">Manage team members and their permissions</p>
+        </div>
 
-          <div className="flex gap-2">
-            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Invite Member
+        <div className="flex gap-2">
+          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite Team Member</DialogTitle>
+                <DialogDescription>Send an invitation to join your team.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="colleague@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                    <SelectTrigger id="role">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="editor">Editor</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="tenant">Tenant Access</Label>
+                  <Select value={inviteTenant} onValueChange={setInviteTenant}>
+                    <SelectTrigger id="tenant">
+                      <SelectValue placeholder="Select a tenant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tenant_1">Acme Inc.</SelectItem>
+                      <SelectItem value="tenant_2">Globex Corporation</SelectItem>
+                      <SelectItem value="tenant_3">Initech</SelectItem>
+                      <SelectItem value="tenant_4">Umbrella Corp</SelectItem>
+                      <SelectItem value="tenant_5">Stark Industries</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="message">Personal Message (Optional)</Label>
+                  <Input
+                    id="message"
+                    placeholder="Looking forward to working with you!"
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setInviteDialogOpen(false)} disabled={isInviting}>
+                  Cancel
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Invite Team Member</DialogTitle>
-                  <DialogDescription>Send an invitation to join your team.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="colleague@example.com"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole}>
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="editor">Editor</SelectItem>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="tenant">Tenant Access</Label>
-                    <Select value={inviteTenant} onValueChange={setInviteTenant}>
-                      <SelectTrigger id="tenant">
-                        <SelectValue placeholder="Select a tenant" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tenant_1">Acme Inc.</SelectItem>
-                        <SelectItem value="tenant_2">Globex Corporation</SelectItem>
-                        <SelectItem value="tenant_3">Initech</SelectItem>
-                        <SelectItem value="tenant_4">Umbrella Corp</SelectItem>
-                        <SelectItem value="tenant_5">Stark Industries</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="message">Personal Message (Optional)</Label>
-                    <Input
-                        id="message"
-                        placeholder="Looking forward to working with you!"
-                        value={inviteMessage}
-                        onChange={(e) => setInviteMessage(e.target.value)}
-                    />
+                <Button onClick={handleInviteMember} disabled={isInviting}>
+                  {isInviting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Invitation"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <Upload className="h-4 w-4 mr-2" />
+                Import Members
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Download className="h-4 w-4 mr-2" />
+                Export Members
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRefresh} disabled={isRefreshing}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                {isRefreshing ? "Refreshing..." : "Refresh"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search members..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="editor">Editor</SelectItem>
+              <SelectItem value="viewer">Viewer</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" size="icon" className="shrink-0">
+            <Filter className="h-4 w-4" />
+          </Button>
+
+          <div className="border rounded-md flex">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon"
+              className="rounded-r-none"
+              onClick={() => setViewMode("grid")}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 15 15"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+              >
+                <path
+                  d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2Z"
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              className="rounded-l-none"
+              onClick={() => setViewMode("list")}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 15 15"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+              >
+                <path
+                  d="M2 3C2 2.44772 2.44772 2 3 2H12C12.5523 2 13 2.44772 13 3V12C13 12.5523 12.5523 13 12 13H3C2.44772 13 2 12.5523 2 12V3ZM3 3H12V12H3V3ZM4 5C4 4.44772 4.44772 4 5 4C5.55228 4 6 4.44772 6 5C6 5.55228 5.55228 6 5 6C4.44772 6 4 5.55228 4 5ZM7 5C7 4.44772 7.44772 4 8 4H10C10.5523 4 11 4.44772 11 5C11 5.55228 10.5523 6 10 6H8C7.44772 6 7 5.55228 7 5ZM4 9C4 8.44772 4.44772 8 5 8C5.55228 8 6 8.44772 6 9C6 9.55228 5.55228 10 5 10C4.44772 10 4 9.55228 4 9ZM7 9C7 8.44772 7.44772 8 8 8H10C10.5523 8 11 8.44772 11 9C11 9.55228 10.5523 10 10 10H8C7.44772 10 7 9.55228 7 9Z"
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {isLoading && members.length === 0 ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+          <span>Loading team members...</span>
+        </div>
+      ) : filteredMembers.length === 0 ? (
+        <EmptyState
+          title="No team members found"
+          description="Try adjusting your search or filters, or invite a new team member."
+          icon={<UserPlus className="h-10 w-10" />}
+          action={
+            <Button onClick={() => setInviteDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Invite Member
+            </Button>
+          }
+        />
+      ) : viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredMembers.map((member) => (
+            <Card key={member.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <CardContent className="p-0">
+                <div className="p-4 flex flex-col items-center text-center">
+                  <Avatar className="h-16 w-16 mb-2">
+                    <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
+                    <AvatarFallback>{member.name ? member.name.charAt(0) : "U"}</AvatarFallback>
+                  </Avatar>
+                  <h3 className="font-medium">{member.name}</h3>
+                  <p className="text-sm text-muted-foreground">{member.email}</p>
+                  <Badge className={`mt-2 ${roleBadgeColors[member.role] || roleBadgeColors.viewer}`}>
+                    {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1) : "User"}
+                  </Badge>
+
+                  <div className="mt-3 flex flex-wrap justify-center gap-1">
+                    {member.tenants &&
+                      Array.isArray(member.tenants) &&
+                      member.tenants.map((tenant) => (
+                        <div
+                          key={tenant.id}
+                          className="h-5 w-5 rounded-full border-2 border-background"
+                          style={{ backgroundColor: tenant.color }}
+                          title={tenant.name}
+                        />
+                      ))}
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)} disabled={isInviting}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleInviteMember} disabled={isInviting}>
-                    {isInviting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Sending...
-                        </>
-                    ) : (
-                        "Send Invitation"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Members
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Members
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleRefresh} disabled={isRefreshing}>
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                <div className="bg-muted/40 p-2 flex justify-between items-center border-t">
+                  <span className="text-xs text-muted-foreground">{member.lastActive}</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditRole(member)}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Edit Role
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <UserCog className="h-4 w-4 mr-2" />
+                        Impersonate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteMember(member)}>
+                        <Trash className="h-4 w-4 mr-2" />
+                        Remove
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-                type="search"
-                placeholder="Search members..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="editor">Editor</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" size="icon" className="shrink-0">
-              <Filter className="h-4 w-4" />
-            </Button>
-
-            <div className="border rounded-md flex">
-              <Button
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="rounded-r-none"
-                  onClick={() => setViewMode("grid")}
-              >
-                <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                >
-                  <path
-                      d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2Z"
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                  ></path>
-                </svg>
-              </Button>
-              <Button
-                  variant={viewMode === "list" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="rounded-l-none"
-                  onClick={() => setViewMode("list")}
-              >
-                <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                >
-                  <path
-                      d="M2 3C2 2.44772 2.44772 2 3 2H12C12.5523 2 13 2.44772 13 3V12C13 12.5523 12.5523 13 12 13H3C2.44772 13 2 12.5523 2 12V3ZM3 3H12V12H3V3ZM4 5C4 4.44772 4.44772 4 5 4C5.55228 4 6 4.44772 6 5C6 5.55228 5.55228 6 5 6C4.44772 6 4 5.55228 4 5ZM7 5C7 4.44772 7.44772 4 8 4H10C10.5523 4 11 4.44772 11 5C11 5.55228 10.5523 6 10 6H8C7.44772 6 7 5.55228 7 5ZM4 9C4 8.44772 4.44772 8 5 8C5.55228 8 6 8.44772 6 9C6 9.55228 5.55228 10 5 10C4.44772 10 4 9.55228 4 9ZM7 9C7 8.44772 7.44772 8 8 8H10C10.5523 8 11 8.44772 11 9C11 9.55228 10.5523 10 10 10H8C7.44772 10 7 9.55228 7 9Z"
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                  ></path>
-                </svg>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {isLoading && members.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-              <span>Loading team members...</span>
-            </div>
-        ) : filteredMembers.length === 0 ? (
-            <EmptyState
-                title="No team members found"
-                description="Try adjusting your search or filters, or invite a new team member."
-                icon={<UserPlus className="h-10 w-10" />}
-                action={
-                  <Button onClick={() => setInviteDialogOpen(true)}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Invite Member
-                  </Button>
-                }
-            />
-        ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredMembers.map((member) => (
-                  <Card key={member.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                    <CardContent className="p-0">
-                      <div className="p-4 flex flex-col items-center text-center">
-                        <Avatar className="h-16 w-16 mb-2">
+      ) : (
+        <div className="border rounded-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3 font-medium">Name</th>
+                  <th className="text-left p-3 font-medium">Role</th>
+                  <th className="text-left p-3 font-medium">Status</th>
+                  <th className="text-left p-3 font-medium">Tenant Access</th>
+                  <th className="text-left p-3 font-medium">Last Active</th>
+                  <th className="text-right p-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filteredMembers.map((member) => (
+                  <tr key={member.id} className="hover:bg-muted/30">
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
                           <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
                           <AvatarFallback>{member.name ? member.name.charAt(0) : "U"}</AvatarFallback>
                         </Avatar>
-                        <h3 className="font-medium">{member.name}</h3>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
-                        <Badge className={`mt-2 ${roleBadgeColors[member.role] || roleBadgeColors.viewer}`}>
-                          {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1) : "User"}
-                        </Badge>
-
-                        <div className="mt-3 flex flex-wrap justify-center gap-1">
-                          {member.tenants &&
-                              Array.isArray(member.tenants) &&
-                              member.tenants.map((tenant) => (
-                                  <div
-                                      key={tenant.id}
-                                      className="h-5 w-5 rounded-full border-2 border-background"
-                                      style={{ backgroundColor: tenant.color }}
-                                      title={tenant.name}
-                                  />
-                              ))}
+                        <div>
+                          <div className="font-medium">{member.name}</div>
+                          <div className="text-xs text-muted-foreground">{member.email}</div>
                         </div>
                       </div>
-
-                      <div className="bg-muted/40 p-2 flex justify-between items-center border-t">
-                        <span className="text-xs text-muted-foreground">{member.lastActive}</span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditRole(member)}>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Edit Role
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <UserCog className="h-4 w-4 mr-2" />
-                              Impersonate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteMember(member)}>
-                              <Trash className="h-4 w-4 mr-2" />
-                              Remove
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                    </td>
+                    <td className="p-3">
+                      <Badge className={roleBadgeColors[member.role] || roleBadgeColors.viewer}>
+                        {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1) : "User"}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <Badge
+                        variant={statusBadgeVariants[member.status as keyof typeof statusBadgeVariants] || "secondary"}
+                      >
+                        {member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : "Unknown"}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex gap-1">
+                        {member.tenants &&
+                          Array.isArray(member.tenants) &&
+                          member.tenants.map((tenant) => (
+                            <div
+                              key={tenant.id}
+                              className="h-5 w-5 rounded-full border-2 border-background"
+                              style={{ backgroundColor: tenant.color }}
+                              title={tenant.name}
+                            />
+                          ))}
                       </div>
-                    </CardContent>
-                  </Card>
-              ))}
-            </div>
-        ) : (
-            <div className="border rounded-md overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/50">
-                  <tr>
-                    <th className="text-left p-3 font-medium">Name</th>
-                    <th className="text-left p-3 font-medium">Role</th>
-                    <th className="text-left p-3 font-medium">Status</th>
-                    <th className="text-left p-3 font-medium">Tenant Access</th>
-                    <th className="text-left p-3 font-medium">Last Active</th>
-                    <th className="text-right p-3 font-medium">Actions</th>
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">{member.lastActive}</td>
+                    <td className="p-3 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditRole(member)}>
+                            <Shield className="h-4 w-4 mr-2" />
+                            Edit Role
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <UserCog className="h-4 w-4 mr-2" />
+                            Impersonate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteMember(member)}>
+                            <Trash className="h-4 w-4 mr-2" />
+                            Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
                   </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                  {filteredMembers.map((member) => (
-                      <tr key={member.id} className="hover:bg-muted/30">
-                        <td className="p-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                              <AvatarFallback>{member.name ? member.name.charAt(0) : "U"}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{member.name}</div>
-                              <div className="text-xs text-muted-foreground">{member.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <Badge className={roleBadgeColors[member.role] || roleBadgeColors.viewer}>
-                            {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1) : "User"}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <Badge
-                              variant={statusBadgeVariants[member.status as keyof typeof statusBadgeVariants] || "secondary"}
-                          >
-                            {member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : "Unknown"}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            {member.tenants &&
-                                Array.isArray(member.tenants) &&
-                                member.tenants.map((tenant) => (
-                                    <div
-                                        key={tenant.id}
-                                        className="h-5 w-5 rounded-full border-2 border-background"
-                                        style={{ backgroundColor: tenant.color }}
-                                        title={tenant.name}
-                                    />
-                                ))}
-                          </div>
-                        </td>
-                        <td className="p-3 text-sm text-muted-foreground">{member.lastActive}</td>
-                        <td className="p-3 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditRole(member)}>
-                                <Shield className="h-4 w-4 mr-2" />
-                                Edit Role
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Profile
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <UserCog className="h-4 w-4 mr-2" />
-                                Impersonate
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteMember(member)}>
-                                <Trash className="h-4 w-4 mr-2" />
-                                Remove
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                  ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-        )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-        {/* Permission Editor Modal */}
-        {/* Update the PermissionEditorModal props to remove roles and permissions */}
-        <PermissionEditorModal
-            isOpen={permissionModalOpen}
-            onClose={() => {
-              setPermissionModalOpen(false)
-              // Refresh the members list after editing permissions
-              fetchMembers()
-            }}
-            member={selectedMember}
-            teamId={teamId}
-            type="team"
-        />
+      <PermissionEditorModal
+        isOpen={permissionModalOpen}
+        onClose={() => {
+          setPermissionModalOpen(false)
+          fetchMembers()
+        }}
+        member={selectedMember}
+        teamId={teamId}
+        type="team"
+      />
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove team member</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to remove {memberToDelete?.name} from this team? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                  onClick={(e) => {
-                    e.preventDefault()
-                    confirmDeleteMember()
-                  }}
-                  disabled={isDeleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Removing...
-                    </>
-                ) : (
-                    "Remove"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove team member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {memberToDelete?.name} from this team? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                confirmDeleteMember()
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                "Remove"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

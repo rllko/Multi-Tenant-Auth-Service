@@ -35,31 +35,26 @@ interface RolesPermissionsViewProps {
 }
 
 export function RolesPermissionsView({
-                                       selectedOrganization,
-                                       roles = [],
-                                       onRefresh,
-                                       isRefreshing = false,
-                                     }: RolesPermissionsViewProps) {
+  selectedOrganization,
+  roles = [],
+  onRefresh,
+  isRefreshing = false,
+}: RolesPermissionsViewProps) {
   const { toast } = useToast()
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("roles")
 
-  // Handle role selection
   const handleRoleSelect = (role: Role) => {
-    setSelectedRole(role)
     toast({
       title: "Role selected",
       description: `Selected role: ${role.name}`,
     })
   }
 
-  // Handle role creation
   const handleRoleCreate = async (role: Omit<Role, "id">) => {
     setIsSubmitting(true)
     try {
-      // Call API to create role
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles`, {
         method: "POST",
         headers: {
@@ -78,7 +73,6 @@ export function RolesPermissionsView({
         description: `Role "${role.name}" has been created successfully.`,
       })
 
-      // Refresh roles list
       if (onRefresh) {
         onRefresh()
       }
@@ -94,11 +88,9 @@ export function RolesPermissionsView({
     }
   }
 
-  // Handle role update
   const handleRoleUpdate = async (id: string, role: Partial<Role>) => {
     setIsSubmitting(true)
     try {
-      // Call API to update role
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles/${id}`, {
         method: "PATCH",
         headers: {
@@ -117,7 +109,6 @@ export function RolesPermissionsView({
         description: `Role "${role.name}" has been updated successfully.`,
       })
 
-      // Refresh roles list
       if (onRefresh) {
         onRefresh()
       }
@@ -133,11 +124,9 @@ export function RolesPermissionsView({
     }
   }
 
-  // Handle role deletion
   const handleRoleDelete = async (id: string) => {
     setIsSubmitting(true)
     try {
-      // Call API to delete role
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles/${id}`, {
         method: "DELETE",
         headers: {
@@ -154,7 +143,6 @@ export function RolesPermissionsView({
         description: "The role has been deleted successfully.",
       })
 
-      // Refresh roles list
       if (onRefresh) {
         onRefresh()
       }
@@ -170,61 +158,59 @@ export function RolesPermissionsView({
     }
   }
 
-  // Log the team ID to help debug
   console.log("RolesPermissionsView - Selected Organization ID:", selectedOrganization.id)
 
   return (
-      <Tabs defaultValue="roles" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="roles">Roles</TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-          </TabsList>
-          <div className="flex items-center gap-2">
-            {onRefresh && (
-                <Button variant="outline" size="sm" onClick={onRefresh} disabled={isRefreshing}>
-                  <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </Button>
-            )}
-            <Button onClick={() => setShowCreateRoleModal(true)} className={activeTab === "permissions" ? "hidden" : ""}>
-              Create Role
+    <Tabs defaultValue="roles" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <div className="flex items-center justify-between">
+        <TabsList>
+          <TabsTrigger value="roles">Roles</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+        </TabsList>
+        <div className="flex items-center gap-2">
+          {onRefresh && (
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={isRefreshing}>
+              <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
-          </div>
+          )}
+          <Button onClick={() => setShowCreateRoleModal(true)} className={activeTab === "permissions" ? "hidden" : ""}>
+            Create Role
+          </Button>
         </div>
+      </div>
 
-        <TabsContent value="roles" className="space-y-4">
-          <RolesTable
-              roles={roles}
-              onRoleSelect={handleRoleSelect}
-              onRoleCreate={handleRoleCreate}
-              onRoleUpdate={handleRoleUpdate}
-              onRoleDelete={handleRoleDelete}
-              loading={isSubmitting || isRefreshing}
-              teamId={selectedOrganization.id}
-              onRefresh={onRefresh || (() => {})}
-          />
-        </TabsContent>
-
-        <TabsContent value="permissions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Permissions</CardTitle>
-              <CardDescription>Manage permissions that can be assigned to roles</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PermissionsManagement teamId={selectedOrganization.id} onRefresh={onRefresh} isRefreshing={isRefreshing} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Create Role Modal */}
-        <CreateRoleModal
-            isOpen={showCreateRoleModal}
-            onClose={() => setShowCreateRoleModal(false)}
-            teamId={selectedOrganization.id}
-            onRoleCreated={onRefresh || (() => {})}
+      <TabsContent value="roles" className="space-y-4">
+        <RolesTable
+          roles={roles}
+          onRoleSelect={handleRoleSelect}
+          onRoleCreate={handleRoleCreate}
+          onRoleUpdate={handleRoleUpdate}
+          onRoleDelete={handleRoleDelete}
+          loading={isSubmitting || isRefreshing}
+          teamId={selectedOrganization.id}
+          onRefresh={onRefresh || (() => {})}
         />
-      </Tabs>
+      </TabsContent>
+
+      <TabsContent value="permissions" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Permissions</CardTitle>
+            <CardDescription>Manage permissions that can be assigned to roles</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PermissionsManagement teamId={selectedOrganization.id} onRefresh={onRefresh} isRefreshing={isRefreshing} />
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <CreateRoleModal
+        isOpen={showCreateRoleModal}
+        onClose={() => setShowCreateRoleModal(false)}
+        teamId={selectedOrganization.id}
+        onRoleCreated={onRefresh || (() => {})}
+      />
+    </Tabs>
   )
 }

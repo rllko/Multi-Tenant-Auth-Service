@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Edit, MoreHorizontal, Plus, Settings, Trash, Users } from "lucide-react"
 
-// Mock data for tenants
 const tenants = [
   {
     id: "t1",
@@ -96,7 +95,6 @@ export function TenantsView() {
   }
 
   const handleSave = () => {
-    // In a real app, this would call an API to save the tenant
     console.log("Saving tenant:", selectedTenant ? "update" : "create", newTenant)
     setOpen(false)
   }

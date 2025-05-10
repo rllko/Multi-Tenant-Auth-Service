@@ -17,7 +17,6 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-// Mock notifications data
 const notifications = [
   {
     id: "notif_1",
@@ -39,7 +38,6 @@ const notifications = [
   },
 ]
 
-// Mock data for organizations
 const organizations = [
   { id: "org_1", name: "Acme Inc.", members: 12 },
   { id: "org_2", name: "Globex Corporation", members: 8 },
@@ -52,7 +50,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
   const [selectedOrganization, setSelectedOrganization] = useState(organizations[0])
 
   const handleNotificationClick = () => {
-    // Show the most recent notification as a toast
     const latestNotification = notifications[0]
 
     toast({
@@ -61,7 +58,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
       duration: 5000,
     })
 
-    // Show a second toast after a short delay
     setTimeout(() => {
       toast({
         title: `${notifications.length - 1} more notifications`,
@@ -74,7 +70,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
   const handleOrganizationChange = (value) => {
     const org = organizations.find((org) => org.id === value)
     setSelectedOrganization(org)
-    // In a real app, you would dispatch an event or use context to update the organization globally
   }
 
   return (
@@ -85,7 +80,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
             {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
 
-          {/* Organization Selector */}
           <div className="hidden md:flex items-center">
             <Select value={selectedOrganization.id} onValueChange={handleOrganizationChange}>
               <SelectTrigger className="w-[180px] h-8 border-none bg-transparent hover:bg-secondary focus:ring-0">
@@ -108,7 +102,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
           </div>
         </div>
 
-        {/* Search - hidden by default on mobile, toggleable */}
         <div className={`${showSearch ? "flex flex-1 mx-2" : "hidden md:flex"} relative md:w-[250px] lg:w-[350px]`}>
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -119,12 +112,10 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Search toggle for mobile */}
           <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" onClick={() => setShowSearch(!showSearch)}>
             {showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
           </Button>
 
-          {/* Mobile Organization Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -147,16 +138,13 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={handleNotificationClick}>
             <Bell className="h-4 w-4" />
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-keyauth-red"></span>
           </Button>
 
-          {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1 hidden md:flex h-8 sm:h-9">
@@ -178,7 +166,6 @@ export function DashboardHeader({ toggleSidebar, isSidebarOpen }) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Mobile avatar */}
           <Avatar className="h-7 w-7 md:hidden">
             <AvatarImage src="/placeholder.svg?height=28&width=28" alt="User" />
             <AvatarFallback className="bg-secondary text-foreground text-xs">JD</AvatarFallback>

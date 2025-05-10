@@ -37,7 +37,6 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true)
 
-      // Get the auth token from localStorage
       const token = localStorage.getItem("authToken")
 
       if (!token) {
@@ -46,27 +45,17 @@ export function TeamProvider({ children }: { children: ReactNode }) {
         setTeamsLoaded(true)
         setIsLoading(false)
 
-        // Show toast notification
         toast({
           title: "Authentication Error",
           description: "Please log in to access this page",
           variant: "destructive",
         })
 
-        // Redirect to login page
         router.push("/login")
         return
       }
 
-      // Ensure we're using the absolute API URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
-      if (!apiUrl) {
-        console.error("API URL is not defined in environment variables")
-        throw new Error("API configuration error")
-      }
-
-      // Use the absolute URL for the API request
-      const response = await fetch(`${apiUrl}/teams`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -76,7 +65,6 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         let errorMessage = `Failed to fetch teams: ${response.status}`
 
-        // Handle specific status codes
         if (response.status === 401) {
           errorMessage = "Your session has expired. Please log in again."
           localStorage.removeItem("authToken")
@@ -96,7 +84,6 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       setTeams(data)
       setTeamsLoaded(true)
 
-      // Try to get selected team from localStorage
       const savedTeamId = localStorage.getItem("selectedTeamId")
       if (savedTeamId && data.length > 0) {
         const savedTeam = data.find((team: Team) => team.id === savedTeamId)
@@ -110,11 +97,9 @@ export function TeamProvider({ children }: { children: ReactNode }) {
         setSelectedTeam(data[0])
         localStorage.setItem("selectedTeamId", data[0].id)
       } else {
-        // No teams available
         setSelectedTeam(null)
         localStorage.removeItem("selectedTeamId")
 
-        // Show toast notification for no teams
         toast({
           title: "No Teams Available",
           description: "You don't have any teams. Please create a team to continue.",
@@ -124,12 +109,10 @@ export function TeamProvider({ children }: { children: ReactNode }) {
 
       setError(null)
     } catch (err) {
-      console.error("Error fetching teams:", err)
       const errorMessage = err instanceof Error ? err.message : "Failed to load teams"
       setError(errorMessage)
       setTeamsLoaded(true)
 
-      // Show toast notification for the error
       toast({
         title: "Error Loading Teams",
         description: errorMessage,
@@ -141,48 +124,42 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Only fetch teams if we're not on the login or register page
     const pathname = window.location.pathname
     if (pathname !== "/login" && pathname !== "/register") {
       fetchTeams()
     }
   }, [toast, router])
 
-  // Update localStorage when selected team changes
   const handleSetSelectedTeam = (team: Team) => {
     setSelectedTeam(team)
     localStorage.setItem("selectedTeamId", team.id)
 
-    // Show toast notification for team switch
     toast({
       title: "Team Switched",
       description: `You are now working in ${team.name}`,
       variant: "default",
     })
-
-    console.log("Team switched to:", team.name)
   }
 
-  // Function to refresh teams list
   const refreshTeams = async () => {
     await fetchTeams()
   }
 
   return (
-      <TeamContext.Provider
-          value={{
-            teams,
-            setTeams,
-            selectedTeam,
-            setSelectedTeam: handleSetSelectedTeam,
-            isLoading,
-            teamsLoaded,
-            error,
-            refreshTeams,
-          }}
-      >
-        {children}
-      </TeamContext.Provider>
+    <TeamContext.Provider
+      value={{
+        teams,
+        setTeams,
+        selectedTeam,
+        setSelectedTeam: handleSetSelectedTeam,
+        isLoading,
+        teamsLoaded,
+        error,
+        refreshTeams,
+      }}
+    >
+      {children}
+    </TeamContext.Provider>
   )
 }
 

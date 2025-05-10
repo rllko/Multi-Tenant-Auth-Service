@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-// User schema
 export const UserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
@@ -12,10 +11,10 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>
 
-// Team schema
 export const TeamSchema = z.object({
   id: z.string(),
   name: z.string(),
+  slug: z.string(),
   logo: z.string().url().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -23,7 +22,6 @@ export const TeamSchema = z.object({
 
 export type Team = z.infer<typeof TeamSchema>
 
-// Team Member schema
 export const TeamMemberSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -36,7 +34,6 @@ export const TeamMemberSchema = z.object({
 
 export type TeamMember = z.infer<typeof TeamMemberSchema>
 
-// Application schema
 export const ApplicationSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -49,7 +46,6 @@ export const ApplicationSchema = z.object({
 
 export type Application = z.infer<typeof ApplicationSchema>
 
-// License schema
 export const LicenseSchema = z.object({
   id: z.string(),
   appId: z.string(),
@@ -63,7 +59,6 @@ export const LicenseSchema = z.object({
 
 export type License = z.infer<typeof LicenseSchema>
 
-// Session schema
 export const SessionSchema = z.object({
   id: z.string(),
   appId: z.string(),
@@ -76,7 +71,6 @@ export const SessionSchema = z.object({
 
 export type Session = z.infer<typeof SessionSchema>
 
-// OAuth Client schema
 export const OAuthClientSchema = z.object({
   id: z.string(),
   appId: z.string(),
@@ -90,7 +84,6 @@ export const OAuthClientSchema = z.object({
 
 export type OAuthClient = z.infer<typeof OAuthClientSchema>
 
-// Role schema
 export const RoleSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -102,7 +95,6 @@ export const RoleSchema = z.object({
 
 export type Role = z.infer<typeof RoleSchema>
 
-// Permission schema
 export const PermissionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -115,7 +107,6 @@ export const PermissionSchema = z.object({
 
 export type Permission = z.infer<typeof PermissionSchema>
 
-// Activity Log schema
 export const ActivityLogSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -130,7 +121,6 @@ export const ActivityLogSchema = z.object({
 
 export type ActivityLog = z.infer<typeof ActivityLogSchema>
 
-// Analytics schema
 export const AnalyticsSchema = z.object({
   totalUsers: z.number(),
   activeUsers: z.number(),
@@ -150,7 +140,6 @@ export const AnalyticsSchema = z.object({
 
 export type Analytics = z.infer<typeof AnalyticsSchema>
 
-// Settings schema
 export const SettingsSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -162,7 +151,6 @@ export const SettingsSchema = z.object({
 
 export type Settings = z.infer<typeof SettingsSchema>
 
-// Tenant schema
 export const TenantSchema = z.object({
   id: z.string(),
   teamId: z.string(),
@@ -175,7 +163,6 @@ export const TenantSchema = z.object({
 
 export type Tenant = z.infer<typeof TenantSchema>
 
-// File schema
 export const FileSchema = z.object({
   id: z.string(),
   appId: z.string(),
@@ -188,49 +175,41 @@ export const FileSchema = z.object({
 
 export type File = z.infer<typeof FileSchema>
 
-// Login schema
 export const LoginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string(),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 })
 
-// Register schema
 export const RegisterSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 })
 
-// Create Team schema
 export const CreateTeamSchema = z.object({
   name: z.string().min(2, { message: "Team name must be at least 2 characters" }),
 })
 
-// Create Application schema
 export const CreateApplicationSchema = z.object({
   name: z.string().min(2, { message: "Application name must be at least 2 characters" }),
   description: z.string().optional(),
 })
 
-// Create License schema
 export const CreateLicenseSchema = z.object({
   name: z.string().optional(),
   expiresAt: z.string().datetime().optional(),
 })
 
-// Create OAuth Client schema
 export const CreateOAuthClientSchema = z.object({
   name: z.string().min(2, { message: "Client name must be at least 2 characters" }),
   redirectUris: z.array(z.string().url({ message: "Please enter valid URLs" })),
 })
 
-// Create Role schema
 export const CreateRoleSchema = z.object({
   name: z.string().min(2, { message: "Role name must be at least 2 characters" }),
   description: z.string().optional(),
 })
 
-// Create Tenant schema
 export const CreateTenantSchema = z.object({
   name: z.string().min(2, { message: "Tenant name must be at least 2 characters" }),
   domain: z.string().optional(),

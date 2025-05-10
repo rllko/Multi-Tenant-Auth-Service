@@ -25,7 +25,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-// Mock data for tenants
 const tenants = [
   { id: "t1", name: "Acme Inc." },
   { id: "t2", name: "Globex Corporation" },
@@ -40,7 +39,6 @@ export function TenantSelector() {
   const [newTenantName, setNewTenantName] = useState("")
 
   const handleCreateTenant = () => {
-    // In a real app, this would call an API to create the tenant
     console.log("Creating tenant:", newTenantName)
     setCreateOpen(false)
     setNewTenantName("")

@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 
-// Define all permissions grouped by category
 export const permissionGroups = [
   {
     id: "license",
@@ -118,7 +117,6 @@ export function PermissionsManager({ selectedEntity = null, onSave = () => {}, s
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
 
-  // Filter permissions based on search query
   const filterPermissions = (permissions) => {
     if (!searchQuery) return permissions
     return permissions.filter((permission) => permission.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -139,11 +137,9 @@ export function PermissionsManager({ selectedEntity = null, onSave = () => {}, s
     if (!group) return
 
     if (isSelected) {
-      // Add all permissions from this group
       const permissionIds = group.permissions.map((p) => p.id)
       setSelectedPermissions((current) => [...new Set([...current, ...permissionIds])])
     } else {
-      // Remove all permissions from this group
       setSelectedPermissions((current) => current.filter((id) => !group.permissions.some((p) => p.id === id)))
     }
   }

@@ -1,7 +1,5 @@
-// Scope impact levels
 export type ScopeImpactLevel = "low" | "medium" | "high" | "critical"
 
-// Scope category
 export interface ScopeCategory {
   id: string
   name: string
@@ -9,28 +7,25 @@ export interface ScopeCategory {
   icon?: string
 }
 
-// Scope definition
 export interface Scope {
   id: string
   name: string
   description: string
   category: string
   impact: ScopeImpactLevel
-  permissions: string[] // References to specific permissions
+  permissions: string[]
   isCustom?: boolean
 }
 
-// Role definition
 export interface Role {
   id: string
   name: string
   description: string
-  scopes: string[] // References to scope IDs
+  scopes: string[]
   isDefault?: boolean
   isCustom?: boolean
 }
 
-// Predefined scope categories
 export const scopeCategories: ScopeCategory[] = [
   {
     id: "user",
@@ -70,7 +65,6 @@ export const scopeCategories: ScopeCategory[] = [
   },
 ]
 
-// Predefined scopes
 export const predefinedScopes: Scope[] = [
   {
     id: "user.read",
@@ -255,7 +249,6 @@ export const predefinedScopes: Scope[] = [
   },
 ]
 
-// Predefined roles
 export const predefinedRoles: Role[] = [
   {
     id: "admin",
@@ -294,7 +287,6 @@ export const predefinedRoles: Role[] = [
   },
 ]
 
-// Helper function to get impact level color
 export function getImpactLevelColor(level: ScopeImpactLevel): string {
   switch (level) {
     case "low":
@@ -310,7 +302,6 @@ export function getImpactLevelColor(level: ScopeImpactLevel): string {
   }
 }
 
-// Helper function to get impact level description
 export function getImpactLevelDescription(level: ScopeImpactLevel): string {
   switch (level) {
     case "low":
