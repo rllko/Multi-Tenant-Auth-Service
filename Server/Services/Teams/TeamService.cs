@@ -26,6 +26,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
             SELECT t.*
             FROM teams t
             JOIN team_tenants tt ON t.id = tt.team
+            JOIN roles r ON tt.role = r.role_id
             WHERE tt.tenant = @UserId;
         ";
 

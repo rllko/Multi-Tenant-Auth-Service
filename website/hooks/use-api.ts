@@ -1,266 +1,264 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
-import { apiService } from "@/lib/api-service"
+import {useCallback, useEffect, useState} from "react"
+import {useToast} from "@/hooks/use-toast"
+import {apiService} from "@/lib/api-service"
 
 export function useFetch<T>(
-  fetchFn: () => Promise<T>,
-  dependencies: any[] = [],
-  initialData: T | null = null,
-  errorMessage = "Failed to fetch data",
+    fetchFn: () => Promise<T>,
+    dependencies: never[] = [],
+    initialData: T | null = null,
+    errorMessage = "Failed to fetch data",
 ) {
-  const [data, setData] = useState<T | null>(initialData)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [isTimeout, setIsTimeout] = useState(false)
-  const { toast } = useToast()
+    const [data, setData] = useState<T | null>(initialData)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<Error | null>(null)
+    const [isTimeout, setIsTimeout] = useState(false)
+    const {toast} = useToast()
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setIsTimeout(false)
-    try {
-      const result = await fetchFn()
-      setData(result)
-      setError(null)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      setError(error)
+    const fetchData = useCallback(async () => {
+        setIsLoading(true)
+        setIsTimeout(false)
+        try {
+            const result = await fetchFn()
+            setData(result)
+            setError(null)
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err))
+            setError(error)
 
-      const isTimeoutError = error.message.includes("timed out")
-      const isAuthError =
-        error.message.includes("401") ||
-        error.message.includes("unauthorized") ||
-        error.message.includes("Unauthorized")
+            const isTimeoutError = error.message.includes("timed out")
+            const isAuthError =
+                error.message.includes("401") ||
+                error.message.includes("unauthorized") ||
+                error.message.includes("Unauthorized")
 
-      setIsTimeout(isTimeoutError)
+            setIsTimeout(isTimeoutError)
 
-      if (isAuthError && typeof window !== "undefined") {
-        toast({
-          title: "Authentication Error",
-          description: "Your session has expired. Please log in again.",
-          variant: "destructive",
-        })
+            if (isAuthError && typeof window !== "undefined") {
+                toast({
+                    title: "Authentication Error",
+                    description: "Your session has expired. Please log in again.",
+                    variant: "destructive",
+                })
 
-        localStorage.removeItem(EN_NAME)
+                setTimeout(() => {
+                    window.location.href = "/login"
+                }, 1500)
+                return
+            }
 
-        setTimeout(() => {
-          window.location.href = "/login"
-        }, 1500)
-        return
-      }
+            toast({
+                title: isTimeoutError ? "Request Timeout" : "Error",
+                description: isTimeoutError
+                    ? "The request timed out. Please check your connection and try again."
+                    : errorMessage,
+                variant: "destructive",
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }, [fetchFn, errorMessage, toast])
 
-      toast({
-        title: isTimeoutError ? "Request Timeout" : "Error",
-        description: isTimeoutError
-          ? "The request timed out. Please check your connection and try again."
-          : errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [fetchFn, errorMessage, toast])
+    useEffect(() => {
+        fetchData()
+    }, [...dependencies, fetchData])
 
-  useEffect(() => {
-    fetchData()
-  }, [...dependencies, fetchData])
+    const refetch = useCallback(async () => {
+        await fetchData()
+    }, [fetchData])
 
-  const refetch = useCallback(() => {
-    fetchData()
-  }, [fetchData])
-
-  return { data, isLoading, error, isTimeout, refetch }
+    return {data, isLoading, error, isTimeout, refetch}
 }
 
 export function useMutation<T, P>(
-  mutationFn: (params: P) => Promise<T>,
-  options: {
-    onSuccess?: (data: T) => void
-    onError?: (error: Error) => void
-    successMessage?: string
-    errorMessage?: string
-  } = {},
+    mutationFn: (params: P) => Promise<T>,
+    options: {
+        onSuccess?: (data: T) => void
+        onError?: (error: Error) => void
+        successMessage?: string
+        errorMessage?: string
+    } = {},
 ) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-  const [isTimeout, setIsTimeout] = useState(false)
-  const [data, setData] = useState<T | null>(null)
-  const { toast } = useToast()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const [isTimeout, setIsTimeout] = useState(false)
+    const [data, setData] = useState<T | null>(null)
+    const {toast} = useToast()
 
-  const mutate = async (params: P) => {
-    setIsLoading(true)
-    setIsTimeout(false)
-    try {
-      const result = await mutationFn(params)
-      setData(result)
-      setError(null)
-      if (options.successMessage) {
-        toast({
-          title: "Success",
-          description: options.successMessage,
-        })
-      }
-      if (options.onSuccess) {
-        options.onSuccess(result)
-      }
-      return result
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      setError(error)
+    const mutate = async (params: P) => {
+        setIsLoading(true)
+        setIsTimeout(false)
+        try {
+            const result = await mutationFn(params)
+            setData(result)
+            setError(null)
+            if (options.successMessage) {
+                toast({
+                    title: "Success",
+                    description: options.successMessage,
+                })
+            }
+            if (options.onSuccess) {
+                options.onSuccess(result)
+            }
+            return result
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err))
+            setError(error)
 
-      const isTimeoutError = error.message.includes("timed out")
-      setIsTimeout(isTimeoutError)
+            const isTimeoutError = error.message.includes("timed out")
+            setIsTimeout(isTimeoutError)
 
-      toast({
-        title: isTimeoutError ? "Request Timeout" : "Error",
-        description: isTimeoutError
-          ? "The request timed out. Please check your connection and try again."
-          : options.errorMessage || error.message,
-        variant: "destructive",
-      })
-      if (options.onError) {
-        options.onError(error)
-      }
-      throw error
-    } finally {
-      setIsLoading(false)
+            toast({
+                title: isTimeoutError ? "Request Timeout" : "Error",
+                description: isTimeoutError
+                    ? "The request timed out. Please check your connection and try again."
+                    : options.errorMessage || error.message,
+                variant: "destructive",
+            })
+            if (options.onError) {
+                options.onError(error)
+            }
+            throw error
+        } finally {
+            setIsLoading(false)
+        }
     }
-  }
 
-  return { mutate, isLoading, error, isTimeout, data }
+    return {mutate, isLoading, error, isTimeout, data}
 }
 
 export function useTeams() {
-  return useFetch(() => apiService.teams.getTeams(), [], [], "Failed to fetch teams")
+    return useFetch(() => apiService.teams.getTeams(), [], [], "Failed to fetch teams")
 }
 
 export function useTeam(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.teams.getTeam(teamId) : Promise.resolve(null)),
-    [teamId],
-    null,
-    "Failed to fetch team details",
-  )
+    return useFetch(
+        () => (teamId ? apiService.teams.getTeam(teamId) : Promise.resolve(null)),
+        [teamId],
+        null,
+        "Failed to fetch team details",
+    )
 }
 
 export function useTeamMembers(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.teams.getTeamMembers(teamId) : Promise.resolve([])),
-    [teamId],
-    [],
-    "Failed to fetch team members",
-  )
+    return useFetch(
+        () => (teamId ? apiService.teams.getTeamMembers(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch team members",
+    )
 }
 
 export function useApps(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.apps.getApps(teamId) : Promise.resolve([])),
-    [teamId],
-    [],
-    "Failed to fetch applications",
-  )
+    return useFetch(
+        () => (teamId ? apiService.apps.getApps(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch applications",
+    )
 }
 
 export function useApp(teamId: string | null, appId: string | null) {
-  return useFetch(
-    () => (teamId && appId ? apiService.apps.getApp(teamId, appId) : Promise.resolve(null)),
-    [teamId, appId],
-    null,
-    "Failed to fetch application details",
-  )
+    return useFetch(
+        () => (teamId && appId ? apiService.apps.getApp(teamId, appId) : Promise.resolve(null)),
+        [teamId, appId],
+        null,
+        "Failed to fetch application details",
+    )
 }
 
 export function useLicenses(teamId: string | null, appId: string | null) {
-  return useFetch(
-    () => (teamId && appId ? apiService.licenses.getLicenses(teamId, appId) : Promise.resolve([])),
-    [teamId, appId],
-    [],
-    "Failed to fetch licenses",
-  )
+    return useFetch(
+        () => (teamId && appId ? apiService.licenses.getLicenses(teamId, appId) : Promise.resolve([])),
+        [teamId, appId],
+        [],
+        "Failed to fetch licenses",
+    )
 }
 
 export function useSessions(teamId: string | null, appId: string | null) {
-  return useFetch(
-    () => (teamId && appId ? apiService.sessions.getSessions(teamId, appId) : Promise.resolve([])),
-    [teamId, appId],
-    [],
-    "Failed to fetch sessions",
-  )
+    return useFetch(
+        () => (teamId && appId ? apiService.sessions.getSessions(teamId, appId) : Promise.resolve([])),
+        [teamId, appId],
+        [],
+        "Failed to fetch sessions",
+    )
 }
 
 export function useOAuthClients(teamId: string | null, appId: string | null) {
-  return useFetch(
-    () => (teamId && appId ? apiService.oauth.getClients(teamId, appId) : Promise.resolve([])),
-    [teamId, appId],
-    [],
-    "Failed to fetch OAuth clients",
-  )
+    return useFetch(
+        () => (teamId && appId ? apiService.oauth.getClients(teamId, appId) : Promise.resolve([])),
+        [teamId, appId],
+        [],
+        "Failed to fetch OAuth clients",
+    )
 }
 
 export function useRoles(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.roles.getRoles(teamId) : Promise.resolve([])),
-    [teamId],
-    [],
-    "Failed to fetch roles",
-  )
+    return useFetch(
+        () => (teamId ? apiService.roles.getRoles(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch roles",
+    )
 }
 
 export function usePermissions(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.permissions.getPermissions(teamId) : Promise.resolve([])),
-    [teamId],
-    [],
-    "Failed to fetch permissions",
-  )
+    return useFetch(
+        () => (teamId ? apiService.permissions.getPermissions(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch permissions",
+    )
 }
 
 export function useActivity(teamId: string | null, filters?: any) {
-  return useFetch(
-    () => (teamId ? apiService.activity.getActivity(teamId, filters) : Promise.resolve([])),
-    [teamId, JSON.stringify(filters)],
-    [],
-    "Failed to fetch activity logs",
-  )
+    return useFetch(
+        () => (teamId ? apiService.activity.getActivity(teamId, filters) : Promise.resolve([])),
+        [teamId, JSON.stringify(filters)],
+        [],
+        "Failed to fetch activity logs",
+    )
 }
 
 export function useAnalytics(teamId: string | null, appId?: string | null, period?: string) {
-  return useFetch(
-    () => (teamId ? apiService.analytics.getStats(teamId, appId || undefined, period) : Promise.resolve({})),
-    [teamId, appId, period],
-    {},
-    "Failed to fetch analytics data",
-  )
+    return useFetch(
+        () => (teamId ? apiService.analytics.getStats(teamId, appId || undefined, period) : Promise.resolve({})),
+        [teamId, appId, period],
+        {},
+        "Failed to fetch analytics data",
+    )
 }
 
 export function useSettings(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.settings.getSettings(teamId) : Promise.resolve({})),
-    [teamId],
-    {},
-    "Failed to fetch settings",
-  )
+    return useFetch(
+        () => (teamId ? apiService.settings.getSettings(teamId) : Promise.resolve({})),
+        [teamId],
+        {},
+        "Failed to fetch settings",
+    )
 }
 
 export function useTenants(teamId: string | null) {
-  return useFetch(
-    () => (teamId ? apiService.tenants.getTenants(teamId) : Promise.resolve([])),
-    [teamId],
-    [],
-    "Failed to fetch tenants",
-  )
+    return useFetch(
+        () => (teamId ? apiService.tenants.getTenants(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch tenants",
+    )
 }
 
 export function useFiles(teamId: string | null, appId: string | null) {
-  return useFetch(
-    () => (teamId && appId ? apiService.files.getFiles(teamId, appId) : Promise.resolve([])),
-    [teamId, appId],
-    [],
-    "Failed to fetch files",
-  )
+    return useFetch(
+        () => (teamId && appId ? apiService.files.getFiles(teamId, appId) : Promise.resolve([])),
+        [teamId, appId],
+        [],
+        "Failed to fetch files",
+    )
 }
 
 export function useCurrentUser() {
-  return useFetch(() => apiService.auth.getCurrentUser(), [], null, "Failed to fetch user profile")
+    return useFetch(() => apiService.auth.getCurrentUser(), [], null, "Failed to fetch user profile")
 }

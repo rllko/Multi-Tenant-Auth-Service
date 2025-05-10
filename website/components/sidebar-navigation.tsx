@@ -1,12 +1,11 @@
 "use client"
 
-import {useState, useEffect} from "react"
+import {useEffect, useState} from "react"
 import Link from "next/link"
-import {useRouter} from "next/navigation"
-import {usePathname} from "next/navigation"
+import {usePathname, useRouter} from "next/navigation"
 import {cn} from "@/lib/utils"
 import {useToast} from "@/hooks/use-toast"
-import apiService from "@/lib/api-service"
+import apiService, {appsApi, isAuthenticated} from "@/lib/api-service"
 import {
     ActivitySquare,
     AlertCircle,
@@ -21,7 +20,7 @@ import {
     Settings,
     Users,
 } from "lucide-react"
-import type {AppSchema} from "@/lib/schemas"
+
 import type {z} from "zod"
 import {useTeam} from "@/contexts/team-context"
 import {CreateTeamModal} from "./create-team-modal"
@@ -44,10 +43,8 @@ export function SidebarNavigation({className}: SidebarNavigationProps) {
     const handleLogout = async () => {
         try {
             setIsLoggingOut(true)
-            console.log("AAAAAAAAAAAAAA");
-            const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
 
-            if (token) {
+            if (!isAuthenticated()) {
                 await apiService.auth.logout()
             }
 
@@ -83,13 +80,7 @@ export function SidebarNavigation({className}: SidebarNavigationProps) {
             try {
                 setIsLoading(true)
 
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps`)
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch apps: ${response.status}`)
-                }
-
-                const data = await response.json()
+                const data: object = await appsApi.getApps(selectedTeam.id)
                 setApps(data)
                 setError(null)
             } catch (err) {

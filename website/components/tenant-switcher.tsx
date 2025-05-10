@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons"
-import { AlertCircle } from "lucide-react"
-import { Loader2 } from "lucide-react"
+import {useState} from "react"
+import {CaretSortIcon, CheckIcon, PlusCircledIcon} from "@radix-ui/react-icons"
+import {AlertCircle, Loader2} from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import {cn} from "@/lib/utils"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Button} from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -26,226 +26,212 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useTeam } from "@/contexts/team-context"
-import { useState } from "react"
-import { toast } from "@/components/ui/use-toast"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
+import {useTeam} from "@/contexts/team-context"
+import {toast} from "@/components/ui/use-toast"
 import {CONSTANTS} from "@/app/const";
+import {teamsApi} from "@/lib/api-service";
 
 export function TenantSwitcher() {
-  const [open, setOpen] = React.useState(false)
-  const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const { teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded, setTeams } = useTeam()
-  const [newTeamName, setNewTeamName] = useState("")
-  const [isCreatingTeam, setIsCreatingTeam] = useState(false)
+    const [open, setOpen] = React.useState(false)
+    const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
+    const {teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded, setTeams} = useTeam()
+    const [newTeamName, setNewTeamName] = useState("")
+    const [isCreatingTeam, setIsCreatingTeam] = useState(false)
 
-  if (isLoading) {
-    return (
-      <Button variant="outline" className="w-[200px] justify-start">
-        <div className="h-5 w-5 rounded-full bg-muted animate-pulse mr-2" />
-        <span className="w-20 h-4 bg-muted animate-pulse rounded"></span>
-      </Button>
-    )
-  }
-  !isLoading && teamsLoaded && teams.length === 0 && (
-    <div className="px-2 py-1.5 text-sm">
-      <div className="flex items-center gap-2 text-amber-600">
-        <AlertCircle className="h-4 w-4" />
-        <span>No teams available</span>
-      </div>
-      <p className="text-xs text-muted-foreground mt-1">Create a team to get started</p>
-    </div>
-  )
-
-  const handleCreateTeam = async (e) => {
-    e.preventDefault()
-    if (!newTeamName.trim()) {
-      toast({
-        title: "Error",
-        description: "Team name cannot be empty",
-        variant: "destructive",
-      })
-      return
+    if (isLoading) {
+        return (
+            <Button variant="outline" className="w-[200px] justify-start">
+                <div className="h-5 w-5 rounded-full bg-muted animate-pulse mr-2"/>
+                <span className="w-20 h-4 bg-muted animate-pulse rounded"></span>
+            </Button>
+        )
     }
-
-    try {
-      setIsCreatingTeam(true)
-
-      // Get the auth token from localStorage
-      const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
-
-      if (!token) {
-        toast({
-          title: "Authentication Error",
-          description: "Please log in to create a team",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: newTeamName,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to create team: ${response.status}`)
-      }
-
-      const newTeam = await response.json()
-
-      // Update the teams list and select the new team
-      setTeams([...teams, newTeam])
-      setSelectedTeam(newTeam)
-      localStorage.setItem("selectedTeamId", newTeam.id)
-
-      // Close the modal and reset the form
-      setOpen(false)
-      setNewTeamName("")
-
-      toast({
-        title: "Team Created",
-        description: `${newTeam.name} has been created successfully`,
-      })
-    } catch (error) {
-      console.error("Error creating team:", error)
-      toast({
-        title: "Error Creating Team",
-        description: error instanceof Error ? error.message : "Failed to create team",
-        variant: "destructive",
-      })
-    } finally {
-      setIsCreatingTeam(false)
-    }
-  }
-
-  return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            aria-label="Select a team"
-            className={cn("w-[200px] justify-between")}
-          >
-            {selectedTeam ? (
-              <>
-                <Avatar className="mr-2 h-5 w-5">
-                  <AvatarImage
-                    src={selectedTeam.logo || `/placeholder.svg?height=32&width=32`}
-                    alt={selectedTeam.name}
-                  />
-                  <AvatarFallback>{selectedTeam.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                {selectedTeam.name}
-              </>
-            ) : (
-              <>Select a team</>
-            )}
-            <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandList>
-              <CommandInput placeholder="Search team..." />
-              <CommandEmpty>No team found.</CommandEmpty>
-              <CommandGroup heading="Teams">
-                {teams.map((team) => (
-                  <CommandItem
-                    key={team.id}
-                    onSelect={() => {
-                      setSelectedTeam(team)
-                      setOpen(false)
-                    }}
-                    className="text-sm"
-                  >
-                    <Avatar className="mr-2 h-5 w-5">
-                      <AvatarImage src={team.logo || `/placeholder.svg?height=32&width=32`} alt={team.name} />
-                      <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    {team.name}
-                    <CheckIcon
-                      className={cn("ml-auto h-4 w-4", selectedTeam?.id === team.id ? "opacity-100" : "opacity-0")}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-            <CommandSeparator />
-            <CommandList>
-              <CommandGroup>
-                <DialogTrigger asChild>
-                  <CommandItem
-                    onSelect={() => {
-                      setOpen(false)
-                      setShowNewTeamDialog(true)
-                    }}
-                  >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
-                  </CommandItem>
-                </DialogTrigger>
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
-          <DialogDescription>Add a new team to manage products and customers.</DialogDescription>
-        </DialogHeader>
-        <div>
-          <div className="space-y-4 py-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
-              <Input
-                id="name"
-                placeholder="Acme Inc."
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-              />
+    !isLoading && teamsLoaded && teams.length === 0 && (
+        <div className="px-2 py-1.5 text-sm">
+            <div className="flex items-center gap-2 text-amber-600">
+                <AlertCircle className="h-4 w-4"/>
+                <span>No teams available</span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="plan">Subscription plan</Label>
-              <select
-                id="plan"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option>Free</option>
-                <option>Pro</option>
-                <option>Enterprise</option>
-              </select>
-            </div>
-          </div>
+            <p className="text-xs text-muted-foreground mt-1">Create a team to get started</p>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
-            Cancel
-          </Button>
-          <Button type="submit" className="w-full" disabled={isCreatingTeam} onClick={handleCreateTeam}>
-            {isCreatingTeam ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Create Team"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
+    )
+
+    const handleCreateTeam = async (e) => {
+        e.preventDefault()
+        if (!newTeamName.trim()) {
+            toast({
+                title: "Error",
+                description: "Team name cannot be empty",
+                variant: "destructive",
+            })
+            return
+        }
+
+        try {
+            setIsCreatingTeam(true)
+
+            // Get the auth token from localStorage
+            const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
+
+            if (!token) {
+                toast({
+                    title: "Authentication Error",
+                    description: "Please log in to create a team",
+                    variant: "destructive",
+                })
+                return
+            }
+
+            const newTeam = await teamsApi.createTeam(newTeamName);
+
+            // Update the teams list and select the new team
+            setTeams([...teams, newTeam])
+            setSelectedTeam(newTeam)
+            localStorage.setItem("selectedTeamId", newTeam.id)
+
+            // Close the modal and reset the form
+            setOpen(false)
+            setNewTeamName("")
+
+            toast({
+                title: "Team Created",
+                description: `${newTeam.name} has been created successfully`,
+            })
+        } catch (error) {
+            console.error("Error creating team:", error)
+            toast({
+                title: "Error Creating Team",
+                description: error instanceof Error ? error.message : "Failed to create team",
+                variant: "destructive",
+            })
+        } finally {
+            setIsCreatingTeam(false)
+        }
+    }
+
+    return (
+        <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        aria-label="Select a team"
+                        className={cn("w-[200px] justify-between")}
+                    >
+                        {selectedTeam ? (
+                            <>
+                                <Avatar className="mr-2 h-5 w-5">
+                                    <AvatarImage
+                                        src={selectedTeam.logo || `/placeholder.svg?height=32&width=32`}
+                                        alt={selectedTeam.name}
+                                    />
+                                    <AvatarFallback>{selectedTeam.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                {selectedTeam.name}
+                            </>
+                        ) : (
+                            <>Select a team</>
+                        )}
+                        <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50"/>
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                        <CommandList>
+                            <CommandInput placeholder="Search team..."/>
+                            <CommandEmpty>No team found.</CommandEmpty>
+                            <CommandGroup heading="Teams">
+                                {teams.map((team) => (
+                                    <CommandItem
+                                        key={team.id}
+                                        onSelect={() => {
+                                            setSelectedTeam(team)
+                                            setOpen(false)
+                                        }}
+                                        className="text-sm"
+                                    >
+                                        <Avatar className="mr-2 h-5 w-5">
+                                            <AvatarImage src={team.logo || `/placeholder.svg?height=32&width=32`}
+                                                         alt={team.name}/>
+                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        {team.name}
+                                        <CheckIcon
+                                            className={cn("ml-auto h-4 w-4", selectedTeam?.id === team.id ? "opacity-100" : "opacity-0")}
+                                        />
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                        <CommandSeparator/>
+                        <CommandList>
+                            <CommandGroup>
+                                <DialogTrigger asChild>
+                                    <CommandItem
+                                        onSelect={() => {
+                                            setOpen(false)
+                                            setShowNewTeamDialog(true)
+                                        }}
+                                    >
+                                        <PlusCircledIcon className="mr-2 h-5 w-5"/>
+                                        Create Team
+                                    </CommandItem>
+                                </DialogTrigger>
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create team</DialogTitle>
+                    <DialogDescription>Add a new team to manage products and customers.</DialogDescription>
+                </DialogHeader>
+                <div>
+                    <div className="space-y-4 py-2 pb-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Team name</Label>
+                            <Input
+                                id="name"
+                                placeholder="Acme Inc."
+                                value={newTeamName}
+                                onChange={(e) => setNewTeamName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="plan">Subscription plan</Label>
+                            <select
+                                id="plan"
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <option>Free</option>
+                                <option>Pro</option>
+                                <option>Enterprise</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" className="w-full" disabled={isCreatingTeam} onClick={handleCreateTeam}>
+                        {isCreatingTeam ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                Creating...
+                            </>
+                        ) : (
+                            "Create Team"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
 }

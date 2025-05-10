@@ -36,6 +36,7 @@ import {
   Plus,
   Loader2,
 } from "lucide-react"
+import {appsApi, teamsApi} from "@/lib/api-service";
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -64,13 +65,7 @@ export function DashboardLayout({ children, userRole = "admin" }: DashboardLayou
 
       try {
         setLoading(true)
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/apps`)
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch applications: ${response.status}`)
-        }
-
-        const data = await response.json()
+        const data = await appsApi.getApps(selectedTeam.id)
         setApps(data)
         setError(null)
       } catch (err) {
