@@ -57,8 +57,8 @@ export function TeamProvider({children}: { children: ReactNode }) {
                 return
             }
 
-            const data = await teamsApi.getTeams();
-            
+            const data: Team[] = await teamsApi.getTeams();
+
             setTeams(data)
             setTeamsLoaded(true)
 

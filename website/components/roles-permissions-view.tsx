@@ -11,17 +11,9 @@ import {RolesTable} from "./roles-table"
 import {CreateRoleModal} from "./create-role-modal"
 import {PermissionsManagement} from "./permissions-management"
 import {CONSTANTS} from "@/app/const";
+import {rolesApi} from "@/lib/api-service";
+import {Role} from "@/models/role";
 
-type Role = {
-    id: string
-    name: string
-    description?: string
-    members?: number
-    isDefault?: boolean
-    permissions?: number
-    scopes?: string[]
-    isSystemRole?: boolean
-}
 
 interface RolesPermissionsViewProps {
     selectedOrganization: {
@@ -51,30 +43,18 @@ export function RolesPermissionsView({
         setSelectedRole(role)
         toast({
             title: "Role selected",
-            description: `Selected role: ${role.name}`,
+            description: `Selected role: ${role.role_name}`,
         })
     }
 
-    const handleRoleCreate = async (role: Omit<Role, "id">) => {
+    const handleRoleCreate = async (role: Role) => {
         setIsSubmitting(true)
         try {
-             Call API to create role
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem(CONSTANTS.TOKEN_NAME)}`,
-                },
-                body: JSON.stringify(role),
-            })
-
-            if (!response.ok) {
-                throw new Error(`Failed to create role: ${response.statusText}`)
-            }
+            await rolesApi.createRole(selectedOrganization.id, role);
 
             toast({
                 title: "Role created",
-                description: `Role "${role.name}" has been created successfully.`,
+                description: `Role "${role.role_name}" has been created successfully.`,
             })
 
             if (onRefresh) {
@@ -92,7 +72,7 @@ export function RolesPermissionsView({
         }
     }
 
-    const handleRoleUpdate = async (id: string, role: Partial<Role>) => {
+    const handleRoleUpdate = async (id: string, role: Role) => {
         setIsSubmitting(true)
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedOrganization.id}/roles/${id}`, {
@@ -110,7 +90,7 @@ export function RolesPermissionsView({
 
             toast({
                 title: "Role updated",
-                description: `Role "${role.name}" has been updated successfully.`,
+                description: `Role "${role.role_name}" has been updated successfully.`,
             })
 
             if (onRefresh) {

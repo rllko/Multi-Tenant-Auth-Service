@@ -1,6 +1,9 @@
 import {CONSTANTS} from '@/app/const'
 
 import {DEFAULT_TIMEOUT, handleApiError, withTimeout} from "./api-timeout"
+import {Team} from "@/lib/schemas";
+import {Tenant} from "@/models/tenant";
+import {Role} from "@/models/role";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -26,21 +29,14 @@ export const isAuthenticated = () => {
 }
 
 export const refreshToken = async () => {
+    type refresh = {
+        token: string
+    }
+
     try {
-        asdasasdasdasd
-        const response = await fetch(`${API_URL}/auth/tenant/refresh`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...getAuthHeader(),
-            },
+        const data: refresh = await fetchApi(`${API_URL}/auth/tenant/refresh`, {
+            method: "POST"
         })
-
-        if (!response.ok) {
-            throw new Error("Failed to refresh token")
-        }
-
-        const data = await response.json()
 
         if (data.token && typeof window !== "undefined") {
             localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)
@@ -151,19 +147,19 @@ export const authApi = {
 
 // Teams API
 export const teamsApi = {
-    getTeams: async () => {
+    getTeams: async (): Promise<Team[]> => {
         return fetchApi("/teams")
     },
-    getTeam: async (teamId: string) => {
+    getTeam: async (teamId: string): Promise<Team> => {
         return fetchApi(`/teams/${teamId}`)
     },
-    createTeam: async (name: string) => {
+    createTeam: async (name: string): Promise<Team> => {
         return fetchApi("/teams", {
             method: "POST",
             body: JSON.stringify({name}),
         })
     },
-    updateTeam: async (teamId: string, data: object) => {
+    updateTeam: async (teamId: string, data: object): Promise<void> => {
         return fetchApi(`/teams/${teamId}`, {
             method: "PUT",
             body: JSON.stringify(data),
@@ -288,12 +284,7 @@ export const rolesApi = {
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}`)
     },
-    createRole: async (teamId: string, data: {
-        name: string;
-        description: string;
-        isDefault: boolean;
-        scopes: any[]
-    }) => {
+    createRole: async (teamId: string, data: Role) => {
         if (!teamId) {
             throw new Error("Team ID is required to create a role")
         }
@@ -427,13 +418,13 @@ export const settingsApi = {
 
 // Tenants API
 export const tenantsApi = {
-    getTenants: async (teamId: string) => {
+    getTenants: async (teamId: string): Promise<Tenant[]> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch tenants")
         }
         return fetchApi(`/teams/${teamId}/tenants`)
     },
-    createTenant: async (teamId: string, data: object) => {
+    createTenant: async (teamId: string, data: object): Promise<Tenant> => {
         if (!teamId) {
             throw new Error("Team ID is required to create a tenant")
         }
@@ -442,7 +433,7 @@ export const tenantsApi = {
             body: JSON.stringify(data),
         })
     },
-    updateTenant: async (teamId: string, tenantId: string, data: object) => {
+    updateTenant: async (teamId: string, tenantId: string, data: object): Promise<Tenant> => {
         if (!teamId) {
             throw new Error("Team ID is required to update a tenant")
         }
@@ -451,34 +442,11 @@ export const tenantsApi = {
             body: JSON.stringify(data),
         })
     },
-    deleteTenant: async (teamId: string, tenantId: string) => {
+    deleteTenant: async (teamId: string, tenantId: string): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to delete a tenant")
         }
         return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, {method: "DELETE"})
-    },
-}
-
-// Files API
-export const filesApi = {
-    getFiles: async (teamId: string, appId: string) => {
-        if (!teamId || !appId) {
-            throw new Error("Team ID and App ID are required to fetch files")
-        }
-        return fetchApi(`/teams/${teamId}/apps/${appId}/files`)
-    },
-    uploadFile: async (teamId: string, appId: string) => {
-        if (!teamId || !appId) {
-            throw new Error("Team ID and App ID are required to upload a file")
-        }
-        return await filesApi.getFiles(teamId, appId)
-    },
-    deleteFile: async (teamId: string, appId: string, fileId: string): Promise<boolean> => {
-        if (!teamId || !appId || !fileId) {
-            throw new Error("Team ID, App ID, and File ID are required to delete a file")
-        }
-
-        return await filesApi.deleteFile(teamId, appId, fileId);
     },
 }
 
@@ -496,7 +464,6 @@ export const apiService = {
     analytics: analyticsApi,
     settings: settingsApi,
     tenants: tenantsApi,
-    files: filesApi,
 }
 
 export default apiService

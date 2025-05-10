@@ -4,20 +4,20 @@ import {useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
@@ -25,6 +25,7 @@ import {Badge} from "@/components/ui/badge"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Edit, MoreHorizontal, Plus, Settings, Trash, Users} from "lucide-react"
+import {Tenant} from "@/lib/schemas";
 
 const tenants = [
     {
@@ -67,20 +68,15 @@ const tenants = [
 
 export function TenantsView() {
     const [open, setOpen] = useState(false)
-    const [selectedTenant, setSelectedTenant] = useState(null)
+    const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
     const [newTenant, setNewTenant] = useState({
         name: "",
         domain: "",
         plan: "Starter",
     })
 
-    const handleEdit = (tenant) => {
+    const handleEdit = (tenant: Tenant) => {
         setSelectedTenant(tenant)
-        setNewTenant({
-            name: tenant.name,
-            domain: tenant.domain,
-            plan: tenant.plan,
-        })
         setOpen(true)
     }
 
