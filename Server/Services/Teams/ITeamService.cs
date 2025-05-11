@@ -1,5 +1,4 @@
 using System.Data;
-using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models.Entities;
 using LanguageExt;
 
@@ -10,6 +9,8 @@ public interface ITeamService
     Task<Option<Team>> GetTeamByIdAsync(Guid teamId);
     Task<Option<IEnumerable<Team>>> GetTeamsForUserAsync(Guid userId);
     Task<IEnumerable<Team>> GetAllTeamsAsync();
+    Task<Option<IEnumerable<string>>> GetScopesForUserInTeamAsync(Guid userId, Guid teamId);
+    Task<bool> CheckUserScopesAsync(Guid userId, string teamId, string permissionSlug);
 
     Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto teamDto, Guid createdBy,
         IDbTransaction? transaction = null);

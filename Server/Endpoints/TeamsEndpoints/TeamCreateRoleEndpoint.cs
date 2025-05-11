@@ -1,3 +1,4 @@
+using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
@@ -16,11 +17,10 @@ public class TeamCreateRoleEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-#warning add permission here
         Post("/teams/{teamId:guid}/roles");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        AllowAnonymous();
+        Options(x => x.WithMetadata(new RequiresPermissionAttribute("team.create_roles")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

@@ -35,7 +35,10 @@ import {
     Sun,
     Users,
 } from "lucide-react"
-import {appsApi} from "@/lib/api-service";
+import apiService, {appsApi, isAuthenticated} from "@/lib/api-service";
+import {CONSTANTS} from "@/app/const";
+import {toast} from "@/hooks/use-toast"
+import {router} from "next/client";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -53,9 +56,9 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
     const {theme, setTheme} = useTheme()
     const pathname = usePathname()
     const {selectedTeam} = useTeam()
-    const [apps, setApps] = useState([])
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const [apps, setApps] = useState<object>([])
+    const [loading, setLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -202,6 +205,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
                                         isActive={pathname === "/dashboard/team/members"}
                                         isCollapsed={false}
                                         indented
+                                        className={`${loading ? "hidden" : !error ? "" : "hidden"}`}
                                     />
                                     <NavItem
                                         href="/dashboard/team/roles"
@@ -210,6 +214,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
                                         isActive={pathname === "/dashboard/team/roles"}
                                         isCollapsed={false}
                                         indented
+                                        className={`${loading ? "hidden" : !error ? "" : "hidden"}`}
                                     />
                                     <NavItem
                                         href="/dashboard/team/activity"
@@ -218,13 +223,13 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
                                         isActive={pathname === "/dashboard/team/activity"}
                                         isCollapsed={false}
                                         indented
+                                        className={`${loading ? "hidden" : !error ? "" : "hidden"}`}
                                     />
                                 </div>
                             )}
                         </div>
 
-                        {/* Apps Section */}
-                        <div className="pt-2">
+                        <div className={`pt-2 ${!error ? "" : "hidden"}`}>
                             <div
                                 className={cn(
                                     "flex items-center justify-between p-2 rounded-md hover:bg-accent cursor-pointer",
@@ -334,13 +339,13 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
 
                         {/* Logout */}
                         <div
-
+                            onClick={handleLogout}
                             className={cn(
                                 "flex items-center p-2 rounded-md hover:bg-destructive/10 hover:text-destructive cursor-pointer mt-4",
                                 !sidebarOpen && "justify-center",
                             )}
                         >
-                            <LogOut/>
+
                             <LogOut className="h-5 w-5"/>
                             {sidebarOpen && <span className="ml-2">Logout</span>}
                         </div>
@@ -371,6 +376,34 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
             <Toaster/>
         </div>
     )
+}
+
+const handleLogout = async () => {
+    try {
+
+        if (!isAuthenticated()) {
+            await apiService.auth.logout()
+        }
+
+        localStorage.removeItem(CONSTANTS.TOKEN_NAME)
+        localStorage.removeItem("selectedTeamId")
+
+        toast({
+            title: "Logged Out",
+            description: "You have been successfully logged out.",
+            variant: "default",
+        })
+
+        router.push("/login")
+    } catch (error) {
+        console.error("Logout error:", error)
+
+        toast({
+            title: "Logout Failed",
+            description: "There was an issue logging you out. Please try again.",
+            variant: "destructive",
+        })
+    }
 }
 
 interface NavItemProps {

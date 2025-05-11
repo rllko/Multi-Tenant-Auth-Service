@@ -1,3 +1,4 @@
+using Authentication.Attributes;
 using Authentication.Services.Teams;
 using Authentication.Services.Tenants;
 using FastEndpoints;
@@ -23,22 +24,10 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
 
         var session = await tenantService.GetSessionAsync(token.Value);
 
-#warning please make this more complete, add checks
-        // check if session is active
         if (session is null)
         {
             ctx.ValidationFailures.Add(
                 new ValidationFailure("invalid_session", "Session could not be found"));
-
-            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
-
-            return;
-        }
-
-        if (session.Expires < DateTimeOffset.Now)
-        {
-            ctx.ValidationFailures.Add(
-                new ValidationFailure("expired_session", "Your session is expired"));
 
             await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
 
@@ -51,18 +40,27 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
             Console.WriteLine($"Team ID from route: {teamId}");
             var result = await teamService.GetTeamsForUserAsync(session.TenantId);
 
-            result.Match(
-                teams =>
+            await result.Match(
+                async teams =>
                 {
                     var isMember = teams.Any(t => t.Id.ToString() == teamId);
 
-                    if (!isMember)
-                        throw new UnauthorizedAccessException("You are not a member of this team.");
-
-                    return 0;
+                    if (isMember is false) await ctx.HttpContext.Response.SendForbiddenAsync(ct);
                 },
                 () => throw new UnauthorizedAccessException("Could not load teams.")
             );
+
+            var endpoint = ctx.HttpContext.GetEndpoint();
+            var permissionAttr = endpoint?.Metadata.GetMetadata<RequiresPermissionAttribute>();
+
+            if (permissionAttr is not null &&
+                await teamService.CheckUserScopesAsync(session.TenantId, teamId,
+                    permissionAttr.Permission) is false)
+            {
+                await ctx.HttpContext.Response.SendForbiddenAsync(ct);
+
+                return;
+            }
         }
 
         ctx.HttpContext.Items["Session"] = session;

@@ -1,3 +1,4 @@
+using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
@@ -17,12 +18,12 @@ public class TeamAppsEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationDt
 
     public override void Configure()
     {
-#warning add permission here
         Get("/teams/{teamId:guid}/apps");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        AllowAnonymous();
+        Options(x => x.WithMetadata(new RequiresPermissionAttribute("application.retrieve")));
     }
+
 
     public override async Task HandleAsync(CancellationToken ct)
     {

@@ -14,6 +14,18 @@ public class Scope
     public int? CategoryId { get; set; }
 }
 
+public class TenantScopeDto
+{
+}
+
+public record ScopeDto(
+    string Name,
+    string Description,
+    string? CreatedBy,
+    string Impact,
+    string Resource
+);
+
 public record ScopeCreateDto(
     string ScopeName,
     int ScopeType,

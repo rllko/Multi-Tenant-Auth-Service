@@ -1,6 +1,5 @@
 using System.Data;
 using Authentication.Database;
-using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models.Entities;
 using Dapper;
 using FluentValidation.Results;
@@ -18,22 +17,6 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         var team = await conn.QueryFirstOrDefaultAsync<Team>(sql, new { Id = teamId });
 
         return team == null ? Option<Team>.None : Option<Team>.Some(team);
-    }
-
-    public async Task<Option<IEnumerable<Team>>> GetTeamsForUserAsync(Guid userId)
-    {
-        var sql = @"
-            SELECT t.*
-            FROM teams t
-            JOIN team_tenants tt ON t.id = tt.team
-            JOIN roles r ON tt.role = r.role_id
-            WHERE tt.tenant = @UserId;
-        ";
-
-        using var conn = await connectionFactory.CreateConnectionAsync();
-        var teams = (await conn.QueryAsync<Team>(sql, new { UserId = userId })).ToList();
-
-        return teams.Any() ? Option<IEnumerable<Team>>.Some(teams) : Option<IEnumerable<Team>>.None;
     }
 
     public async Task<IEnumerable<Team>> GetAllTeamsAsync()
@@ -210,5 +193,48 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         var roles = (await conn.QueryAsync<Role>(sql, new { TeamId = teamId })).ToList();
 
         return roles.Any() ? Option<IEnumerable<Role>>.Some(roles) : Option<IEnumerable<Role>>.None;
+    }
+
+    public async Task<Option<IEnumerable<Team>>> GetTeamsForUserAsync(Guid userId)
+    {
+        var sql = @"
+            SELECT t.*
+            FROM teams t
+            JOIN team_tenants tt ON t.id = tt.team
+            WHERE tt.tenant = @UserId;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+        var teams = (await conn.QueryAsync<Team>(sql, new { UserId = userId })).ToList();
+
+        return teams.Any() ? Option<IEnumerable<Team>>.Some(teams) : Option<IEnumerable<Team>>.None;
+    }
+
+    public async Task<bool> CheckUserScopesAsync(Guid tenantId, string teamId, string permissionSlug)
+    {
+        var scopes = await GetScopesForUserInTeamAsync(tenantId, Guid.Parse(teamId));
+
+        return scopes.Match(scopeList => scopeList.Contains(permissionSlug),
+            () => false);
+    }
+
+    public async Task<Option<IEnumerable<string>>> GetScopesForUserInTeamAsync(Guid userId, Guid teamId)
+    {
+        var sql = """
+                      SELECT scopes.slug FROM team_tenants tt
+                          JOIN teams t on tt.team = t.id
+                          JOIN roles on tt.role = roles.role_id
+                          JOIN role_scopes rs on rs.role_id = roles.role_id
+                          JOIN scopes on scopes.scope_id = rs.scope_id
+                      WHERE tt.tenant = @UserId 
+                          AND tt.team = @TeamId 
+                      group by scopes.scope_id
+                      order by scopes.scope_id
+                  """;
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+        var teams = (await conn.QueryAsync<string>(sql, new { UserId = userId, teamId })).ToList();
+
+        return teams.Any() ? Option<IEnumerable<string>>.Some(teams) : Option<IEnumerable<string>>.None;
     }
 }

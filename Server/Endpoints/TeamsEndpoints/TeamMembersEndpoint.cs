@@ -1,3 +1,4 @@
+using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
@@ -17,11 +18,10 @@ public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantD
 
     public override void Configure()
     {
-#warning add permission here
         Get("/teams/{teamId:guid}/members");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        AllowAnonymous();
+        Options(x => x.WithMetadata(new RequiresPermissionAttribute("team.fetch_team_members")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

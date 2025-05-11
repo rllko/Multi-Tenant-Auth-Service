@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from "react"
 import Link from "next/link"
+
 import {usePathname, useRouter} from "next/navigation"
 import {cn} from "@/lib/utils"
 import {useToast} from "@/hooks/use-toast"
@@ -57,7 +58,7 @@ export function SidebarNavigation({className}: SidebarNavigationProps) {
                 variant: "default",
             })
 
-            router.push("/login")
+            router.push("/")
         } catch (error) {
             console.error("Logout error:", error)
 
@@ -80,7 +81,7 @@ export function SidebarNavigation({className}: SidebarNavigationProps) {
             try {
                 setIsLoading(true)
 
-                const data: object = await appsApi.getApps(selectedTeam.id)
+                const data = await appsApi.getApps(selectedTeam.id)
                 setApps(data)
                 setError(null)
             } catch (err) {

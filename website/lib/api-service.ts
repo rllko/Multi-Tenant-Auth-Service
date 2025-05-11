@@ -4,6 +4,7 @@ import {DEFAULT_TIMEOUT, handleApiError, withTimeout} from "./api-timeout"
 import {Team} from "@/lib/schemas";
 import {Tenant} from "@/models/tenant";
 import {Role} from "@/models/role";
+import {Application, UpdateApplicationDto} from "@/models/application";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -193,19 +194,19 @@ export const teamsApi = {
 
 // Applications API
 export const appsApi = {
-    getApps: async (teamId: string) => {
+    getApps: async (teamId: string): Promise<Application[]> => {
         return fetchApi(`/teams/${teamId}/apps`)
     },
-    getApp: async (teamId: string, appId: string) => {
+    getApp: async (teamId: string, appId: string): Promise<Application> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}`)
     },
-    createApp: async (teamId: string, data: object) => {
+    createApp: async (teamId: string, data: object): Promise<Application> => {
         return fetchApi(`/teams/${teamId}/apps`, {
             method: "POST",
             body: JSON.stringify(data),
         })
     },
-    updateApp: async (teamId: string, appId: string, data: object) => {
+    updateApp: async (teamId: string, appId: string, data: UpdateApplicationDto): Promise<void> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}`, {
             method: "PUT",
             body: JSON.stringify(data),
