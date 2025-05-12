@@ -1,10 +1,9 @@
-using System.Security.Claims;
+using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Logging.Enums;
 using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Tenants;
 using FastEndpoints;
-using FluentValidation.Results;
 
 namespace Authentication.Endpoints.Authentication.TenantAuthentication;
 
@@ -17,28 +16,38 @@ public class TenantRefreshEndpoint(ITenantService tenantService, IAuthLoggerServ
     {
         Claims("refresh_token");
         Post("auth/tenant/refresh");
+
         Throttle(
             5,
             60
         );
+
         PreProcessor<TenantProcessor<EmptyRequest>>();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var refreshToken = User.FindFirstValue("refresh_token")!;
-        
-        var session = await tenantService.RefreshSessionAsync(refreshToken);
+        var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
-        await session.Match(async s =>
+        if (session == null)
+        {
+            AddError("Session expired");
+            await SendErrorsAsync(cancellation: ct);
+
+            return;
+        }
+
+        var refreshResult = await tenantService.RefreshSessionAsync(session.RefreshToken);
+
+        await refreshResult.Match(async s =>
             {
                 _loggerService.LogEvent(AuthEventType.Logout, s.TenantId.ToString());
-                await SendAsync(session,cancellation:ct);
+                await SendAsync(session, cancellation: ct);
             },
             async () =>
             {
-                AddError("invalid_payload","something went wrong");
-                await SendErrorsAsync(400,ct);
+                AddError("invalid_payload", "something went wrong");
+                await SendErrorsAsync(400, ct);
             });
     }
 }

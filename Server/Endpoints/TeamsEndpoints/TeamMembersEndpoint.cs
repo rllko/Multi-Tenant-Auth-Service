@@ -21,7 +21,7 @@ public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantD
         Get("/teams/{teamId:guid}/members");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("team.fetch_team_members")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_members")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

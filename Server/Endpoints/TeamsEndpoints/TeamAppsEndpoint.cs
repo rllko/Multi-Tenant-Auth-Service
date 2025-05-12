@@ -21,7 +21,7 @@ public class TeamAppsEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationDt
         Get("/teams/{teamId:guid}/apps");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("application.retrieve")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
     }
 
 

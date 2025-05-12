@@ -20,7 +20,7 @@ public class TeamCreateRoleEndpoint : EndpointWithoutRequest
         Post("/teams/{teamId:guid}/roles");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("team.create_roles")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.create_roles")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

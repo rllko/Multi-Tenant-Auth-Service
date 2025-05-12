@@ -58,6 +58,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
     {
         var sql = @"
             SELECT s.scope_name,
+                   s.scope_id as Id,
                    'todo' as description,
                    s.created_by,
                    permission_impact_levels.name as impact,
@@ -66,7 +67,6 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
                  RIGHT JOIN scopes s on s.created_by = t.id
                  JOIN permission_impact_levels on s.impact_level_id = permission_impact_levels.id
                  JOIN scope_categories on s.category_id = scope_categories.id
-                 JOIN role_types on s.scope_type = role_types.id
             WHERE s.created_by = @TeamId or s.created_by is null
             ORDER BY permission_impact_levels.name;
         ";
@@ -75,7 +75,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
 
         var scopes = await conn.QueryAsync<dynamic>(sql, new { TeamId = teamId });
 
-        var response = scopes.Select(result => new ScopeDto(result.scope_name, result.description,
+        var response = scopes.Select(result => new ScopeDto(result.id, result.scope_name, result.description,
             result.created_by, result.impact,
             result.resource)).ToList();
 

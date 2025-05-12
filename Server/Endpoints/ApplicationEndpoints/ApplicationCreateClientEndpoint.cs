@@ -6,24 +6,24 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.ApplicationEndpoints;
 
-public class ApplicationClientsEndpoint : EndpointWithoutRequest<IEnumerable<Client>>
+public class ApplicationCreateClientEndpoint : Endpoint<CreateApplicationDto, IEnumerable<Client>>
 {
     private readonly IClientService _clientService;
 
-    public ApplicationClientsEndpoint(IClientService clientService)
+    public ApplicationCreateClientEndpoint(IClientService clientService)
     {
         _clientService = clientService;
     }
 
     public override void Configure()
     {
-        Get("/teams/{teamId:guid}/apps/{appId:guid}/oauth/clients");
-        PreProcessor<TenantProcessor<EmptyRequest>>();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
+        Post("/teams/{teamId:guid}/apps/{appId:guid}/oauth/clients");
+        PreProcessor<TenantProcessor<CreateApplicationDto>>();
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("application.create")));
     }
 
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(CreateApplicationDto req, CancellationToken ct)
     {
         var appId = Route<Guid>("appId");
 

@@ -58,6 +58,7 @@ FROM SCOPE s
          CROSS JOIN (VALUES
                          -- CRITICAL IMPACT
                          ('Delete Application', 'application.delete', 'CRITICAL'),
+                         ('Create Application', 'application.create', 'CRITICAL'),
 
                          -- HIGH IMPACT
                          ('Assign Application Role', 'application.assign_role', 'CRITICAL'),

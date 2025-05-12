@@ -1,9 +1,9 @@
 namespace Authentication.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class RequiresPermissionAttribute : Attribute
+public class RequiresScopeAttribute : Attribute
 {
-    public RequiresPermissionAttribute(string permission)
+    public RequiresScopeAttribute(string permission)
     {
         Permission = permission;
     }

@@ -100,7 +100,7 @@ public class TenantService(
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(password))
             return new ValidationFailed(new ValidationFailure("input", "Email, name and password are required"));
 
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var existing = await connection.QueryFirstOrDefaultAsync<Tenant>(
             "SELECT * FROM tenants WHERE email = @Email OR name = @Name", new { Email = email, Name = name });
@@ -175,7 +175,7 @@ public class TenantService(
 
     private async Task<Option<Tenant>> AuthenticateTenant(string email, string password)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var query = "SELECT * FROM tenants WHERE email like @email AND activated_at is not null";
         var result = await connection.QuerySingleOrDefaultAsync<Tenant>(query, new { email });

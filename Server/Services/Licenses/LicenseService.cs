@@ -11,7 +11,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 {
     public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery =
             @"SELECT l.* FROM licenses l 
@@ -41,7 +41,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<License?> GetLicenseByIdAsync(long licenseId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE id = @licenseId;";
 
@@ -53,7 +53,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<License?> GetLicenseByValueAsync(Guid licenseValue)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE value = @licenseValue;";
 
@@ -65,7 +65,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<License?> GetLicenseByCreationDateAsync(DateTime date)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE creation_date = @date;";
 
@@ -77,7 +77,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<IEnumerable<License>> GetAllLicensesAsync()
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses;";
 
@@ -118,7 +118,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 //         var validationResult = await validator.ValidateAsync(license);
 //         if (!validationResult.IsValid) return null;
 
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var query = @"
             UPDATE Licenses
@@ -151,7 +151,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string addDiscordIdQuery = @"DELETE FROM public.licenses WHERE id = @id;";
 
@@ -165,7 +165,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         IEnumerable<License> licenses,
         IDbTransaction? transaction = null)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var transactional = transaction ?? connection.BeginTransaction();
         // yikes, improve later
@@ -176,7 +176,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<License?> GetLicenseByUsername(string username)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
 
@@ -209,7 +209,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         long discordId,
         IDbTransaction? transaction = null)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM licenses WHERE value = @licenseValue;";
 

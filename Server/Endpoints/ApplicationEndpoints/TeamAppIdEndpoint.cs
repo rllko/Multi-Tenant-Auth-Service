@@ -19,7 +19,7 @@ public class TeamAppIdEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationD
     {
         Get("/teams/{teamId:guid}/apps/{appId:guid}");
         PreProcessor<TenantProcessor<EmptyRequest>>();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("application.retrieve")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
     }
 
 

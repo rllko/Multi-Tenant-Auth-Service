@@ -21,7 +21,7 @@ public class TeamRolesEndpoint : EndpointWithoutRequest<IEnumerable<Role>>
         Get("/teams/{teamId:guid}/roles");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("team.fetch_team_roles")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_roles")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

@@ -4,11 +4,18 @@ import {useCallback, useEffect, useState} from "react"
 import {useToast} from "@/hooks/use-toast"
 import {apiService} from "@/lib/api-service"
 
+// Add this at the top of the file, outside any hooks:
+const apiCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_TTL = 60000 // 1 minute cache TTL
+
+// Then modify the useFetch function:
 export function useFetch<T>(
     fetchFn: () => Promise<T>,
-    dependencies: never[] = [],
+    dependencies: any[] = [],
     initialData: T | null = null,
     errorMessage = "Failed to fetch data",
+    cacheKey?: string, // Add cache key parameter
+    cacheTTL = CACHE_TTL, // Add cache TTL parameter
 ) {
     const [data, setData] = useState<T | null>(initialData)
     const [isLoading, setIsLoading] = useState(true)
@@ -17,36 +24,38 @@ export function useFetch<T>(
     const {toast} = useToast()
 
     const fetchData = useCallback(async () => {
+        // Check cache if cacheKey is provided
+        if (cacheKey) {
+            const cached = apiCache.get(cacheKey)
+            const now = Date.now()
+
+            if (cached && now - cached.timestamp < cacheTTL) {
+                setData(cached.data)
+                setIsLoading(false)
+                setError(null)
+                return
+            }
+        }
+
         setIsLoading(true)
         setIsTimeout(false)
         try {
             const result = await fetchFn()
             setData(result)
             setError(null)
+
+            // Cache the result if cacheKey is provided
+            if (cacheKey) {
+                apiCache.set(cacheKey, {data: result, timestamp: Date.now()})
+            }
         } catch (err) {
+            console.error("API Error:", err)
             const error = err instanceof Error ? err : new Error(String(err))
             setError(error)
 
+            // Check if it's a timeout error
             const isTimeoutError = error.message.includes("timed out")
-            const isAuthError =
-                error.message.includes("401") ||
-                error.message.includes("unauthorized") ||
-                error.message.includes("Unauthorized")
-
             setIsTimeout(isTimeoutError)
-
-            if (isAuthError && typeof window !== "undefined") {
-                toast({
-                    title: "Authentication Error",
-                    description: "Your session has expired. Please log in again.",
-                    variant: "destructive",
-                })
-
-                setTimeout(() => {
-                    window.location.href = "/login"
-                }, 1500)
-                return
-            }
 
             toast({
                 title: isTimeoutError ? "Request Timeout" : "Error",
@@ -58,19 +67,24 @@ export function useFetch<T>(
         } finally {
             setIsLoading(false)
         }
-    }, [fetchFn, errorMessage, toast])
+    }, [fetchFn, errorMessage, toast, cacheKey, cacheTTL])
 
     useEffect(() => {
         fetchData()
     }, [...dependencies, fetchData])
 
-    const refetch = useCallback(async () => {
-        await fetchData()
-    }, [fetchData])
+    const refetch = useCallback(() => {
+        // Clear cache for this key if it exists
+        if (cacheKey) {
+            apiCache.delete(cacheKey)
+        }
+        fetchData()
+    }, [fetchData, cacheKey])
 
     return {data, isLoading, error, isTimeout, refetch}
 }
 
+// Hook for mutations (create, update, delete)
 export function useMutation<T, P>(
     mutationFn: (params: P) => Promise<T>,
     options: {
@@ -104,9 +118,11 @@ export function useMutation<T, P>(
             }
             return result
         } catch (err) {
+            console.error("API Error:", err)
             const error = err instanceof Error ? err : new Error(String(err))
             setError(error)
 
+            // Check if it's a timeout error
             const isTimeoutError = error.message.includes("timed out")
             setIsTimeout(isTimeoutError)
 
@@ -129,6 +145,7 @@ export function useMutation<T, P>(
     return {mutate, isLoading, error, isTimeout, data}
 }
 
+// Specific API hooks
 export function useTeams() {
     return useFetch(() => apiService.teams.getTeams(), [], [], "Failed to fetch teams")
 }
@@ -205,12 +222,14 @@ export function useRoles(teamId: string | null) {
     )
 }
 
+// Then update the usePermissions hook to use caching:
 export function usePermissions(teamId: string | null) {
     return useFetch(
         () => (teamId ? apiService.permissions.getPermissions(teamId) : Promise.resolve([])),
         [teamId],
         [],
         "Failed to fetch permissions",
+        teamId ? `permissions-${teamId}` : undefined, // Add cache key
     )
 }
 

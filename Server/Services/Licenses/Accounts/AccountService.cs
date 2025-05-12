@@ -10,18 +10,20 @@ public class AccountService(
 {
     public async Task<bool> PauseAllSubscriptions()
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
             UPDATE Licenses SET paused = TRUE,last_paused_at = NOW() WHERE paused = false;
         ";
+
         var affected = await connection.ExecuteAsync(query);
+
         return affected > 0;
     }
 
     public async Task<Result<bool, ValidationFailed>> ResumeLicense(string username)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
                     UPDATE licenses
@@ -30,12 +32,13 @@ public class AccountService(
         ";
 
         var affected = await connection.ExecuteAsync(query, new { username });
+
         return affected > 0;
     }
 
     public async Task<Result<bool, ValidationFailed>> ResumeAllSubscriptions()
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
         UPDATE licenses
@@ -44,6 +47,7 @@ public class AccountService(
         ";
 
         var affected = await connection.ExecuteAsync(query);
+
         return affected > 0;
     }
 
@@ -53,6 +57,7 @@ public class AccountService(
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword))
         {
             var error = new ValidationFailure("error", "username and password are required");
+
             return new ValidationFailed(error);
         }
 
@@ -60,7 +65,7 @@ public class AccountService(
 
         if (isPasswordValid is false) return false;
 
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var hashedPassword = PasswordHashing.HashPassword(newPassword);
 
@@ -80,10 +85,11 @@ public class AccountService(
         if (string.IsNullOrEmpty(newEmail) || string.IsNullOrEmpty(oldEmail) || string.IsNullOrEmpty(password))
         {
             var error = new ValidationFailure("error", "email and password are required");
+
             return new ValidationFailed(error);
         }
 
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var query = "SELECT password FROM licenses WHERE email = @username;";
         var existingPw = await connection.QuerySingleOrDefaultAsync<string>(query, new { email = oldEmail });
@@ -91,6 +97,7 @@ public class AccountService(
         if (existingPw is null)
         {
             var error = new ValidationFailure("error", "old email or password is invalid");
+
             return new ValidationFailed(error);
         }
 
@@ -106,7 +113,7 @@ public class AccountService(
 
     public async Task<Result<bool, ValidationFailed>> PauseLicense(Guid username)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
             UPDATE Licenses 
@@ -115,12 +122,13 @@ public class AccountService(
         ";
 
         var affected = await connection.ExecuteAsync(query, new { username });
+
         return affected > 0;
     }
 
     public async Task<Result<long, ValidationFailed>> GetRemainingTime(string username)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string query = @"
             SELECT EXTRACT(EPOCH FROM (NOW() - expires_at))::BIGINT 
@@ -135,7 +143,7 @@ public class AccountService(
     {
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return false;
 
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var query = "SELECT password FROM Licenses WHERE username = @username AND activated = TRUE";
         var result = await connection.QuerySingleOrDefaultAsync<string>(query, new { username });

@@ -878,17 +878,7 @@ export function LicensesTab({appId}) {
                                             <CardDescription>Generate a new license key for a user</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="grid gap-2">
-                                                <Label>License Plan</Label>
-                                                <select
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                                                    {plans.map((plan) => (
-                                                        <option key={plan.id} value={plan.id}>
-                                                            {plan.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
+
                                             <div className="grid gap-2">
                                                 <Label>Expiration</Label>
                                                 <Input type="date"/>
@@ -915,17 +905,7 @@ export function LicensesTab({appId}) {
                                                 <Label>Email</Label>
                                                 <Input type="email" placeholder="user@example.com"/>
                                             </div>
-                                            <div className="grid gap-2">
-                                                <Label>License Plan</Label>
-                                                <select
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                                                    {plans.map((plan) => (
-                                                        <option key={plan.id} value={plan.id}>
-                                                            {plan.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                          
                                             <Button
                                                 className="w-full"
                                                 onClick={() => handleBulkAction("create_user")}
@@ -1454,23 +1434,28 @@ export function LicensesTab({appId}) {
                                             onChange={handleCheckboxChange}
                                             className="rounded border-gray-300"
                                         />
-                                        <Label htmlFor="generateKey" className="font-normal">
-                                            Auto-generate license key
-                                        </Label>
+                                        <div className={"flex "}>
+                                            <Label htmlFor="generateKey" className="font-normal">
+                                                Auto-generate license key
+                                            </Label>
+
+
+                                        </div>
+
                                     </div>
                                 </div>
 
                                 {!newLicense.generateKey && (
                                     <div className="grid gap-2">
                                         <Label htmlFor="customKey">Custom License Key</Label>
-                                        <Input
-                                            id="customKey"
-                                            name="customKey"
-                                            value={newLicense.customKey}
-                                            onChange={handleInputChange}
-                                            placeholder="Enter custom license key"
-                                            className="font-mono"
-                                        />
+                                        <select
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                            {plans.map((plan) => (
+                                                <option key={plan.id} value={plan.id}>
+                                                    {plan.name}
+                                                </option>
+                                            ))}
+                                        </select>
                                         <p className="text-xs text-muted-foreground">
                                             Custom format for your license key. Ensure it follows your validation rules.
                                         </p>
@@ -1481,8 +1466,10 @@ export function LicensesTab({appId}) {
                     </Tabs>
 
                     {newLicense.generateKey && !selectedLicense && (
+
                         <div className="bg-muted p-3 rounded-md">
                             <div className="flex items-center justify-between">
+
                                 <div className="flex items-center">
                                     <Key className="h-4 w-4 mr-2 text-muted-foreground"/>
                                     <span className="text-sm font-medium">Preview:</span>
@@ -1629,20 +1616,6 @@ export function LicensesTab({appId}) {
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
                             <Input id="name" placeholder="John Doe"/>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="userPlan">License Plan</Label>
-                            <select
-                                id="userPlan"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                {plans.map((plan) => (
-                                    <option key={plan.id} value={plan.id}>
-                                        {plan.name}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
 
                         <div className="grid gap-2">

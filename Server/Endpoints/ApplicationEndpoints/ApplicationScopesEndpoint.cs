@@ -6,28 +6,28 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.ApplicationEndpoints;
 
-public class ApplicationPermissionsEndpoint : EndpointWithoutRequest<IEnumerable<Client>>
+public class ApplicationScopesEndpoint : EndpointWithoutRequest<IEnumerable<ScopeDto>>
 {
     private readonly IClientService _clientService;
 
-    public ApplicationPermissionsEndpoint(IClientService clientService)
+    public ApplicationScopesEndpoint(IClientService clientService)
     {
         _clientService = clientService;
     }
 
     public override void Configure()
     {
-        Get("/teams/{teamId:guid}/apps/{appId:guid}/oauth/clients");
+        Get("/teams/{teamId:guid}/apps/{appId:guid}/permissions");
         PreProcessor<TenantProcessor<EmptyRequest>>();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("application.retrieve")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
     }
-
 
     public override async Task HandleAsync(CancellationToken ct)
     {
         var appId = Route<Guid>("appId");
+        var teamId = Route<Guid>("teamId");
 
-        var licenses = await _clientService.GetClientPermissionsForTeamAsync(appId);
+        var licenses = await _clientService.GetClientScopesForTeamAsync(teamId, appId);
 
         await SendOkAsync(licenses, ct);
     }

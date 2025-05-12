@@ -198,6 +198,9 @@ export const appsApi = {
     getApps: async (teamId: string): Promise<Application[]> => {
         return fetchApi(`/teams/${teamId}/apps`)
     },
+    getAppPermissions: async (teamId: string, appId: string): Promise<Application[]> => {
+        return fetchApi(`/teams/${teamId}/apps/${appId}/permissions`)
+    },
     getApp: async (teamId: string, appId: string): Promise<Application> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}`)
     },
@@ -272,6 +275,9 @@ export const oauthApi = {
     },
     deleteClient: async (teamId: string, appId: string, clientId: string) => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {method: "DELETE"})
+    },
+    getClientSessions: async (teamId: string, appId: string, clientId: string) => {
+        return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}/sessions`)
     },
 }
 

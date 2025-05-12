@@ -1,5 +1,4 @@
 using Authentication.Attributes;
-using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Licenses;
@@ -20,7 +19,7 @@ public class ApplicationLicensesEndpoint : EndpointWithoutRequest<IEnumerable<Li
     {
         Get("/teams/{teamId:guid}/apps/{appId:guid}/licenses");
         PreProcessor<TenantProcessor<EmptyRequest>>();
-        Options(x => x.WithMetadata(new RequiresPermissionAttribute("license.retrieve_info")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("license.retrieve_info")));
     }
 
 

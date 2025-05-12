@@ -25,7 +25,7 @@ public class CodeService(
 
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
-        var connection = await _connectionFactory.CreateConnectionAsync();
+        using var connection = await _connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM clients WHERE client_identifier = @identifier;";
 

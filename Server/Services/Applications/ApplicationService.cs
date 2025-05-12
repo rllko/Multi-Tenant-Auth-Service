@@ -11,7 +11,7 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 {
     public async Task<Option<ApplicationDto>> GetApplicationByIdAsync(Guid applicationId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string getApplicationQuery = @"SELECT * FROM applications WHERE id = @Id;";
 
@@ -23,7 +23,7 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
     public async Task<IEnumerable<ApplicationDto>> GetAllApplicationsAsync()
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string getDiscordIdQuery = @"SELECT * FROM applications;";
 
@@ -41,7 +41,7 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
     public async Task<Option<IEnumerable<ApplicationDto>>> GetApplicationsByTeamIdAsync(Guid teamId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string getApplicationTeamsQuery = @"SELECT * FROM applications WHERE team = @Id;";
 
@@ -51,34 +51,10 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
         return application == null ? Option<ApplicationDto>.None : Option<ApplicationDto>.Some(application);
     }
 
-    public async Task<Result<ApplicationDto, ValidationFailed>> RegisterApplicationAsync(Guid teamId,
-        CreateApplicationDto applicationDto)
-    {
-        var connection = await connectionFactory.CreateConnectionAsync();
-
-        var query =
-            @"insert into applications (name, description,team) values (@name,@description,@team)";
-
-        var newLicense =
-            await connection.ExecuteAsync(query,
-                new
-                {
-                    name = applicationDto.Name,
-                    description = applicationDto.Description,
-                    applicationDto.Team
-                });
-
-        return new ApplicationDto
-        {
-            Name = applicationDto.Name,
-            Description = applicationDto.Description
-        };
-    }
-
     public async Task<ApplicationDto> UpdateApplicationAsync(Guid applicationId, UpdateApplicationDto applicationDto,
         IDbTransaction? transaction)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? connection.BeginTransaction();
 
         const string query = @"
@@ -102,7 +78,7 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
     public async Task<bool> DeleteApplicationAsync(Guid applicationId, IDbTransaction? transaction)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         const string addDiscordIdQuery = @"DELETE FROM applications WHERE id = @id;";
 
@@ -110,6 +86,35 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
             await connection.ExecuteAsync(addDiscordIdQuery, new { applicationId }, transaction);
 
         return affectedRows1 > 0;
+    }
+
+    public async Task<Result<ApplicationDto, ValidationFailed>> RegisterApplicationAsync(Guid teamId,
+        IEnumerable<ScopeDto> scopes,
+        CreateApplicationDto applicationDto,
+        IDbTransaction? transaction
+    )
+    {
+        using var connection = await connectionFactory.CreateConnectionAsync();
+        var transact = transaction ?? connection.BeginTransaction();
+
+        var query =
+            @"insert into applications (name, description,team) values (@name,@description,@team)";
+
+        var newLicense =
+            await connection.ExecuteAsync(query,
+                new
+                {
+                    name = applicationDto.Name,
+                    description = applicationDto.Description,
+                    applicationDto.Team
+                }, transact);
+
+
+        return new ApplicationDto
+        {
+            Name = applicationDto.Name,
+            Description = applicationDto.Description
+        };
     }
 
     private string GenerateClientSecret()

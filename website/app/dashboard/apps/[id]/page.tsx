@@ -14,7 +14,6 @@ import {Separator} from "@/components/ui/separator"
 import {AlertTriangle, CopyrightIcon as License, Edit, Key, Loader2, Save, Settings, Shield, Users,} from "lucide-react"
 import {OAuthClientsTab} from "@/components/oauth-clients-tab"
 import {PermissionsTab} from "@/components/permissions-tab"
-import {SessionsTab} from "@/components/sessions-tab"
 import {LicensesTab} from "@/components/licenses-tab"
 import {useTeam} from "@/contexts/team-context"
 import {apiService} from "@/lib/api-service"
@@ -55,19 +54,19 @@ export default function AppDetailPage() {
 
                 // Fetch stats if available
                 try {
-                    const statsData = await apiService.analytics.getStats(selectedTeam.id, appId)
-                    if (statsData) {
-                        setStats({
-                            totalUsers: statsData.totalUsers || 0,
-                            activeUsers: statsData.activeUsers || 0,
-                            totalSessions: statsData.totalSessions || 0,
-                            activeSessions: statsData.activeSessions || 0,
-                            totalClients: statsData.clients?.total || 0,
-                            activeClients: statsData.clients?.active || 0,
-                            totalLicenses: statsData.totalLicenses || 0,
-                            activeLicenses: statsData.activeLicenses || 0,
-                        })
-                    }
+                    // const statsData = await apiService.analytics.getStats(selectedTeam.id, appId)
+                    // if (statsData) {
+                    //     setStats({
+                    //         totalUsers: statsData.totalUsers || 0,
+                    //         activeUsers: statsData.activeUsers || 0,
+                    //         totalSessions: statsData.totalSessions || 0,
+                    //         activeSessions: statsData.activeSessions || 0,
+                    //         totalClients: statsData.clients?.total || 0,
+                    //         activeClients: statsData.clients?.active || 0,
+                    //         totalLicenses: statsData.totalLicenses || 0,
+                    //         activeLicenses: statsData.activeLicenses || 0,
+                    //     })
+                    // }
                 } catch (statsError) {
                     console.error("Failed to fetch app stats:", statsError)
                     // Continue without stats
@@ -190,12 +189,11 @@ export default function AppDetailPage() {
             </div>
 
             <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid grid-cols-5 w-full md:w-auto">
+                <TabsList className="grid grid-cols-4 w-full md:w-auto">
                     <TabsTrigger value="details">Details</TabsTrigger>
                     <TabsTrigger value="licenses">Licenses</TabsTrigger>
                     <TabsTrigger value="oauth-clients">M2M Clients</TabsTrigger>
                     <TabsTrigger value="permissions">Permissions</TabsTrigger>
-                    <TabsTrigger value="sessions">Sessions</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="space-y-6 mt-6">
@@ -436,9 +434,6 @@ export default function AppDetailPage() {
                     <PermissionsTab appId={appId}/>
                 </TabsContent>
 
-                <TabsContent value="sessions" className="mt-6">
-                    <SessionsTab appId={appId}/>
-                </TabsContent>
             </Tabs>
         </div>
     )

@@ -19,6 +19,7 @@ public class TenantScopeDto
 }
 
 public record ScopeDto(
+    int Id,
     string Name,
     string Description,
     string? CreatedBy,

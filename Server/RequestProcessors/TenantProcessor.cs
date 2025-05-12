@@ -51,7 +51,7 @@ public class TenantProcessor<TRequest> : IPreProcessor<TRequest>
             );
 
             var endpoint = ctx.HttpContext.GetEndpoint();
-            var permissionAttr = endpoint?.Metadata.GetMetadata<RequiresPermissionAttribute>();
+            var permissionAttr = endpoint?.Metadata.GetMetadata<RequiresScopeAttribute>();
 
             if (permissionAttr is not null &&
                 await teamService.CheckUserScopesAsync(session.TenantId, teamId,
