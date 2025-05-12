@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS key_schemas
 (
     id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name  varchar(150) NOT NULL,
-    regex varchar(150) NOT NULL
+    regex varchar(150) NOT NULL,
+    slug  varchar(150) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS applications

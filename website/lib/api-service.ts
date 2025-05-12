@@ -5,6 +5,7 @@ import {Team} from "@/lib/schemas";
 import {Tenant} from "@/models/tenant";
 import {Role} from "@/models/role";
 import {Application, UpdateApplicationDto} from "@/models/application";
+import {License} from "@/models/license";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -206,7 +207,7 @@ export const appsApi = {
             body: JSON.stringify(data),
         })
     },
-    updateApp: async (teamId: string, appId: string, data: UpdateApplicationDto): Promise<void> => {
+    updateApp: async (teamId: string, appId: string, data: UpdateApplicationDto): Promise<Application> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}`, {
             method: "PUT",
             body: JSON.stringify(data),
@@ -219,22 +220,25 @@ export const appsApi = {
 
 // Licenses API
 export const licensesApi = {
-    getLicenses: async (teamId: string, appId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses`)
+    getLicenses: async (teamId: string, appId: string, params: string): Promise<License[]> => {
+        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses?${params}`)
     },
-    createLicense: async (teamId: string, appId: string, data: object) => {
+    getLicense: async (teamId: string, appId: string, licenseId: string): Promise<License[]> => {
+        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`)
+    },
+    createLicense: async (teamId: string, appId: string, data: object): Promise<License> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/licenses`, {
             method: "POST",
             body: JSON.stringify(data),
         })
     },
-    updateLicense: async (teamId: string, appId: string, licenseId: string, data: object) => {
+    updateLicense: async (teamId: string, appId: string, licenseId: string, data: object): Promise<License> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {
             method: "PUT",
             body: JSON.stringify(data),
         })
     },
-    deleteLicense: async (teamId: string, appId: string, licenseId: string) => {
+    deleteLicense: async (teamId: string, appId: string, licenseId: string): Promise<void> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {method: "DELETE"})
     },
 }

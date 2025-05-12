@@ -1,118 +1,33 @@
--- LOGS
 INSERT INTO roles (role_name, slug, role_type)
-VALUES ('log.read', 'LOGS_READ', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
+VALUES ('Moderator', 'MODERATOR', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE')),
+       ('Admin', 'ADMIN', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE')),
+       ('Team Owner', 'TEAM_OWNER', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
 ON CONFLICT DO NOTHING;
 
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'LOGS_READ'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'LOGS_MANAGEMENT'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'LOW_IMPACT';
+INSERT INTO role_scopes(role_id, scope_id, scope_type)
+SELECT (SELECT role_id FROM roles WHERE slug = 'MODERATOR'),
+       s.scope_id,
+       s.scope_type
+FROM scopes s
+         JOIN scope_categories c ON s.category_id = c.id
+         JOIN permission_impact_levels p ON s.impact_level_id = p.id
+WHERE c.slug IN ('TEAM_MANAGEMENT', 'APPLICATION_MANAGEMENT')
+  AND p.slug IN ('LOW_IMPACT', 'MEDIUM_IMPACT');
 
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('log.write', 'LOGS_WRITE', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
+INSERT INTO role_scopes(role_id, scope_id, scope_type)
+SELECT (SELECT role_id FROM roles WHERE slug = 'ADMIN'),
+       s.scope_id,
+       s.scope_type
+FROM scopes s
+         JOIN scope_categories c ON s.category_id = c.id
+         JOIN permission_impact_levels p ON s.impact_level_id = p.id
+WHERE c.slug IN ('TEAM_MANAGEMENT', 'APPLICATION_MANAGEMENT')
+  AND p.slug IN ('LOW_IMPACT', 'MEDIUM_IMPACT', 'HIGH_IMPACT', 'CRITICAL_IMPACT')
+  AND S.slug NOT IN ('team.delete');
 
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'LOGS_WRITE'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'LOGS_MANAGEMENT'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'HIGH_IMPACT';
-
--- GLOBAL.READ
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('global.read', 'GLOBAL_READ', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'GLOBAL_READ'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'GLOBAL_OPERATIONS'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'LOW_IMPACT';
-
--- GLOBAL.WRITE
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('global.write', 'GLOBAL_WRITE', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'GLOBAL_WRITE'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'GLOBAL_OPERATIONS'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'HIGH_IMPACT';
-
--- GLOBAL.DOWNLOAD
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('global.download', 'GLOBAL_DOWNLOAD', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'GLOBAL_DOWNLOAD'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'GLOBAL_OPERATIONS'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'MEDIUM_IMPACT';
-
-
--- TEAM.READ
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('team.read', 'TEAM_READ', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'TEAM_READ'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'TEAM_MANAGEMENT'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug = 'LOW_IMPACT';
-
--- TEAM.WRITE
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('global.write', 'TEAM_WRITE', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'GLOBAL_WRITE'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
-WHERE scope_categories.slug = 'TEAM_MANAGEMENT'
-  AND scope_types.slug = 'TEAM_SCOPE'
-  AND permission_impact_levels.slug In ('MEDIUM_IMPACT', 'HIGH_IMPACT');
-
--- TEAM.DELETE
-INSERT INTO roles (role_name, slug, role_type)
-VALUES ('team.delete', 'TEAM_DELETE', (SELECT id FROM role_types WHERE slug = 'TEAM_ROLE'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO role_scopes(ROLE_ID, SCOPE_ID, SCOPE_TYPE)
-SELECT (SELECT role_id FROM roles WHERE slug = 'TEAM_ADMIN'), scopes.scope_id, scope_type
-FROM scopes
-         JOIN scope_types ON scopes.scope_type = scope_types.id
-         JOIN scope_categories ON scopes.category_id = scope_categories.id
-         JOIN permission_impact_levels ON scopes.impact_level_id = permission_impact_levels.id
---WHERE scope_categories.slug = 'TEAM_MANAGEMENT'
---  AND scope_types.slug = 'TEAM_SCOPE';
+INSERT INTO role_scopes(role_id, scope_id, scope_type)
+SELECT (SELECT role_id FROM roles WHERE slug = 'TEAM_OWNER'),
+       s.scope_id,
+       s.scope_type
+FROM scopes s
+         JOIN scope_categories c ON s.category_id = c.id

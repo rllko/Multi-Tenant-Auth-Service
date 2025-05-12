@@ -29,7 +29,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Database\Scripts\000027 - insert_initial_team_table.up.sql"/>
         <None Remove="Database\Scripts\000001 - create_tenants_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000001 - create_tenants_table.up.sql"/>
         <None Remove="Database\Scripts\000002 - create_teams_table.up.sql"/>
@@ -60,9 +59,7 @@
         <EmbeddedResource Include="Database\Scripts\000014 - create_role_scopes_table.up.sql"/>
         <None Remove="Database\Scripts\000015 - create_team_tenants_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000015 - create_team_tenants_table.up.sql"/>
-        <None Remove="Database\Scripts\000016- create_tenant_role_table.up.sql"/>
         <None Remove="Database\Scripts\000017 - create_application_roles_table.up.sql"/>
-        <EmbeddedResource Include="Database\Scripts\000017 - create_application_roles_table.up.sql"/>
         <None Remove="Database\Scripts\000018 - insert_impact_levels_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000018 - insert_impact_levels_table.up.sql"/>
         <None Remove="Database\Scripts\000019 - insert_scope_categories_table.up.sql"/>
@@ -81,7 +78,11 @@
         <EmbeddedResource Include="Database\Scripts\000025 - insert_initial_user_roles_table.up.sql"/>
         <None Remove="Database\Scripts\000026 - insert_initial_tenants_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000026 - insert_initial_tenants_table.up.sql"/>
+        <None Remove="Database\Scripts\000027 - insert_initial_team_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\000027 - insert_initial_team_table.up.sql"/>
+        <None Remove="Database\Scripts\000028 - insert_initial_application_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\000028 - insert_initial_application_table.up.sql"/>
     </ItemGroup>
 
-
+   
 </Project>

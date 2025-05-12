@@ -1,8 +1,8 @@
-CREATE TABLE IF NOT EXISTS application_roles
+CREATE TABLE IF NOT EXISTS client_roles
 (
-    id             serial primary key,
-    role_id        INT REFERENCES roles (role_id) ON DELETE CASCADE    NOT NULL,
-    application_id uuid REFERENCES applications (id) ON DELETE CASCADE NOT NULL
+    id        serial primary key,
+    role_id   INT REFERENCES roles (role_id) ON DELETE CASCADE      NOT NULL,
+    client_id uuid REFERENCES clients (client_id) ON DELETE CASCADE NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION check_application_role_type_application()

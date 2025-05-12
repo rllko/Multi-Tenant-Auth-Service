@@ -47,6 +47,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var license = await
             connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseId });
+
         return license;
     }
 
@@ -58,6 +59,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var license = await
             connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue });
+
         return license;
     }
 
@@ -69,6 +71,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         var license = await
             connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { date });
+
         return license;
     }
 
@@ -98,6 +101,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             Paused = x.paused,
             Activated = x.activated
         }).ToList();
+
         return licenses;
     }
 
@@ -141,6 +145,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
                 license.ActivatedAt,
                 license.Id
             }, transaction);
+
         return updatedLicense;
     }
 
@@ -149,6 +154,7 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         var connection = await connectionFactory.CreateConnectionAsync();
 
         const string addDiscordIdQuery = @"DELETE FROM public.licenses WHERE id = @id;";
+
         var affectedRows1 =
             await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
 
@@ -213,12 +219,14 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         if (license == null)
         {
             var error = new ValidationFailure("License", "License activation failed");
+
             return new ValidationFailed(error);
         }
 
         if (license.Activated)
         {
             var error = new ValidationFailure("License", "License is already activated");
+
             return new ValidationFailed(error);
         }
 
@@ -234,15 +242,36 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         if (license is null)
         {
             var error = new ValidationFailure("License", "License activation failed");
+
             return new ValidationFailed(error);
         }
 
         return license.MapToDto();
     }
 
+    public async Task<Option<IEnumerable<LicenseDto>>> GetLicenseByApplication(Guid application)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
 
-    // Start/resume license
+        var getApplicationIdQuery = """
+                                    SELECT 
+                                        l.id as Id, 
+                                        l.value as Value,
+                                        l.activated_at as ActivatedAt,
+                                        l.username as Username,
+                                        l.paused as Paused,
+                                        l.expires_at as ExpirationDate,
+                                        l.email as Email,
+                                        l.discordid as Discord,
+                                        l.max_sessions as MaxSessions,
+                                        l.creation_date as CreationDate
+                                        FROM licenses l 
+                                            WHERE application = @application;
+                                    """;
 
+        var licenses = await
+            connection.QueryAsync<LicenseDto>(getApplicationIdQuery, new { application });
 
-    // Pause license and update remaining time
+        return Option<IEnumerable<LicenseDto>>.Some(licenses);
+    }
 }

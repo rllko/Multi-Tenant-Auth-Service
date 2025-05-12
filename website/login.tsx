@@ -9,6 +9,7 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Input} from "@/components/ui/input"
 import {useToast} from "@/hooks/use-toast"
 import {CONSTANTS} from "@/app/const";
+import {authApi} from "@/lib/api-service";
 
 export default function Login() {
     const router = useRouter()
@@ -29,19 +30,7 @@ export default function Login() {
         setIsLoading(true)
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/auth/tenant/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-            })
-
-            const data = await response.json()
-
-            if (!response.ok) {
-                throw new Error(data.message || "Login failed")
-            }
+            const data = await authApi.login(formData.email, formData.password);
 
             if (data.token) {
                 localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)

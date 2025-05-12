@@ -129,7 +129,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
 
             var team = await conn.QuerySingleAsync<Team>(sql, new { dto.Name, CreatedBy = createdBy }, transact);
 
-            var roleID = await conn.QuerySingleAsync<int>("SELECT role_id from roles where slug = 'TEAM_ADMIN'");
+            var roleID = await conn.QuerySingleAsync<int>("SELECT role_id from roles where slug = 'TEAM_OWNER'");
 
             var teamTenantsql = @"
             INSERT INTO team_tenants (invited_by, tenant, team, role,created_at)

@@ -1,6 +1,5 @@
 ﻿using Authentication.Database;
-using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
-using Authentication.Models;
+using Authentication.Models.Entities;
 using Authentication.Models.OAuth;
 using Authentication.Services.Logger;
 using Dapper;

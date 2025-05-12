@@ -1,19 +1,4 @@
-export type License = {
-    id: number;
-    value: string;
-    discordId?: number;
-    max_sessions?: number;
-    email?: string;
-    username: string;
-    creation_date: number;
-    password?: string | null;
-    activated_at?: number | null;
-    expires_at: number;
-    last_paused_at?: number | null;
-    paused?: boolean;
-    activated?: boolean;
-    application: string;
-};
+import {z} from "zod";
 
 export type CreateLicenseDto = {
     username: string;
@@ -31,3 +16,16 @@ export type UpdateLicenseDto = {
     activated?: boolean;
     paused?: boolean;
 };
+
+export const LicenseSchema = z.object({
+    id: z.number().int(),
+    value: z.string(),
+    creationDate: z.number().int(),
+    activated: z.boolean(),
+    paused: z.boolean(),
+    expirationDate: z.number().int(),
+    email: z.string().email().nullable(),
+    discord: z.number().int().nullable(),
+});
+
+export type License = z.infer<typeof LicenseSchema>;

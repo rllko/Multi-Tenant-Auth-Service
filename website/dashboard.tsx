@@ -3,7 +3,6 @@
 import {useEffect, useState} from "react"
 import {DashboardSidebar} from "./components/dashboard-sidebar"
 import {DashboardHeader} from "./components/dashboard-header"
-import {AnalyticsView} from "./components/analytics-view"
 import {SettingsView} from "./components/settings-view"
 import {ApplicationsView} from "./components/applications-view"
 import {ScopesView} from "./components/scopes-view"
@@ -120,7 +119,7 @@ export default function Dashboard() {
                         {activeView === "analytics" && (
                             <>
                                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight mb-3 sm:mb-4">Analytics</h1>
-                                <AnalyticsView/>
+
                             </>
                         )}
 

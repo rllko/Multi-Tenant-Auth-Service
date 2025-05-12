@@ -5,6 +5,6 @@ VALUES (gen_random_uuid(),
         0,
         'admin@authio.com',
         'admin',
-        '\$2a\$10\$JRYnq1pyvoFXIe1x2FvmC.6F/QxI.V0JlbvYAXlJJPQwqIXvdJwYe',
+        '$2a$10$x7KljLuGfaH9GB49gmHYLOp47rReMgF6MnC0pup.E0bl8sr2bXgza',
         NOW())
 ON CONFLICT DO NOTHING;
