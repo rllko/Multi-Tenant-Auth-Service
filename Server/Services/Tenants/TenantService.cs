@@ -67,6 +67,16 @@ public class TenantService(
     }
 
 
+    public async Task<Option<TenantDto>> GetTenantByEmailAsync(string email)
+    {
+        var sql = "SELECT * FROM tenants WHERE email like @Email;";
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var team = await conn.QueryFirstOrDefaultAsync<TenantDto>(sql, new { Email = email });
+
+        return team == null ? Option<TenantDto>.None : Option<TenantDto>.Some(team);
+    }
+
     public async Task<Option<TenantSessionInfo>> RefreshSessionAsync(string refreshToken)
     {
         var session = await _sessions.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
@@ -94,6 +104,17 @@ public class TenantService(
 
         return true;
     }
+
+    public async Task<Option<TenantDto>> GetTenantByIdAsync(Guid teamId)
+    {
+        var sql = "SELECT * FROM tenants WHERE id = @Id;";
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var team = await conn.QueryFirstOrDefaultAsync<TenantDto>(sql, new { Id = teamId });
+
+        return team == null ? Option<TenantDto>.None : Option<TenantDto>.Some(team);
+    }
+
 
     public async Task<Result<Unit, ValidationFailed>> CreateTenantAsync(string email, string name, string password)
     {

@@ -82,34 +82,28 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         return scopes.Any() ? Option<IEnumerable<ScopeDto>>.Some(response) : Option<IEnumerable<ScopeDto>>.None;
     }
 
-    public async Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null)
+    public async Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid tenantGuid, IDbTransaction? transaction = null)
     {
-        var sql = @"
-            INSERT INTO team_tenants (tenant, team, created_at)
-            VALUES (@UserId, @TeamId, @Now)
-            ON CONFLICT DO NOTHING;
-        ";
-
-        using var conn = await connectionFactory.CreateConnectionAsync();
-
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        var rows = await conn.ExecuteAsync(sql, new { UserId = userId, TeamId = teamId, Now = now });
-
-        return rows > 0;
-    }
-
-    public async Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null)
-    {
-        var sql = "DELETE FROM team_tenants WHERE team = @TeamId AND tenant = @UserId;";
+        var sql = "DELETE FROM team_tenants WHERE team = @TeamId AND tenant = @TenantGuid;";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
 
         var transact = transaction ?? conn.BeginTransaction();
 
-        var rows = await conn.ExecuteAsync(sql, new { TeamId = teamId, UserId = userId });
+        try
+        {
+            var rows = await conn.ExecuteAsync(sql, new { TeamId = teamId, TenantGuid = tenantGuid }, transact);
 
-        return rows > 0;
+            transact.Commit();
+
+            return rows > 0;
+        }
+        catch (Exception e)
+        {
+            transact.Rollback();
+
+            throw;
+        }
     }
 
     public async Task<Result<TeamDto, ValidationFailed>> CreateTeamAsync(TeamCreateDto dto, Guid createdBy,
@@ -175,6 +169,28 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         return tenants.Select(tenant => tenant.ToDto()).ToList();
     }
 
+    public async Task<TenantDto> GetTenantInTeamAsync(Guid teamId, Guid tenantId)
+    {
+        var sql = @"
+            SELECT id as Id,
+                   discordid as DiscordId,
+                   name as Name,
+                   Email as Email,
+                   role as RoleId,
+                   created_at as CreationDate,
+                   activated_at as ActivatedAt
+            FROM tenants t
+            JOIN team_tenants tt ON t.id = tt.tenant
+            WHERE tt.team = @TeamId;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var tenant = await conn.QuerySingleAsync<Tenant>(sql, new { TeamId = teamId });
+
+        return tenant.ToDto();
+    }
+
     public async Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId)
     {
         var sql = @"
@@ -236,5 +252,21 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         var teams = (await conn.QueryAsync<string>(sql, new { UserId = userId, teamId })).ToList();
 
         return teams.Any() ? Option<IEnumerable<string>>.Some(teams) : Option<IEnumerable<string>>.None;
+    }
+
+    public async Task<bool> AddUserToTeamAsync(Guid teamId, Guid userId, Guid invitedBy,
+        IDbTransaction? transaction = null)
+    {
+        var sql = @"
+            INSERT INTO team_tenants (tenant, team,role, created_at,invited_by)
+            VALUES (@UserId, @TeamId,(SELECT role_id FROM roles where slug = 'MODERATOR') ,NOW(),@InvitedBy)
+            ON CONFLICT DO NOTHING;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var rows = await conn.ExecuteAsync(sql, new { UserId = userId, TeamId = teamId, InvitedBy = invitedBy });
+
+        return rows > 0;
     }
 }

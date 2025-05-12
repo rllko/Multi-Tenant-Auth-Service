@@ -1,5 +1,6 @@
 using Authentication.Endpoints.Authentication.TenantAuthentication;
 using Authentication.Models;
+using Authentication.Models.Entities;
 using LanguageExt;
 
 namespace Authentication.Services.Tenants;
@@ -11,6 +12,9 @@ public interface ITenantService
 
     Task<Result<Unit, ValidationFailed>> CreateTenantAsync(string email, string name, string password);
     Task<TenantSessionInfo?> GetSessionAsync(string sessionToken);
+
+    Task<Option<TenantDto>> GetTenantByIdAsync(Guid teamId);
+    Task<Option<TenantDto>> GetTenantByEmailAsync(string email);
 
     Task<Option<TenantSessionInfo>> RefreshSessionAsync(string sessionToken);
 

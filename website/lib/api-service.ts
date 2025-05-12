@@ -51,7 +51,11 @@ export const refreshToken = async () => {
     }
 }
 
-const handleResponse = async (response: Response) => {
+const handleResponse = async (response: Response, expectJsonResponse: boolean) => {
+    if (!expectJsonResponse && response.ok) {
+        return {};
+    }
+
     if (response.status === 401) {
         const refreshed = await refreshToken()
 
@@ -76,6 +80,7 @@ export async function fetchApi<T>(
     endpoint: string,
     options: RequestInit = {},
     timeout: number = DEFAULT_TIMEOUT,
+    expectJsonResponse: boolean = true,
 ): Promise<T> {
     try {
         const templateMatch = endpoint.match(/\${([^}]+)}/)
@@ -109,7 +114,7 @@ export async function fetchApi<T>(
         const fetchPromise = fetch(url, {
             ...options,
             headers,
-        }).then(handleResponse)
+        }).then((response) => handleResponse(response, expectJsonResponse))
 
         return await withTimeout(fetchPromise, timeout)
     } catch (error) {
@@ -161,6 +166,19 @@ export const teamsApi = {
             body: JSON.stringify({name}),
         })
     },
+    getPendingInvites: async (teamId: string) => {
+        return fetchApi(`/teams/${teamId}/invites/pending`)
+    },
+    resendInvite: async (teamId: string, inviteId: string) => {
+        return fetchApi(`/teams/${teamId}/invites/${inviteId}/resend`, {
+            method: "POST",
+        })
+    },
+    cancelInvite: async (teamId: string, inviteId: string) => {
+        return fetchApi(`/teams/${teamId}/invites/${inviteId}/cancel`, {
+            method: "POST",
+        })
+    },
     updateTeam: async (teamId: string, data: object): Promise<void> => {
         return fetchApi(`/teams/${teamId}`, {
             method: "PUT",
@@ -176,14 +194,14 @@ export const teamsApi = {
     getTeamMember: async (teamId: string, tenantId: string) => {
         return fetchApi(`/teams/${teamId}/members/${tenantId}`)
     },
-    inviteTeamMember: async (teamId: string, email: string, role: string) => {
+    inviteTeamMember: async (teamId: string, email: string, role: string, inviteMessage: string) => {
         return fetchApi(`/teams/${teamId}/members`, {
             method: "POST",
-            body: JSON.stringify({email, role}),
+            body: JSON.stringify({email, role, inviteMessage}),
         })
     },
-    removeTeamMember: async (teamId: string, userId: string) => {
-        return fetchApi(`/teams/${teamId}/members/${userId}`, {method: "DELETE"})
+    removeTeamMember: async (teamId: string, userId: string,) => {
+        return fetchApi(`/teams/${teamId}/members/${userId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
     updateTeamMember: async (teamId: string, userId: string, roleId: string) => {
         return fetchApi(`/teams/${teamId}/members/${userId}`, {
@@ -430,28 +448,28 @@ export const settingsApi = {
 // Invites API
 export const invitesApi = {
     getInvites: async () => {
-        return fetchApi("/team/invites")
+        return fetchApi("/teams/invites")
     },
     getReceivedInvites: async () => {
-        return fetchApi("/team/invites/received")
+        return fetchApi("/teams/invites/received")
     },
     getSentInvites: async () => {
-        return fetchApi("/team/invites/sent")
+        return fetchApi("/teams/invites/sent")
     },
     getPendingInvites: async () => {
-        return fetchApi("/team/invites/pending")
+        return fetchApi("/teams/invites/pending")
     },
     acceptInvite: async (inviteId: string) => {
-        return fetchApi(`/team/invites/${inviteId}/accept`, {method: "POST"})
+        return fetchApi(`/teams/invites/${inviteId}/accept`, {method: "POST"}, DEFAULT_TIMEOUT, false)
     },
     declineInvite: async (inviteId: string) => {
-        return fetchApi(`/team/invites/${inviteId}/decline`, {method: "POST"})
+        return fetchApi(`/teams/invites/${inviteId}/decline`, {method: "POST"})
     },
     cancelInvite: async (inviteId: string) => {
-        return fetchApi(`/team/invites/${inviteId}`, {method: "DELETE"})
+        return fetchApi(`/teams/invites/${inviteId}`, {method: "DELETE"})
     },
     resendInvite: async (inviteId: string) => {
-        return fetchApi(`/team/invites/${inviteId}/resend`, {method: "POST"})
+        return fetchApi(`/teams/invites/${inviteId}/resend`, {method: "POST"})
     },
 }
 
@@ -486,6 +504,15 @@ export const tenantsApi = {
             throw new Error("Team ID is required to delete a tenant")
         }
         return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, {method: "DELETE"})
+    },
+    inviteTenant: async (
+        teamId: string,
+        data: { name: string; domain?: string; adminEmail: string; message?: string },
+    ) => {
+        return fetchApi(`/teams/${teamId}/tenants/invite`, {
+            method: "POST",
+            body: JSON.stringify(data),
+        })
     },
 }
 

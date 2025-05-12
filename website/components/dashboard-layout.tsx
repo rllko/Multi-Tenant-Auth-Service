@@ -2,7 +2,7 @@
 
 import type React from "react"
 import {useEffect, useState} from "react"
-import {usePathname} from "next/navigation"
+import {usePathname, useRouter} from "next/navigation"
 import Link from "next/link"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
@@ -39,8 +39,8 @@ import {
 import apiService, {appsApi, isAuthenticated} from "@/lib/api-service";
 import {CONSTANTS} from "@/app/const";
 import {toast} from "@/hooks/use-toast"
-import {router} from "next/client";
 import {Badge} from "@/components/ui/badge";
+import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime"
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -62,6 +62,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [pendingInvites, setPendingInvites] = useState(0)
+    const router = useRouter();
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -360,7 +361,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
 
                         {/* Logout */}
                         <div
-                            onClick={handleLogout}
+                            onClick={() => handleLogout(router)}
                             className={cn(
                                 "flex items-center p-2 rounded-md hover:bg-destructive/10 hover:text-destructive cursor-pointer mt-4",
                                 !sidebarOpen && "justify-center",
@@ -399,7 +400,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
     )
 }
 
-const handleLogout = async () => {
+const handleLogout = async (router: AppRouterInstance) => {
     try {
 
         if (!isAuthenticated()) {

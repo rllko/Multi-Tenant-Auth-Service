@@ -61,6 +61,7 @@
         <EmbeddedResource Include="Database\Scripts\000015 - create_team_tenants_table.up.sql"/>
         <None Remove="Database\Scripts\000017 - create_application_roles_table.up.sql"/>
         <None Remove="Database\Scripts\000018 - insert_impact_levels_table.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\000016 - create_invites_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000018 - insert_impact_levels_table.up.sql"/>
         <None Remove="Database\Scripts\000019 - insert_scope_categories_table.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000019 - insert_scope_categories_table.up.sql"/>
@@ -84,5 +85,5 @@
         <EmbeddedResource Include="Database\Scripts\000028 - insert_initial_application_table.up.sql"/>
     </ItemGroup>
 
-   
+
 </Project>

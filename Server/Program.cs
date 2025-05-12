@@ -1,6 +1,5 @@
 using Authentication.AuthenticationHandlers;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.HostedServices;
 using Authentication.Services.Applications;
 using Authentication.Services.Authentication.AccessToken;
@@ -9,6 +8,7 @@ using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Clients;
 using Authentication.Services.Discords;
 using Authentication.Services.Hwids;
+using Authentication.Services.Invites;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
@@ -25,10 +25,8 @@ using FastEndpoints.Security;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Writers;
 using Redis.OM;
 using Serilog;
-using Serilog.Debugging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,7 +81,8 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IScopeService, ScopeService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IClientService, ClientService>();
-builder.Services.AddScoped<IApplicationService,ApplicationService>();
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
 
 //SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();

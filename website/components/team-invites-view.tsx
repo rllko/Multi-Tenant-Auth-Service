@@ -8,51 +8,50 @@ import {Badge} from "@/components/ui/badge"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {toast} from "@/hooks/use-toast"
 import {EmptyState} from "./empty-state"
 import {
-  AlertCircle,
-  Building,
-  Calendar,
-  Check,
-  Clock,
-  Filter,
-  Loader2,
-  Mail,
-  RefreshCw,
-  Search,
-  Shield,
-  User,
-  X,
+    AlertCircle,
+    Calendar,
+    Check,
+    Clock,
+    Filter,
+    Loader2,
+    Mail,
+    RefreshCw,
+    Search,
+    Shield,
+    User,
+    X,
 } from "lucide-react"
 import {format, formatDistanceToNow} from "date-fns"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {CONSTANTS} from "@/app/const";
-import {invitesApi} from "@/lib/api-service";
+import {CONSTANTS} from "@/app/const"
+import {invitesApi} from "@/lib/api-service"
 
 interface TeamInvite {
     id: string
     teamId: string
     teamName: string
     teamLogo?: string
-    inviterName: string
+    createdBy: string
     inviterEmail: string
     inviterAvatar?: string
     role: string
@@ -76,10 +75,60 @@ export function TeamInvitesView() {
     const [confirmAction, setConfirmAction] = useState<"accept" | "decline" | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
 
+    const [tenantName, setTenantName] = useState("")
+    const [tenantDomain, setTenantDomain] = useState("")
+    const [tenantAdminEmail, setTenantAdminEmail] = useState("")
+    const [tenantMessage, setTenantMessage] = useState("")
+    const [isInvitingTenant, setIsInvitingTenant] = useState(false)
+
+    const [pendingInvites, setPendingInvites] = useState<any[]>([])
+    const [isLoadingInvites, setIsLoadingInvites] = useState(false)
+
     // Fetch invites
     useEffect(() => {
+        if (statusFilter === "all" || statusFilter === "pending") {
+            fetchPendingInvites()
+        }
+
         fetchInvites()
-    }, [activeTab])
+    }, [activeTab, statusFilter])
+
+    const fetchPendingInvites = async () => {
+        try {
+            setIsLoadingInvites(true)
+
+            const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
+            if (!token) {
+                throw new Error("Authentication required")
+            }
+
+            // Use the API service to fetch pending invites
+            const data = await invitesApi.getPendingInvites()
+            console.log("Pending invites received:", data)
+
+            console.log(data)
+
+            
+            // Transform invites to match member format
+            const formattedInvites = data.map((invite) => ({
+                id: invite.id,
+                name: invite.recipientName || "Invited User",
+                email: invite.recipientEmail,
+                status: "pending",
+                lastActive: "Never",
+                role: invite.role,
+                isPendingInvite: true,
+                invitedAt: invite.createdAt,
+                expiresAt: invite.expiresAt
+            }))
+
+            setPendingInvites(formattedInvites)
+        } catch (err) {
+            console.error("Error fetching pending invites:", err)
+        } finally {
+            setIsLoadingInvites(false)
+        }
+    }
 
     const fetchInvites = async (showRefreshing = false) => {
         try {
@@ -95,7 +144,7 @@ export function TeamInvitesView() {
                 throw new Error("Authentication required")
             }
 
-            const data = activeTab === "received" ? await invitesApi.getReceivedInvites() : await invitesApi.getSentInvites();
+            const data = activeTab === "received" ? await invitesApi.getReceivedInvites() : await invitesApi.getSentInvites()
 
             if (activeTab === "received") {
                 setInvites(data)
@@ -145,22 +194,15 @@ export function TeamInvitesView() {
         try {
             setIsProcessing(true)
 
-            const token = localStorage.getItem("authToken")
+            const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
             if (!token) {
                 throw new Error("Authentication required")
             }
 
-            const action = confirmAction === "accept" ? "accept" : "decline"
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invites/${selectedInvite.id}/${action}`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            })
-
-            if (!response.ok) {
-                throw new Error(`Failed to ${action} invite: ${response.status}`)
-            }
+            if (confirmAction == "accept")
+                await invitesApi.acceptInvite(selectedInvite.inviteToken)
+            else
+                await invitesApi.declineInvite(selectedInvite.inviteToken)
 
             // Close dialogs
             setConfirmDialogOpen(false)
@@ -185,7 +227,6 @@ export function TeamInvitesView() {
                 variant: "default",
             })
 
-            // If accepted, we might want to refresh the teams list
             if (confirmAction === "accept") {
                 // This would typically be handled by the team context
                 // refreshTeams()
@@ -206,7 +247,7 @@ export function TeamInvitesView() {
 
     const cancelInvite = async (inviteId: string) => {
         try {
-            const token = localStorage.getItem("authToken")
+            const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
             if (!token) {
                 throw new Error("Authentication required")
             }
@@ -242,6 +283,10 @@ export function TeamInvitesView() {
         }
     }
 
+    const handleInviteTenant = async () => {
+        //TODO: implement this function
+    }
+
     // Filter invites based on search query and status filter
     const getFilteredInvites = () => {
         const currentInvites = activeTab === "received" ? invites : sentInvites
@@ -250,7 +295,7 @@ export function TeamInvitesView() {
             const matchesSearch =
                 searchQuery === "" ||
                 invite.teamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                invite.inviterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                invite.createdBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 invite.inviterEmail.toLowerCase().includes(searchQuery.toLowerCase())
 
             const matchesStatus = statusFilter === "all" || invite.status === statusFilter
@@ -415,7 +460,8 @@ export function TeamInvitesView() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredInvites.map((invite) => (
-                                <Card key={invite.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                                <Card key={invite.inviteToken}
+                                      className="overflow-hidden hover:shadow-md transition-shadow">
                                     <CardContent className="p-0">
                                         <div className="p-4">
                                             <div className="flex items-center gap-3 mb-3">
@@ -431,7 +477,7 @@ export function TeamInvitesView() {
                                                     <p className="text-xs text-muted-foreground">
                             <span className="inline-flex items-center">
                               <Shield className="h-3 w-3 mr-1"/>
-                                {invite.role.charAt(0).toUpperCase() + invite.role.slice(1)}
+                                {/*{invite.role.charAt(0).toUpperCase() + invite.role.slice(1)}*/}
                             </span>
                                                     </p>
                                                 </div>
@@ -443,8 +489,8 @@ export function TeamInvitesView() {
                                                     <User className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground"/>
                                                     <div>
                                                         <p className="text-muted-foreground">From</p>
-                                                        <p>{invite.inviterName}</p>
-                                                        <p className="text-xs text-muted-foreground">{invite.inviterEmail}</p>
+                                                        <p>{invite.createdBy}</p>
+                                                        <p className="text-xs text-muted-foreground">{invite.createdByEmail}</p>
                                                     </div>
                                                 </div>
 
@@ -543,7 +589,7 @@ export function TeamInvitesView() {
                                         <tr key={invite.id} className="hover:bg-muted/30">
                                             <td className="p-3">
                                                 <div>
-                                                    <div className="font-medium">{invite.inviterName}</div>
+                                                    <div className="font-medium">{invite.createdBy}</div>
                                                     <div
                                                         className="text-xs text-muted-foreground">{invite.inviterEmail}</div>
                                                 </div>
@@ -623,10 +669,6 @@ export function TeamInvitesView() {
                                 </Avatar>
                                 <div>
                                     <h3 className="font-medium text-lg">{selectedInvite.teamName}</h3>
-                                    <div className="flex items-center text-sm text-muted-foreground">
-                                        <Building className="h-3.5 w-3.5 mr-1"/>
-                                        <span>Team ID: {selectedInvite.teamId}</span>
-                                    </div>
                                 </div>
                             </div>
 
@@ -649,12 +691,12 @@ export function TeamInvitesView() {
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
                                                 src={selectedInvite.inviterAvatar || "/placeholder.svg?height=24&width=24"}
-                                                alt={selectedInvite.inviterName}
+                                                alt={selectedInvite.createdBy}
                                             />
-                                            <AvatarFallback>{selectedInvite.inviterName.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback>{selectedInvite.createdBy.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div>
-                                            <p>{selectedInvite.inviterName}</p>
+                                            <p>{selectedInvite.createdBy}</p>
                                             <p className="text-xs text-muted-foreground">{selectedInvite.inviterEmail}</p>
                                         </div>
                                     </div>
@@ -711,7 +753,7 @@ export function TeamInvitesView() {
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {confirmAction === "accept"
-                                ? `Are you sure you want to join ${selectedInvite?.teamName}? You will be added as a ${selectedInvite?.role}.`
+                                ? `Are you sure you want to join ${selectedInvite?.teamName}?`
                                 : `Are you sure you want to decline the invitation to ${selectedInvite?.teamName}?`}
                         </AlertDialogDescription>
                     </AlertDialogHeader>

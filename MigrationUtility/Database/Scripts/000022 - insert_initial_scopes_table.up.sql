@@ -158,8 +158,9 @@ SELECT distinct data.scope_name,
 FROM SCOPE s
          CROSS JOIN (VALUES
                          -- HIGH IMPACT
-                         ('Disable 2FA', 'global.check_blacklist', 'HIGH'),
-                         ('Enable 2FA', 'global.fetch_online_users', 'HIGH'),
+                         ('Disable 2FA', 'global.disable_2fa', 'HIGH'),
+                         ('Enable 2FA', 'global.enable_2fa', 'HIGH'),
+                         ('Invites Permission', 'global.invite_management', 'HIGH'),
 
                          -- MEDIUM IMPACT
                          ('Download File', 'global.retrieve_variable', 'MEDIUM'),
