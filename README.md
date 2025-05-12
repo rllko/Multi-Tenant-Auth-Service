@@ -1,4 +1,4 @@
-# Authio – Prototype
+# Authio – Prototype[WIP]
 
 **Authio** is a multi-tenant SaaS platform designed for secure license and session management.
 
