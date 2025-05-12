@@ -40,7 +40,7 @@ docker compose up
 
 ## External Database (Optional)
 
-If you prefer running Authio with an external PostgreSQL database, execute the following SQL commands:
+If you prefer running Authio with an external PostgreSQL database, execute the following SQL commands to setup the logger:
 
 ```sql
 CREATE USER authio_serilog WITH PASSWORD 'authio.24';
@@ -54,4 +54,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authio_se
 GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 ```
 
-> ⚠️ Be sure to replace hardcoded credentials in production environments.
+> ⚠️ Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.
