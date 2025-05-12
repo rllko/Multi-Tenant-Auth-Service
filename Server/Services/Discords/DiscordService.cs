@@ -16,9 +16,10 @@ public class DiscordService(
 {
     public async Task<DiscordUser> CreateUserAsync(long discordUserId, IDbTransaction? transaction = null)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var addDiscordIdQuery = @"INSERT INTO discords(discord_id) VALUES (@discordUserId) RETURNING *;";
+
         var newUser =
             await connection.QuerySingleAsync(addDiscordIdQuery, new { discordUserId }, transaction);
 
@@ -33,9 +34,10 @@ public class DiscordService(
 
     public async Task<bool> DeleteUserAsync(ulong id, IDbTransaction? transaction = null)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var addDiscordIdQuery = @"DELETE FROM discords WHERE discord_id = @discordId;";
+
         var affectedRows1 =
             await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
 
@@ -44,7 +46,7 @@ public class DiscordService(
 
     public async Task<DiscordUser?> GetByIdAsync(long id)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM discords WHERE discord_id = @discordId;";
 
@@ -65,10 +67,11 @@ public class DiscordService(
     {
         // validate object sent by the user
         var validationResult = await validator.ValidateAsync(licenseRequest);
+
         if (validationResult.IsValid is false) return new ValidationFailed(validationResult.Errors);
 
         // create Connection
-        var connection = await connectionFactory.CreateConnectionAsync();
+        using var connection = await connectionFactory.CreateConnectionAsync();
 
         // start the transaction
         using var transaction = connection.BeginTransaction();
@@ -85,6 +88,7 @@ public class DiscordService(
         {
             var error = new ValidationFailure("incorrect fields", "license is invalid");
             transaction.Rollback();
+
             return new ValidationFailed(error);
         }
 
@@ -101,11 +105,13 @@ public class DiscordService(
         {
             var error = new ValidationFailure("internal error", "cant update the license");
             transaction.Rollback();
+
             return new ValidationFailed(error);
         }
 
         // commit transaction
         transaction.Commit();
+
         return newPassword;
     }
 }

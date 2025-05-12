@@ -10,7 +10,6 @@ import { permissionGroups } from "./permissions-manager"
 export function ApiDocumentation() {
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Filter endpoints based on search query
   const filterEndpoints = (endpoints) => {
     if (!searchQuery) return endpoints
     return endpoints.filter((endpoint) => endpoint.name.toLowerCase().includes(searchQuery.toLowerCase()))

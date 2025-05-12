@@ -11,15 +11,20 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
     public async Task<Option<Role>> GetRoleByIdAsync(Guid roleId)
     {
         const string sql = "SELECT * FROM roles WHERE role_id = @Id;";
+        
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         var role = await conn.QueryFirstOrDefaultAsync<Role>(sql, new { Id = roleId });
+        
         return role is null ? Option<Role>.None : Option<Role>.Some(role);
     }
 
     public async Task<IEnumerable<Role>> GetAllRolesAsync()
     {
         const string sql = "SELECT * FROM roles;";
+        
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         return await conn.QueryAsync<Role>(sql);
     }
 
@@ -31,7 +36,9 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
             RETURNING *;
         ";
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         var transact = transaction ?? conn.BeginTransaction();
+        
         return await conn.QuerySingleAsync<Role>(sql, dto,transact);
     }
 
@@ -43,17 +50,25 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
             WHERE role_id = @Id;
         ";
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         var transact = transaction ?? conn.BeginTransaction();
-        var affected = await conn.ExecuteAsync(sql, new { dto.RoleName, dto.Slug, dto.RoleType, Id = roleId },transact);
+        
+        var affected = await conn.ExecuteAsync(sql, new { dto.RoleName, dto.Slug, dto.RoleType, Id = roleId }
+            ,transact);
+        
         return affected > 0;
     }
 
     public async Task<bool> DeleteRoleAsync(Guid roleId, IDbTransaction? transaction = null)
     {
         const string sql = "DELETE FROM roles WHERE role_id = @Id;";
+        
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         var transact = transaction ?? conn.BeginTransaction();
+        
         var affected = await conn.ExecuteAsync(sql, new { Id = roleId });
+        
         return affected > 0;
     }
 
@@ -65,8 +80,11 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
             ON CONFLICT DO NOTHING;
         ";
         using var conn = await connectionFactory.CreateConnectionAsync();
+        
         var transact = transaction ?? conn.BeginTransaction();
+        
         var affected = await conn.ExecuteAsync(sql, new { RoleId = roleId, ScopeId = scopeId },transact);
+        
         return affected > 0;
     }
 

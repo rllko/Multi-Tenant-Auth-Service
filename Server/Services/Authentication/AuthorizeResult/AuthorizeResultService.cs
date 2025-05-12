@@ -1,7 +1,7 @@
 ﻿using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
 using Authentication.Endpoints.Authentication.OAuth.TokenEndpoint;
 using Authentication.Misc;
-using Authentication.Models;
+using Authentication.Models.Entities;
 using Authentication.Models.OAuth;
 using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.CodeStorage;
@@ -27,6 +27,7 @@ public class AuthorizeResultService(
         AuthorizeRequest authorizeRequest)
     {
         var validationResult = await validator.ValidateAsync(authorizeRequest);
+
         if (!validationResult.IsValid)
             return new ValidationFailed(new ValidationFailure("error", "one or more fields empty"));
 
@@ -37,6 +38,7 @@ public class AuthorizeResultService(
             var error = new ValidationFailure(
                 ErrorTypeEnum.InvalidClient.GetEnumDescription(),
                 "Invalid client");
+
             return new ValidationFailed(error);
         }
 
@@ -52,6 +54,7 @@ public class AuthorizeResultService(
             var error = new ValidationFailure(
                 ErrorTypeEnum.TemporarilyUnAvailable.GetEnumDescription(),
                 "client identifier cannot be null or empty");
+
             return new ValidationFailed(error);
         }
 
@@ -66,6 +69,7 @@ public class AuthorizeResultService(
     public async Task<Result<TokenResponse, ValidationFailed>> GenerateToken(TokenRequest tokenRequest)
     {
         var validationResult = await tokenRequestValidator.ValidateAsync(tokenRequest);
+
         if (!validationResult.IsValid)
             return new ValidationFailed(validationResult.Errors);
 
@@ -74,6 +78,7 @@ public class AuthorizeResultService(
             var error = new ValidationFailure(
                 ErrorTypeEnum.InvalidClient.GetEnumDescription(),
                 "Invalid client");
+
             return new ValidationFailed(error);
         }
 

@@ -1,117 +1,117 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import type { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { useToast } from "@/hooks/use-toast"
-import { apiService } from "@/lib/api-service"
-import { LoginSchema } from "@/lib/schemas"
+import type React from "react"
+import {useState} from "react"
+import {useRouter} from "next/navigation"
 import Link from "next/link"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {Input} from "@/components/ui/input"
+import {useToast} from "@/hooks/use-toast"
+import {CONSTANTS} from "@/app/const";
+import {authApi} from "@/lib/api-service";
 
 export default function Login() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+    const router = useRouter()
+    const {toast} = useToast()
+    const [isLoading, setIsLoading] = useState(false)
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    })
 
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof LoginSchema>) {
-    setIsLoading(true)
-    try {
-      await apiService.auth.login(values.email, values.password)
-      toast({
-        title: "Success",
-        description: "You have been logged in successfully.",
-      })
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Login error:", error)
-      toast({
-        title: "Error",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = e.target
+        setFormData((prev) => ({...prev, [name]: value}))
     }
-  }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in to your account</CardTitle>
-          <CardDescription>Enter your email and password to access your dashboard</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type={showPassword ? "text" : "password"} placeholder="Password" {...field} />
-                    </FormControl>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowPassword((prev) => !prev)}>
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      <span className="sr-only">Show password</span>
-                    </Button>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row items-center justify-between p-6">
-          <div className="text-sm text-gray-600">
-            Need an account?{" "}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Create an account
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
-  )
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+
+        try {
+            const data = await authApi.login(formData.email, formData.password);
+
+            if (data.token) {
+                localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)
+                toast({
+                    title: "Login successful",
+                    description: "You have been logged in successfully.",
+                })
+                router.push("/dashboard")
+            } else {
+                throw new Error("No token received")
+            }
+        } catch (error) {
+            toast({
+                title: "Login failed",
+                description: error instanceof Error ? error.message : "An unexpected error occurred",
+                variant: "destructive",
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    return (
+        <div
+            className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-gray-900 sm:px-6 lg:px-8">
+            <Card className="w-full max-w-md">
+                <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl font-bold">Login to Authio</CardTitle>
+                    <CardDescription>Enter your credentials to access your account</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="text-sm font-medium">
+                                Email
+                            </label>
+                            <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="name@example.com"
+                                required
+                                value={formData.email}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="password" className="text-sm font-medium">
+                                    Password
+                                </label>
+                                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                placeholder="••••••••"
+                                required
+                                value={formData.password}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                            />
+                        </div>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-4">
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? "Logging in..." : "Login"}
+                        </Button>
+                        <div className="text-center text-sm">
+                            Don&apos;t have an account?{" "}
+                            <Link href="/register" className="text-primary hover:underline">
+                                Register
+                            </Link>
+                        </div>
+                    </CardFooter>
+                </form>
+            </Card>
+        </div>
+    )
 }

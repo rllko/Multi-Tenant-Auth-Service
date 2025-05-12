@@ -1,0 +1,18 @@
+FROM node:23-alpine
+
+WORKDIR /app
+
+# Install dependencies first for caching
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy all files (except what's in .dockerignore)
+COPY . .
+
+EXPOSE 3000
+
+# Add these for better Docker development experience
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+CMD ["npm", "run", "dev"]

@@ -41,20 +41,18 @@ import {
 import { OrganizationSelector } from "./organization-selector"
 import { useToast } from "@/hooks/use-toast"
 
-// Mock data for organizations
 const organizations = [
   { id: "org_1", name: "Acme Inc.", members: 12 },
   { id: "org_2", name: "Globex Corporation", members: 8 },
   { id: "org_3", name: "Initech", members: 5 },
 ]
 
-// Mock data for files
 const mockFiles = [
   {
     id: "file_1",
     name: "product-documentation.pdf",
     type: "application/pdf",
-    size: 2500000, // 2.5MB
+    size: 2500000,
     uploadedBy: "john@example.com",
     uploadedAt: "2023-06-15T14:32:45Z",
     organization: "Acme Inc.",
@@ -63,7 +61,7 @@ const mockFiles = [
     id: "file_2",
     name: "logo.png",
     type: "image/png",
-    size: 350000, // 350KB
+    size: 350000,
     uploadedBy: "jane@example.com",
     uploadedAt: "2023-06-20T09:15:30Z",
     organization: "Acme Inc.",
@@ -72,7 +70,7 @@ const mockFiles = [
     id: "file_3",
     name: "api-documentation.md",
     type: "text/markdown",
-    size: 120000, // 120KB
+    size: 120000,
     uploadedBy: "bob@example.com",
     uploadedAt: "2023-06-25T11:45:12Z",
     organization: "Globex Corporation",
@@ -81,7 +79,7 @@ const mockFiles = [
     id: "file_4",
     name: "presentation.pptx",
     type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    size: 4800000, // 4.8MB
+    size: 4800000,
     uploadedBy: "alice@example.com",
     uploadedAt: "2023-06-28T16:20:45Z",
     organization: "Initech",
@@ -90,7 +88,7 @@ const mockFiles = [
     id: "file_5",
     name: "data-export.csv",
     type: "text/csv",
-    size: 1200000, // 1.2MB
+    size: 1200000,
     uploadedBy: "john@example.com",
     uploadedAt: "2023-07-01T10:05:22Z",
     organization: "Acme Inc.",
@@ -108,7 +106,6 @@ export function FilesView() {
   const fileInputRef = useRef(null)
   const { toast } = useToast()
 
-  // Filter files based on search query and selected organization
   const filteredFiles = files.filter((file) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -127,7 +124,6 @@ export function FilesView() {
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      // Check file size (50MB limit)
       if (file.size > 50 * 1024 * 1024) {
         toast({
           variant: "destructive",
@@ -153,7 +149,6 @@ export function FilesView() {
     setIsUploading(true)
     setUploadProgress(0)
 
-    // Simulate upload progress
     const interval = setInterval(() => {
       setUploadProgress((prev) => {
         if (prev >= 100) {
@@ -164,19 +159,17 @@ export function FilesView() {
       })
     }, 300)
 
-    // Simulate upload completion
     setTimeout(() => {
       clearInterval(interval)
       setUploadProgress(100)
       setIsUploading(false)
 
-      // Add the new file to the list
       const newFile = {
         id: `file_${Date.now()}`,
         name: selectedFile.name,
         type: selectedFile.type,
         size: selectedFile.size,
-        uploadedBy: "current.user@example.com", // In a real app, this would be the current user
+        uploadedBy: "current.user@example.com",
         uploadedAt: new Date().toISOString(),
         organization: selectedOrganization.name,
       }
@@ -230,14 +223,12 @@ export function FilesView() {
 
   return (
     <div className="space-y-6">
-      {/* Organization Selector */}
       <OrganizationSelector
         organizations={organizations}
         selectedOrganization={selectedOrganization}
         onOrganizationChange={handleOrganizationChange}
       />
 
-      {/* Organization Context Banner */}
       <Card className="bg-primary/5 border-primary/10">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -342,7 +333,6 @@ export function FilesView() {
         </CardContent>
       </Card>
 
-      {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

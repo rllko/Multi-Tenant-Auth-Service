@@ -51,6 +51,7 @@ public class LoginEndpoint : Endpoint<LoginRequest>
                 {
                     o.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName)!;
                     o.ExpireAt = response.session.Expires;
+                    
                     o.User.Claims.Add(("sub", response.session.TenantId.ToString()));
                     o.User.Claims.Add(("access_token", response.session.SessionToken));
                 });

@@ -37,14 +37,12 @@ export function RoleBasedAccessControl() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  // New role form state
   const [newRole, setNewRole] = useState<Partial<Role>>({
     name: "",
     description: "",
     scopes: [],
   })
 
-  // Filter roles based on search query
   const filteredRoles = roles.filter((role) => {
     if (!searchQuery) return true
     return (
@@ -55,7 +53,6 @@ export function RoleBasedAccessControl() {
   })
 
   const handleCreateRole = () => {
-    // Generate ID from name
     const id = newRole.name?.toLowerCase().replace(/\s+/g, "_") || `role_${Date.now()}`
 
     const roleToAdd: Role = {
@@ -120,7 +117,6 @@ export function RoleBasedAccessControl() {
     })
   }
 
-  // Group scopes by category for the UI
   const getScopesByCategory = () => {
     return scopes.reduce(
       (acc, scope) => {
@@ -137,7 +133,6 @@ export function RoleBasedAccessControl() {
 
   const scopesByCategory = getScopesByCategory()
 
-  // Get the highest impact level from a role's scopes
   const getRoleHighestImpact = (role: Role): ScopeImpactLevel => {
     const roleScopes = scopes.filter((scope) => role.scopes.includes(scope.id))
     if (roleScopes.some((scope) => scope.impact === "critical")) return "critical"
@@ -146,7 +141,6 @@ export function RoleBasedAccessControl() {
     return "low"
   }
 
-  // Get impact badge for a role
   const getRoleImpactBadge = (role: Role) => {
     const impact = getRoleHighestImpact(role)
     const colorClass = getImpactLevelColor(impact)
@@ -229,7 +223,6 @@ export function RoleBasedAccessControl() {
         )}
       </div>
 
-      {/* View/Edit Role Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -392,7 +385,6 @@ export function RoleBasedAccessControl() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Role Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -552,7 +544,6 @@ export function RoleBasedAccessControl() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

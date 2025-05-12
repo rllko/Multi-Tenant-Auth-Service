@@ -6,8 +6,8 @@ namespace Authentication.Models.Entities;
 [Table("applications")]
 public class Application
 {
-    [Key]
-    public Guid Id { get; set; }
+    [Key] public Guid Id { get; set; }
+
     public string Name { get; set; }
     public string? Description { get; set; }
     public required string ClientDecryptionChaChaKey { get; set; }
@@ -21,8 +21,7 @@ public record ApplicationDto
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string? Description { get; set; }
-    public Guid DefaultKeySchema { get; set; }
-    public Guid? Team { get; set; }
+    public IEnumerable<ApplicationRole> role { get; set; }
 }
 
 public record CreateApplicationDto
@@ -35,7 +34,7 @@ public record CreateApplicationDto
 
 public record UpdateApplicationDto
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public string? Description { get; set; }
-    public Guid DefaultKeySchema { get; set; }
+    public Guid? DefaultKeySchema { get; set; }
 }

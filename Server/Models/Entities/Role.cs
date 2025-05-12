@@ -4,12 +4,20 @@ namespace Authentication.Models.Entities;
 
 public class Role
 {
-    [Key]
-    public int RoleId { get; set; }
+    [Key] public int RoleId { get; set; }
+
     public string RoleName { get; set; }
     public string Slug { get; set; }
     public int RoleType { get; set; }
     public Guid? CreatedBy { get; set; }
+}
+
+public class RoleDto
+{
+    public required string TeamId { get; init; }
+    public required string RoleName { get; init; }
+    public required string Slug { get; init; }
+    public required string RoleType { get; init; }
 }
 
 public class CreateRoleDto
