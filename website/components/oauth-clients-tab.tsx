@@ -17,7 +17,6 @@ import {
     Plus,
     RefreshCw,
     Search,
-    Shield,
     Trash2,
     UserCircle2,
 } from "lucide-react"
@@ -38,6 +37,7 @@ import {Textarea} from "@/components/ui/textarea"
 import {Checkbox} from "@/components/ui/checkbox"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {RolesTable} from "@/components/roles-table"
 
 // Define types for our component
 interface OAuthClient {
@@ -48,19 +48,21 @@ interface OAuthClient {
     clientSecret?: string
     grantType: string
     redirectUris?: string[]
-    scopes?: string[]
+    roles?: string[]
     status: string
     lastUsed?: string
     createdAt: string
     updatedAt: string
 }
 
-interface Permission {
+interface Role {
     id: string
     name: string
-    description?: string
-    resource: string
-    action: string
+    description: string
+    scopes: string[]
+    isDefault: boolean
+    isSystemRole?: boolean
+    isCustom?: boolean
 }
 
 interface ClientSession {
@@ -79,6 +81,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
     const [searchTerm, setSearchTerm] = useState("")
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [activeTab, setActiveTab] = useState("clients")
 
     // Modal states
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -92,7 +95,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
         description: "",
         grantType: "client_credentials",
         redirectUris: "",
-        scopes: [] as string[],
+        roles: [] as string[],
     })
 
     const [editingClient, setEditingClient] = useState<OAuthClient | null>(null)
@@ -101,20 +104,12 @@ export function OAuthClientsTab({appId}: { appId: string }) {
     const [clientSessions, setClientSessions] = useState<Record<string, ClientSession[]>>({})
     const [loadingSessions, setLoadingSessions] = useState(false)
 
-    // Get permissions from API
-    // const { data: permissions = [], isLoading: loadingPermissions } = usePermissions(selectedTeam?.id || null)
-    const [permissions, setPermissions] = useState<Permission[]>([])
-    const [loadingPermissions, setLoadingPermissions] = useState(false)
+    // Roles state
+    const [roles, setRoles] = useState<Role[]>([])
+    const [loadingRoles, setLoadingRoles] = useState(false)
+    const [roleLoading, setRoleLoading] = useState(false)
 
-    // Group permissions by resource for better organization
-    const groupedPermissions = permissions.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
-        if (!acc[permission.resource]) {
-            acc[permission.resource] = []
-        }
-        acc[permission.resource].push(permission)
-        return acc
-    }, {})
-
+    // Fetch clients on mount
     useEffect(() => {
         const fetchClients = async () => {
             if (!selectedTeam || !appId) return
@@ -135,36 +130,54 @@ export function OAuthClientsTab({appId}: { appId: string }) {
         fetchClients()
     }, [selectedTeam, appId])
 
+    // Fetch roles only when the roles tab is active
     useEffect(() => {
-        const fetchPermissions = async () => {
-            if (!selectedTeam?.id) return
+        const fetchRoles = async () => {
+            if (!selectedTeam || activeTab !== "roles") return
 
             try {
-                setLoadingPermissions(true)
-                // Check if we already have permissions cached
-                const data = await apiService.permissions.getPermissions(selectedTeam.id)
-                setPermissions(data || [])
+                setLoadingRoles(true)
+                const data = await apiService.roles.getRoles(selectedTeam.id)
+                setRoles(data || [])
             } catch (err) {
-                console.error("Failed to fetch permissions:", err)
+                console.error("Failed to fetch roles:", err)
                 toast({
                     title: "Error",
-                    description: "Failed to load permissions",
+                    description: "Failed to load roles",
                     variant: "destructive",
                 })
             } finally {
-                setLoadingPermissions(false)
+                setLoadingRoles(false)
             }
         }
 
-        fetchPermissions()
-    }, [selectedTeam?.id])
+        fetchRoles()
+    }, [selectedTeam, activeTab, toast])
+
+    // Fetch roles when creating/editing a client
+    useEffect(() => {
+        const fetchRolesForClient = async () => {
+            if (!selectedTeam || (!isCreateModalOpen && !isEditModalOpen)) return
+
+            try {
+                setLoadingRoles(true)
+                const data = await apiService.roles.getRoles(selectedTeam.id)
+                setRoles(data || [])
+            } catch (err) {
+                console.error("Failed to fetch roles:", err)
+            } finally {
+                setLoadingRoles(false)
+            }
+        }
+
+        fetchRolesForClient()
+    }, [selectedTeam, isCreateModalOpen, isEditModalOpen])
 
     const fetchClientSessions = async (clientId: string) => {
         if (!selectedTeam || !appId || !clientId) return
 
         try {
             setLoadingSessions(true)
-            // Assuming there's an API endpoint for client sessions
             const data = await apiService.oauth.getClientSessions(selectedTeam.id, appId, clientId)
             setClientSessions((prev) => ({...prev, [clientId]: data || []}))
             return data
@@ -204,7 +217,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                 description: newClient.description,
                 grantType: newClient.grantType,
                 redirectUris: redirectUrisArray,
-                scopes: newClient.scopes,
+                roles: newClient.roles,
             }
 
             const createdClient = await apiService.oauth.createClient(selectedTeam.id, appId, clientData)
@@ -216,7 +229,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                 description: "",
                 grantType: "client_credentials",
                 redirectUris: "",
-                scopes: [],
+                roles: [],
             })
 
             toast({
@@ -248,7 +261,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                 description: editingClient.description,
                 grantType: editingClient.grantType,
                 redirectUris: redirectUrisArray,
-                scopes: editingClient.scopes || [],
+                roles: editingClient.roles || [],
             }
 
             const updatedClient = await apiService.oauth.updateClient(selectedTeam.id, appId, editingClient.id, clientData)
@@ -345,6 +358,92 @@ export function OAuthClientsTab({appId}: { appId: string }) {
         setIsEditModalOpen(true)
     }
 
+    const handleRoleSelect = (role: Role) => {
+        toast({
+            title: "Role Selected",
+            description: `You selected the ${role.name} role`,
+        })
+    }
+
+    const handleRoleCreate = async (role: Omit<Role, "id">) => {
+        if (!selectedTeam) return
+
+        try {
+            setRoleLoading(true)
+            const createdRole = await apiService.roles.createRole(selectedTeam.id, role)
+
+            // Update the roles list
+            setRoles((prev) => [...prev, createdRole])
+
+            toast({
+                title: "Success",
+                description: "Role created successfully",
+            })
+            return createdRole
+        } catch (err) {
+            console.error("Failed to create role:", err)
+            toast({
+                title: "Error",
+                description: "Failed to create role",
+                variant: "destructive",
+            })
+        } finally {
+            setRoleLoading(false)
+        }
+    }
+
+    const handleRoleUpdate = async (id: string, role: Partial<Role>) => {
+        if (!selectedTeam) return
+
+        try {
+            setRoleLoading(true)
+            const updatedRole = await apiService.roles.updateRole(selectedTeam.id, id, role)
+
+            // Update the roles list
+            setRoles((prev) => prev.map((r) => (r.id === id ? {...r, ...updatedRole} : r)))
+
+            toast({
+                title: "Success",
+                description: "Role updated successfully",
+            })
+        } catch (err) {
+            console.error("Failed to update role:", err)
+            toast({
+                title: "Error",
+                description: "Failed to update role",
+                variant: "destructive",
+            })
+        } finally {
+            setRoleLoading(false)
+        }
+    }
+
+    const handleRoleDelete = async (id: string) => {
+        if (!selectedTeam) return
+
+        try {
+            setRoleLoading(true)
+            await apiService.roles.deleteRole(selectedTeam.id, id)
+
+            // Update the roles list
+            setRoles((prev) => prev.filter((r) => r.id !== id))
+
+            toast({
+                title: "Success",
+                description: "Role deleted successfully",
+            })
+        } catch (err) {
+            console.error("Failed to delete role:", err)
+            toast({
+                title: "Error",
+                description: "Failed to delete role",
+                variant: "destructive",
+            })
+        } finally {
+            setRoleLoading(false)
+        }
+    }
+
     const getGrantTypeBadge = (grantType: string) => {
         switch (grantType?.toLowerCase()) {
             case "client_credentials":
@@ -424,6 +523,16 @@ export function OAuthClientsTab({appId}: { appId: string }) {
         })
     }
 
+    // Find role names for a client
+    const getRoleNames = (client: OAuthClient) => {
+        if (!client.roles || client.roles.length === 0) return []
+
+        return client.roles.map((roleId) => {
+            const role = roles.find((r) => r.id === roleId)
+            return role ? role.name : "Unknown Role"
+        })
+    }
+
     if (loading && clients.length === 0) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -444,148 +553,184 @@ export function OAuthClientsTab({appId}: { appId: string }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-semibold">Machine-to-Machine Clients</h2>
-                    <p className="text-muted-foreground">Manage API clients for service-to-service authentication</p>
-                </div>
-                <div className="flex flex-col md:flex-row gap-2">
-                    <div className="relative w-full md:w-64">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
-                        <Input
-                            type="search"
-                            placeholder="Search clients..."
-                            className="pl-8"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4"/>
-                        Create M2M Client
-                    </Button>
-                </div>
-            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid grid-cols-2 w-full max-w-md">
+                    <TabsTrigger value="clients">M2M Clients</TabsTrigger>
+                    <TabsTrigger value="roles">Roles</TabsTrigger>
+                </TabsList>
 
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle>Machine-to-Machine Clients</CardTitle>
-                    <CardDescription>Manage service accounts that can access this API without user
-                        interaction</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Client ID</TableHead>
-                                <TableHead>Grant Type</TableHead>
-                                <TableHead>Scopes</TableHead>
-                                <TableHead>Last Used</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredClients.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                                        {loading ? (
-                                            <div className="flex justify-center items-center">
-                                                <Loader2 className="h-4 w-4 animate-spin mr-2"/>
-                                                Loading clients...
-                                            </div>
-                                        ) : (
-                                            "No machine-to-machine clients found"
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredClients.map((client) => (
-                                    <TableRow key={client.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{client.name}</div>
-                                            {client.description && <div
-                                                className="text-xs text-muted-foreground">{client.description}</div>}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="font-mono text-xs flex items-center gap-1">
-                                                {client.clientId}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-5 w-5"
-                                                    onClick={() => copyToClipboard(client.clientId)}
-                                                >
-                                                    <Copy className="h-3 w-3"/>
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{getGrantTypeBadge(client.grantType || "client_credentials")}</TableCell>
-                                        <TableCell>
-                                            <div className="max-w-xs truncate text-xs">
-                                                {client.scopes && client.scopes.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {client.scopes.slice(0, 3).map((scope, index) => (
-                                                            <Badge key={index} variant="secondary" className="text-xs">
-                                                                {scope}
-                                                            </Badge>
-                                                        ))}
-                                                        {client.scopes.length > 3 && (
-                                                            <Badge variant="secondary" className="text-xs">
-                                                                +{client.scopes.length - 3} more
-                                                            </Badge>
-                                                        )}
+                <TabsContent value="clients" className="space-y-6 mt-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 className="text-xl font-semibold">Machine-to-Machine Clients</h2>
+                            <p className="text-muted-foreground">Manage API clients for service-to-service
+                                authentication</p>
+                        </div>
+                        <div className="flex flex-col md:flex-row gap-2">
+                            <div className="relative w-full md:w-64">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+                                <Input
+                                    type="search"
+                                    placeholder="Search clients..."
+                                    className="pl-8"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Button onClick={() => setIsCreateModalOpen(true)}>
+                                <Plus className="mr-2 h-4 w-4"/>
+                                Create M2M Client
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle>Machine-to-Machine Clients</CardTitle>
+                            <CardDescription>
+                                Manage service accounts that can access this API without user interaction
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Client ID</TableHead>
+                                        <TableHead>Grant Type</TableHead>
+                                        <TableHead>Roles</TableHead>
+                                        <TableHead>Last Used</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredClients.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                                                {loading ? (
+                                                    <div className="flex justify-center items-center">
+                                                        <Loader2 className="h-4 w-4 animate-spin mr-2"/>
+                                                        Loading clients...
                                                     </div>
                                                 ) : (
-                                                    <span className="text-muted-foreground">No scopes</span>
+                                                    "No machine-to-machine clients found"
                                                 )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="text-sm flex items-center gap-1">
-                                                <Clock className="h-3 w-3 text-muted-foreground"/>
-                                                {formatDate(client.lastUsed || "")}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{getStatusBadge(client.status)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreHorizontal className="h-4 w-4"/>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleViewSessions(client)}>
-                                                        <UserCircle2 className="mr-2 h-4 w-4"/>
-                                                        View Sessions
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleEditClient(client)}>
-                                                        <Edit className="mr-2 h-4 w-4"/>
-                                                        Edit Client
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleRegenerateSecret(client.id)}>
-                                                        <RefreshCw className="mr-2 h-4 w-4"/>
-                                                        Regenerate Secret
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        className="text-red-600 dark:text-red-400"
-                                                        onClick={() => handleDeleteClient(client.id)}
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4"/>
-                                                        Delete Client
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        filteredClients.map((client) => (
+                                            <TableRow key={client.id}>
+                                                <TableCell>
+                                                    <div className="font-medium">{client.name}</div>
+                                                    {client.description && (
+                                                        <div
+                                                            className="text-xs text-muted-foreground">{client.description}</div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="font-mono text-xs flex items-center gap-1">
+                                                        {client.clientId}
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-5 w-5"
+                                                            onClick={() => copyToClipboard(client.clientId)}
+                                                        >
+                                                            <Copy className="h-3 w-3"/>
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{getGrantTypeBadge(client.grantType || "client_credentials")}</TableCell>
+                                                <TableCell>
+                                                    <div className="max-w-xs truncate text-xs">
+                                                        {client.roles && client.roles.length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {getRoleNames(client)
+                                                                    .slice(0, 3)
+                                                                    .map((roleName, index) => (
+                                                                        <Badge key={index} variant="secondary"
+                                                                               className="text-xs">
+                                                                            {roleName}
+                                                                        </Badge>
+                                                                    ))}
+                                                                {client.roles.length > 3 && (
+                                                                    <Badge variant="secondary" className="text-xs">
+                                                                        +{client.roles.length - 3} more
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-muted-foreground">No roles</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm flex items-center gap-1">
+                                                        <Clock className="h-3 w-3 text-muted-foreground"/>
+                                                        {formatDate(client.lastUsed || "")}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{getStatusBadge(client.status)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <MoreHorizontal className="h-4 w-4"/>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleViewSessions(client)}>
+                                                                <UserCircle2 className="mr-2 h-4 w-4"/>
+                                                                View Sessions
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleEditClient(client)}>
+                                                                <Edit className="mr-2 h-4 w-4"/>
+                                                                Edit Client
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleRegenerateSecret(client.id)}>
+                                                                <RefreshCw className="mr-2 h-4 w-4"/>
+                                                                Regenerate Secret
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className="text-red-600 dark:text-red-400"
+                                                                onClick={() => handleDeleteClient(client.id)}
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4"/>
+                                                                Delete Client
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="roles" className="mt-6">
+                    {loadingRoles ? (
+                        <div className="flex items-center justify-center h-64">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                            <span className="ml-2">Loading roles...</span>
+                        </div>
+                    ) : (
+                        <RolesTable
+                            roles={roles}
+                            onRoleSelect={handleRoleSelect}
+                            onRoleCreate={handleRoleCreate}
+                            onRoleUpdate={handleRoleUpdate}
+                            onRoleDelete={handleRoleDelete}
+                            loading={roleLoading}
+                        />
+                    )}
+                </TabsContent>
+            </Tabs>
 
             {/* Create Client Modal */}
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
@@ -598,7 +743,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                     <Tabs defaultValue="basic" className="mt-4">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                            <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                            <TabsTrigger value="roles">Roles</TabsTrigger>
                             <TabsTrigger value="advanced">Advanced</TabsTrigger>
                         </TabsList>
 
@@ -628,64 +773,65 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="permissions" className="space-y-4 mt-4">
+                        <TabsContent value="roles" className="space-y-4 mt-4">
                             <div className="space-y-4">
-                                <Label>Permissions</Label>
-                                <p className="text-sm text-muted-foreground">Select the permissions this client will
-                                    have</p>
+                                <Label>Roles</Label>
+                                <p className="text-sm text-muted-foreground">Select the roles this client will have</p>
 
                                 <ScrollArea className="h-[300px] pr-4">
-                                    {loadingPermissions ? (
+                                    {loadingRoles ? (
                                         <div className="flex items-center justify-center h-32">
                                             <Loader2 className="h-5 w-5 animate-spin mr-2"/>
-                                            <span>Loading permissions...</span>
+                                            <span>Loading roles...</span>
                                         </div>
-                                    ) : Object.keys(groupedPermissions).length === 0 ? (
-                                        <div className="text-center py-8 text-muted-foreground">No permissions
-                                            available</div>
+                                    ) : roles.length === 0 ? (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            No roles available. Create roles in the Roles tab.
+                                        </div>
                                     ) : (
-                                        Object.entries(groupedPermissions).map(([resource, perms]) => (
-                                            <div key={resource} className="mb-6">
-                                                <h3 className="text-sm font-medium mb-2 flex items-center">
-                                                    <Shield className="h-4 w-4 mr-1"/>
-                                                    {resource}
-                                                </h3>
-                                                <div className="space-y-2 ml-6">
-                                                    {perms.map((permission) => (
-                                                        <div key={permission.id} className="flex items-start space-x-2">
-                                                            <Checkbox
-                                                                id={`permission-${permission.id}`}
-                                                                checked={newClient.scopes.includes(permission.id)}
-                                                                onCheckedChange={(checked) => {
-                                                                    if (checked) {
-                                                                        setNewClient({
-                                                                            ...newClient,
-                                                                            scopes: [...newClient.scopes, permission.id],
-                                                                        })
-                                                                    } else {
-                                                                        setNewClient({
-                                                                            ...newClient,
-                                                                            scopes: newClient.scopes.filter((id) => id !== permission.id),
-                                                                        })
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <div className="grid gap-1.5 leading-none">
-                                                                <Label
-                                                                    htmlFor={`permission-${permission.id}`}
-                                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                                >
-                                                                    {permission.name}
-                                                                </Label>
-                                                                {permission.description && (
-                                                                    <p className="text-xs text-muted-foreground">{permission.description}</p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                        <div className="space-y-4">
+                                            {roles.map((role) => (
+                                                <div key={role.id} className="flex items-start space-x-2">
+                                                    <Checkbox
+                                                        id={`role-${role.id}`}
+                                                        checked={newClient.roles.includes(role.id)}
+                                                        onCheckedChange={(checked) => {
+                                                            if (checked) {
+                                                                setNewClient({
+                                                                    ...newClient,
+                                                                    roles: [...newClient.roles, role.id],
+                                                                })
+                                                            } else {
+                                                                setNewClient({
+                                                                    ...newClient,
+                                                                    roles: newClient.roles.filter((id) => id !== role.id),
+                                                                })
+                                                            }
+                                                        }}
+                                                    />
+                                                    <div className="grid gap-1.5 leading-none">
+                                                        <Label
+                                                            htmlFor={`role-${role.id}`}
+                                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                        >
+                                                            {role.name}
+                                                            {role.isSystemRole && (
+                                                                <Badge variant="secondary" className="ml-2">
+                                                                    System
+                                                                </Badge>
+                                                            )}
+                                                            {role.isDefault && (
+                                                                <Badge variant="outline" className="ml-2">
+                                                                    Default
+                                                                </Badge>
+                                                            )}
+                                                        </Label>
+                                                        {role.description &&
+                                                            <p className="text-xs text-muted-foreground">{role.description}</p>}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            ))}
+                                        </div>
                                     )}
                                 </ScrollArea>
                             </div>
@@ -739,14 +885,14 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>Edit Machine-to-Machine Client</DialogTitle>
-                        <DialogDescription>Update client information and permissions</DialogDescription>
+                        <DialogDescription>Update client information and roles</DialogDescription>
                     </DialogHeader>
 
                     {editingClient && (
                         <Tabs defaultValue="basic" className="mt-4">
                             <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                                <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                                <TabsTrigger value="roles">Roles</TabsTrigger>
                                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
                             </TabsList>
 
@@ -770,74 +916,77 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                                             id="edit-description"
                                             placeholder="Used for integrating with our payment system"
                                             value={editingClient.description || ""}
-                                            onChange={(e) => setEditingClient({
-                                                ...editingClient,
-                                                description: e.target.value
-                                            })}
+                                            onChange={(e) =>
+                                                setEditingClient({
+                                                    ...editingClient,
+                                                    description: e.target.value,
+                                                })
+                                            }
                                         />
                                     </div>
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="permissions" className="space-y-4 mt-4">
+                            <TabsContent value="roles" className="space-y-4 mt-4">
                                 <div className="space-y-4">
-                                    <Label>Permissions</Label>
-                                    <p className="text-sm text-muted-foreground">Select the permissions this client will
+                                    <Label>Roles</Label>
+                                    <p className="text-sm text-muted-foreground">Select the roles this client will
                                         have</p>
 
                                     <ScrollArea className="h-[300px] pr-4">
-                                        {loadingPermissions ? (
+                                        {loadingRoles ? (
                                             <div className="flex items-center justify-center h-32">
                                                 <Loader2 className="h-5 w-5 animate-spin mr-2"/>
-                                                <span>Loading permissions...</span>
+                                                <span>Loading roles...</span>
                                             </div>
-                                        ) : Object.keys(groupedPermissions).length === 0 ? (
-                                            <div className="text-center py-8 text-muted-foreground">No permissions
-                                                available</div>
+                                        ) : roles.length === 0 ? (
+                                            <div className="text-center py-8 text-muted-foreground">
+                                                No roles available. Create roles in the Roles tab.
+                                            </div>
                                         ) : (
-                                            Object.entries(groupedPermissions).map(([resource, perms]) => (
-                                                <div key={resource} className="mb-6">
-                                                    <h3 className="text-sm font-medium mb-2 flex items-center">
-                                                        <Shield className="h-4 w-4 mr-1"/>
-                                                        {resource}
-                                                    </h3>
-                                                    <div className="space-y-2 ml-6">
-                                                        {perms.map((permission) => (
-                                                            <div key={permission.id}
-                                                                 className="flex items-start space-x-2">
-                                                                <Checkbox
-                                                                    id={`edit-permission-${permission.id}`}
-                                                                    checked={editingClient.scopes?.includes(permission.id) || false}
-                                                                    onCheckedChange={(checked) => {
-                                                                        if (checked) {
-                                                                            setEditingClient({
-                                                                                ...editingClient,
-                                                                                scopes: [...(editingClient.scopes || []), permission.id],
-                                                                            })
-                                                                        } else {
-                                                                            setEditingClient({
-                                                                                ...editingClient,
-                                                                                scopes: (editingClient.scopes || []).filter((id) => id !== permission.id),
-                                                                            })
-                                                                        }
-                                                                    }}
-                                                                />
-                                                                <div className="grid gap-1.5 leading-none">
-                                                                    <Label
-                                                                        htmlFor={`edit-permission-${permission.id}`}
-                                                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                                    >
-                                                                        {permission.name}
-                                                                    </Label>
-                                                                    {permission.description && (
-                                                                        <p className="text-xs text-muted-foreground">{permission.description}</p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
+                                            <div className="space-y-4">
+                                                {roles.map((role) => (
+                                                    <div key={role.id} className="flex items-start space-x-2">
+                                                        <Checkbox
+                                                            id={`edit-role-${role.id}`}
+                                                            checked={editingClient.roles?.includes(role.id) || false}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    setEditingClient({
+                                                                        ...editingClient,
+                                                                        roles: [...(editingClient.roles || []), role.id],
+                                                                    })
+                                                                } else {
+                                                                    setEditingClient({
+                                                                        ...editingClient,
+                                                                        roles: (editingClient.roles || []).filter((id) => id !== role.id),
+                                                                    })
+                                                                }
+                                                            }}
+                                                        />
+                                                        <div className="grid gap-1.5 leading-none">
+                                                            <Label
+                                                                htmlFor={`edit-role-${role.id}`}
+                                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                            >
+                                                                {role.name}
+                                                                {role.isSystemRole && (
+                                                                    <Badge variant="secondary" className="ml-2">
+                                                                        System
+                                                                    </Badge>
+                                                                )}
+                                                                {role.isDefault && (
+                                                                    <Badge variant="outline" className="ml-2">
+                                                                        Default
+                                                                    </Badge>
+                                                                )}
+                                                            </Label>
+                                                            {role.description &&
+                                                                <p className="text-xs text-muted-foreground">{role.description}</p>}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))
+                                                ))}
+                                            </div>
                                         )}
                                     </ScrollArea>
                                 </div>
@@ -851,10 +1000,12 @@ export function OAuthClientsTab({appId}: { appId: string }) {
                                             id="edit-grantType"
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                             value={editingClient.grantType}
-                                            onChange={(e) => setEditingClient({
-                                                ...editingClient,
-                                                grantType: e.target.value
-                                            })}
+                                            onChange={(e) =>
+                                                setEditingClient({
+                                                    ...editingClient,
+                                                    grantType: e.target.value,
+                                                })
+                                            }
                                         >
                                             <option value="client_credentials">Client Credentials</option>
                                             <option value="authorization_code">Authorization Code</option>

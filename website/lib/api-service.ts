@@ -427,6 +427,34 @@ export const settingsApi = {
     },
 }
 
+// Invites API
+export const invitesApi = {
+    getInvites: async () => {
+        return fetchApi("/team/invites")
+    },
+    getReceivedInvites: async () => {
+        return fetchApi("/team/invites/received")
+    },
+    getSentInvites: async () => {
+        return fetchApi("/team/invites/sent")
+    },
+    getPendingInvites: async () => {
+        return fetchApi("/team/invites/pending")
+    },
+    acceptInvite: async (inviteId: string) => {
+        return fetchApi(`/team/invites/${inviteId}/accept`, {method: "POST"})
+    },
+    declineInvite: async (inviteId: string) => {
+        return fetchApi(`/team/invites/${inviteId}/decline`, {method: "POST"})
+    },
+    cancelInvite: async (inviteId: string) => {
+        return fetchApi(`/team/invites/${inviteId}`, {method: "DELETE"})
+    },
+    resendInvite: async (inviteId: string) => {
+        return fetchApi(`/team/invites/${inviteId}/resend`, {method: "POST"})
+    },
+}
+
 // Tenants API
 export const tenantsApi = {
     getTenants: async (teamId: string): Promise<Tenant[]> => {

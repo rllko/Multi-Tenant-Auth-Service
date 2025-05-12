@@ -213,15 +213,6 @@ export function useOAuthClients(teamId: string | null, appId: string | null) {
     )
 }
 
-export function useRoles(teamId: string | null) {
-    return useFetch(
-        () => (teamId ? apiService.roles.getRoles(teamId) : Promise.resolve([])),
-        [teamId],
-        [],
-        "Failed to fetch roles",
-    )
-}
-
 // Then update the usePermissions hook to use caching:
 export function usePermissions(teamId: string | null) {
     return useFetch(
@@ -230,6 +221,17 @@ export function usePermissions(teamId: string | null) {
         [],
         "Failed to fetch permissions",
         teamId ? `permissions-${teamId}` : undefined, // Add cache key
+    )
+}
+
+// And update the useRoles hook to use caching:
+export function useRoles(teamId: string | null) {
+    return useFetch(
+        () => (teamId ? apiService.roles.getRoles(teamId) : Promise.resolve([])),
+        [teamId],
+        [],
+        "Failed to fetch roles",
+        teamId ? `roles-${teamId}` : undefined, // Add cache key
     )
 }
 

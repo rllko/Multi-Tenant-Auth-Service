@@ -25,6 +25,7 @@ import {
     Keyboard,
     Loader2,
     LogOut,
+    Mail,
     Moon,
     Package,
     PanelLeft,
@@ -39,6 +40,7 @@ import apiService, {appsApi, isAuthenticated} from "@/lib/api-service";
 import {CONSTANTS} from "@/app/const";
 import {toast} from "@/hooks/use-toast"
 import {router} from "next/client";
+import {Badge} from "@/components/ui/badge";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -59,6 +61,7 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
     const [apps, setApps] = useState<object>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
+    const [pendingInvites, setPendingInvites] = useState(0)
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -229,7 +232,25 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
                             )}
                         </div>
 
+                        <Link
+                            href="/dashboard/team/invites"
+                            className={cn(
+                                "flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                                pathname === "/dashboard/team/invites" ? "bg-accent text-accent-foreground" : "transparent",
+                            )}
+                        >
+                            <div className="flex items-center">
+                                <Mail className="mr-2 h-4 w-4"/>
+                                <span>Invites</span>
+                            </div>
+                            {pendingInvites > 0 && (
+                                <Badge variant="destructive" className="ml-auto">
+                                    {pendingInvites}
+                                </Badge>
+                            )}
+                        </Link>
                         <div className={`pt-2 ${!error ? "" : "hidden"}`}>
+
                             <div
                                 className={cn(
                                     "flex items-center justify-between p-2 rounded-md hover:bg-accent cursor-pointer",
