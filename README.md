@@ -54,3 +54,4 @@ GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 ```
 
 > ⚠️ Be sure to replace hardcoded credentials in production environments.
+
