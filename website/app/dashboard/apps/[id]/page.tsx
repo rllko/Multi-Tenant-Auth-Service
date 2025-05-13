@@ -11,7 +11,7 @@ import {Label} from "@/components/ui/label"
 import {Textarea} from "@/components/ui/textarea"
 import {Switch} from "@/components/ui/switch"
 import {Separator} from "@/components/ui/separator"
-import {AlertTriangle, CopyrightIcon as License, Edit, Key, Loader2, Save, Settings, Shield, Users,} from "lucide-react"
+import {AlertTriangle, Edit, Loader2, Save,} from "lucide-react"
 import {OAuthClientsTab} from "@/components/oauth-clients-tab"
 import {PermissionsTab} from "@/components/permissions-tab"
 import {LicensesTab} from "@/components/licenses-tab"
@@ -385,41 +385,6 @@ export default function AppDetailPage() {
                     </div>
 
                     {/* Quick Actions */}
-                    <Card className="bg-card dark:bg-[#1E1E1E]">
-                        <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                            <CardDescription>Common tasks for this application</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                <Button variant="outline"
-                                        className="h-auto py-4 flex flex-col items-center justify-center gap-2">
-                                    <License className="h-5 w-5"/>
-                                    <span>Create License</span>
-                                </Button>
-                                <Button variant="outline"
-                                        className="h-auto py-4 flex flex-col items-center justify-center gap-2">
-                                    <Key className="h-5 w-5"/>
-                                    <span>Create M2M Client</span>
-                                </Button>
-                                <Button variant="outline"
-                                        className="h-auto py-4 flex flex-col items-center justify-center gap-2">
-                                    <Shield className="h-5 w-5"/>
-                                    <span>Manage Permissions</span>
-                                </Button>
-                                <Button variant="outline"
-                                        className="h-auto py-4 flex flex-col items-center justify-center gap-2">
-                                    <Users className="h-5 w-5"/>
-                                    <span>View Active Sessions</span>
-                                </Button>
-                                <Button variant="outline"
-                                        className="h-auto py-4 flex flex-col items-center justify-center gap-2">
-                                    <Settings className="h-5 w-5"/>
-                                    <span>Advanced Settings</span>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </TabsContent>
 
                 <TabsContent value="licenses" className="mt-6">
