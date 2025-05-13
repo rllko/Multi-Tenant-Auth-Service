@@ -14,5 +14,5 @@ public interface IRoleService
 
     Task<bool> AssignScopeToRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null);
     Task<bool> RemoveScopeFromRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null);
-    Task<IEnumerable<Scope>> GetScopesInRoleAsync(Guid roleId);
+    Task<IEnumerable<int>> GetScopesInRoleAsync(int roleId);
 }

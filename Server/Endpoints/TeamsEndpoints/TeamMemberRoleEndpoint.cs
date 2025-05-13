@@ -19,7 +19,7 @@ public class TeamMemberRoleEndpoint : Endpoint<UpdateTenantRoleDto>
         Patch("/teams/{teamId:guid}/members/{memberId:guid}");
         PreProcessor<TenantProcessor<UpdateTenantRoleDto>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_members")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.team.update_roles")));
     }
 
     public override async Task HandleAsync(UpdateTenantRoleDto req, CancellationToken ct)
@@ -27,7 +27,7 @@ public class TeamMemberRoleEndpoint : Endpoint<UpdateTenantRoleDto>
         var teamId = Route<Guid>("teamId");
         var memberId = Route<Guid>("memberId");
 
-        var tenants = await _tenantService.UpdateTenantRoleAsync(req, memberId);
+        var tenants = await _tenantService.UpdateTenantRoleAsync(req, memberId, teamId);
         await SendOkAsync(tenants, ct);
     }
 }

@@ -17,7 +17,9 @@ public interface ITenantService
 
     Task<Option<TenantDto>> GetTenantByIdAsync(Guid teamId);
     Task<Option<TenantDto>> GetTenantByEmailAsync(string email);
-    Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid, IDbTransaction? transaction = null);
+
+    Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid, Guid teamGuid,
+        IDbTransaction? transaction = null);
 
     Task<Option<TenantSessionInfo>> RefreshSessionAsync(string sessionToken);
 

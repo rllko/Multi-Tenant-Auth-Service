@@ -6,6 +6,7 @@ import {Tenant} from "@/models/tenant";
 import {Role} from "@/models/role";
 import {Application, UpdateApplicationDto} from "@/models/application";
 import {License} from "@/models/license";
+import {Permission} from "@/models/permission";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -341,13 +342,13 @@ export const rolesApi = {
 
 // Permissions API
 export const permissionsApi = {
-    getPermission: async (teamId: string, permissionID: string): Promise<Role> => {
+    getPermission: async (teamId: string, permissionID: string): Promise<Permission> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch permissions")
         }
         return fetchApi(`/teams/${teamId}/permissions/${permissionID}`)
     },
-    getPermissions: async (teamId: string): Promise<Role[]> => {
+    getPermissions: async (teamId: string): Promise<Permission[]> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch permissions")
         }

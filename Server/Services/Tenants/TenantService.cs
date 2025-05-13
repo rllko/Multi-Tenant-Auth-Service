@@ -170,20 +170,31 @@ public class TenantService(
             await _sessions.DeleteAsync(s);
     }
 
-    public async Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid,
+    public async Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid, Guid teamGuid,
         IDbTransaction? transaction = null)
     {
-        const string sql = @"
-            UPDATE team_tenants
-            SET role = @RoleId
-            WHERE tenant = @TenantGuid;
-        ";
-
         using var conn = await connectionFactory.CreateConnectionAsync();
 
         var transact = transaction ?? conn.BeginTransaction();
 
-        var affected = await conn.ExecuteAsync(sql, new { RoleId = req.roleId, TenantGuid = tenantGuid }
+        const string teamSql = @"
+            select created_by from teams
+            WHERE teams = @TeamGuid;
+        ";
+
+        var teamOwner = await conn.QueryFirstOrDefaultAsync<Guid>(teamSql,
+            new { TeamGuid = teamGuid }, transact);
+
+        if (teamOwner == tenantGuid) return false;
+
+        const string sql = @"
+            UPDATE team_tenants
+            SET role = @RoleId
+            WHERE tenant = @TenantGuid and team = @TeamId;
+        ";
+
+        var affected = await conn.ExecuteAsync(sql,
+            new { RoleId = req.roleId, TenantGuid = tenantGuid, TeamGuid = teamGuid }
             , transact);
 
         transact.Commit();

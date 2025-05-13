@@ -24,6 +24,7 @@ FROM SCOPE s
                          -- HIGH IMPACT
                          ('Assign team roles', 'team.assign_roles', 'HIGH'),
                          ('Remove team roles', 'team.remove_roles', 'HIGH'),
+                         ('Update team roles', 'team.update_roles', 'HIGH'),
                          ('Kick team members', 'team.kick', 'HIGH'),
 
                          -- MEDIUM IMPACT

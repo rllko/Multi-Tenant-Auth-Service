@@ -1,13 +1,14 @@
 using System.Data;
 using Authentication.Database;
 using Authentication.Models.Entities;
+using Authentication.Services.Roles;
 using Dapper;
 using FluentValidation.Results;
 using LanguageExt;
 
 namespace Authentication.Services.Teams;
 
-public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
+public class TeamService(IDbConnectionFactory connectionFactory, IRoleService roleService) : ITeamService
 {
     public async Task<Option<Team>> GetTeamByIdAsync(Guid teamId)
     {
@@ -195,7 +196,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         return tenant;
     }
 
-    public async Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId)
+    public async Task<Option<IEnumerable<RoleDto>>> GetTeamRolesAsync(Guid teamId)
     {
         var sql = @"
             SELECT r.role_id as RoleId,
@@ -211,9 +212,25 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
-        var roles = (await conn.QueryAsync<Role>(sql, new { TeamId = teamId })).ToList();
 
-        return roles.Any() ? Option<IEnumerable<Role>>.Some(roles) : Option<IEnumerable<Role>>.None;
+        var roleDtos = await Task.WhenAll(
+            (await conn.QueryAsync<Role>(sql, new { TeamId = teamId }))
+            .Select(async role =>
+            {
+                var roleDto = role.ToDto();
+
+                var scopes = await roleService.GetScopesInRoleAsync(roleDto.RoleId);
+
+                roleDto.Scopes = scopes.ToList();
+
+                return roleDto;
+            })
+        );
+
+        var list = roleDtos.OfType<RoleDto>().ToList();
+
+
+        return list.Any() ? Option<IEnumerable<RoleDto>>.Some(list) : Option<IEnumerable<RoleDto>>.None;
     }
 
     public async Task<Option<IEnumerable<Team>>> GetTeamsForUserAsync(Guid userId)

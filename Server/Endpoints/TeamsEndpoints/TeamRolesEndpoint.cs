@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.TeamsEndpoints;
 
-public class TeamRolesEndpoint : EndpointWithoutRequest<IEnumerable<Role>>
+public class TeamRolesEndpoint : EndpointWithoutRequest<IEnumerable<RoleDto>>
 {
     private readonly ITeamService _teamService;
 
