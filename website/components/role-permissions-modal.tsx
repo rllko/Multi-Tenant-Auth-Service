@@ -208,6 +208,7 @@ export function RolePermissionsModal({
 
             const data = await permissionsApi.getPermissions(teamId);
 
+
             setPermissions(data)
 
             // Extract categories
@@ -221,6 +222,7 @@ export function RolePermissionsModal({
 
             setCategories(categoriesData)
             
+
         } catch (err) {
             console.error("Error refreshing permissions:", err)
             setError("Failed to refresh permissions.")

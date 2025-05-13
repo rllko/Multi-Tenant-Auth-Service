@@ -3,7 +3,7 @@
 import {useEffect, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
-import {AlertTriangle, Info, Loader2, MoreHorizontal, Plus, RefreshCw, Search} from 'lucide-react'
+import {AlertTriangle, Info, Loader2, MoreHorizontal, RefreshCw, Search} from 'lucide-react'
 import {Badge} from "@/components/ui/badge"
 
 import {DropdownMenu, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
@@ -13,100 +13,6 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {permissionsApi} from "@/lib/api-service";
-
-const DEFAULT_PERMISSIONS = [
-    {
-        id: "user.read",
-        name: "View Users",
-        description: "Can view user profiles",
-        resource: "user",
-        action: "read",
-        impact: "low",
-        createdBy: null,
-    },
-    {
-        id: "user.write",
-        name: "Edit Users",
-        description: "Can edit user profiles",
-        resource: "user",
-        action: "write",
-        impact: "medium",
-        createdBy: null,
-    },
-    {
-        id: "license.read",
-        name: "View Licenses",
-        description: "Can view license details",
-        resource: "license",
-        action: "read",
-        impact: "low",
-        createdBy: null,
-    },
-    {
-        id: "license.write",
-        name: "Manage Licenses",
-        description: "Can create and modify licenses",
-        resource: "license",
-        action: "write",
-        impact: "medium",
-        createdBy: null,
-    },
-    {
-        id: "app.read",
-        name: "View Applications",
-        description: "Can view application details",
-        resource: "app",
-        action: "read",
-        impact: "low",
-        createdBy: null,
-    },
-    {
-        id: "app.write",
-        name: "Manage Applications",
-        description: "Can create and modify applications",
-        resource: "app",
-        action: "write",
-        impact: "medium",
-        createdBy: null,
-    },
-    {
-        id: "team.read",
-        name: "View Team",
-        description: "Can view team details",
-        resource: "team",
-        action: "read",
-        impact: "low",
-        createdBy: null,
-    },
-    {
-        id: "team.write",
-        name: "Manage Team",
-        description: "Can modify team settings",
-        resource: "team",
-        action: "write",
-        impact: "medium",
-        createdBy: null,
-    },
-    {
-        id: "analytics.read",
-        name: "View Analytics",
-        description: "Can view analytics data",
-        resource: "analytics",
-        action: "read",
-        impact: "low",
-        createdBy: null,
-    },
-    {
-        id: "analytics.export",
-        name: "Export Analytics",
-        description: "Can export analytics data",
-        resource: "analytics",
-        action: "export",
-        impact: "medium",
-        createdBy: null,
-    },
-]
-
 
 interface PermissionsManagementProps {
     teamId: string
@@ -128,67 +34,30 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
     const fetchPermissionsAndCategories = async () => {
         if (!teamId) return
 
-        try {
-            setIsLoading(true)
-            setError(null)
+        setIsLoading(true)
+        setError(null)
 
-            const data = await permissionsApi.getPermissions(teamId);
+        const data = await permissionsApi.getPermissions(teamId);
 
-            if (Array.isArray(data) && data.length === 0) {
-                setPermissions(DEFAULT_PERMISSIONS)
+        setPermissions(data)
 
-                const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-                const categoriesData = uniqueResources.map((resource) => ({
-                    id: resource,
-                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                    count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-                }))
+        const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
+        const categoriesData = uniqueResources.map((resource) => ({
+            id: resource,
+            name: resource.charAt(0).toUpperCase() + resource.slice(1),
+            description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
+            count: data.filter((p) => p.resource === resource).length,
+        }))
 
-                setCategories(categoriesData)
+        setCategories(categoriesData)
 
-                if (!selectedCategory && categoriesData.length > 0) {
-                    setSelectedCategory(categoriesData[0].id)
-                }
-            } else {
-                setPermissions(data)
-
-                const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
-                const categoriesData = uniqueResources.map((resource) => ({
-                    id: resource,
-                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                    count: data.filter((p) => p.resource === resource).length,
-                }))
-
-                setCategories(categoriesData)
-
-                if (!selectedCategory && categoriesData.length > 0) {
-                    setSelectedCategory(categoriesData[0].id)
-                }
-            }
-        } catch (err) {
-            console.error("Error fetching permissions:", err)
-            setPermissions(DEFAULT_PERMISSIONS)
-
-            const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-            const categoriesData = uniqueResources.map((resource) => ({
-                id: resource,
-                name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-            }))
-
-            setCategories(categoriesData)
-
-            if (!selectedCategory && categoriesData.length > 0) {
-                setSelectedCategory(categoriesData[0].id)
-            }
-
-            setError("Failed to load permissions. Using default values.")
-        } finally {
-            setIsLoading(false)
+        if (!selectedCategory && categoriesData.length > 0) {
+            setSelectedCategory(categoriesData[0].id)
         }
+
+
+        setIsLoading(false)
+
     }
 
     useEffect(() => {
@@ -209,17 +78,6 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
         return matchesSearch && matchesCategory
     })
 
-
-    const getImpactColor = (impact: string) => {
-        const colors = {
-            critical: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-            high: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
-            medium: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-            low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-        }
-        return colors[impact?.toLowerCase()] || colors.medium
-    }
-
     return (
         <div className="space-y-4">
             <div className="flex flex-col space-y-4 md:flex-row md:items-end md:justify-between md:space-y-0">
@@ -235,10 +93,6 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                         />
                     </div>
                 </div>
-                <Button onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="mr-2 h-4 w-4"/>
-                    Create Permission
-                </Button>
             </div>
 
             {isLoading ? (
@@ -316,7 +170,7 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                                                                     System
                                                                 </Badge>
                                                             )}
-                                                            <Badge className={getImpactColor(permission.impact)}>
+                                                            <Badge>
                                                                 {permission.impact?.charAt(0).toUpperCase() + permission.impact?.slice(1)}
                                                             </Badge>
                                                             <TooltipProvider>
@@ -406,7 +260,7 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                                             <Badge variant="secondary">{permission.action}</Badge>
                                         </div>
                                         <div className="col-span-1">
-                                            <Badge className={getImpactColor(permission.impact)}>
+                                            <Badge>
                                                 {permission.impact?.charAt(0).toUpperCase() + permission.impact?.slice(1)}
                                             </Badge>
                                         </div>

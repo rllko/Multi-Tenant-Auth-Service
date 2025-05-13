@@ -1,5 +1,5 @@
-import { AppsManagement } from "@/components/apps-management"
+import {ApplicationsView} from "@/components/applications-view"
 
 export default function AppsPage() {
-  return <AppsManagement />
+    return <ApplicationsView/>
 }
