@@ -1,4 +1,6 @@
+using System.Data;
 using Authentication.Endpoints.Authentication.TenantAuthentication;
+using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using LanguageExt;
@@ -15,6 +17,7 @@ public interface ITenantService
 
     Task<Option<TenantDto>> GetTenantByIdAsync(Guid teamId);
     Task<Option<TenantDto>> GetTenantByEmailAsync(string email);
+    Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid, IDbTransaction? transaction = null);
 
     Task<Option<TenantSessionInfo>> RefreshSessionAsync(string sessionToken);
 

@@ -1,5 +1,4 @@
 using Authentication.Attributes;
-using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
@@ -27,7 +26,6 @@ public class TeamRolesEndpoint : EndpointWithoutRequest<IEnumerable<Role>>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var teamId = Route<Guid>("teamId");
-        var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
         var teams = await _teamService.GetTeamRolesAsync(teamId);
 

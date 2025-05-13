@@ -361,7 +361,7 @@ export function OAuthClientsTab({appId}: { appId: string }) {
     const handleRoleSelect = (role: Role) => {
         toast({
             title: "Role Selected",
-            description: `You selected the ${role.name} role`,
+            description: `You selected the ${role.roleName} role`,
         })
     }
 

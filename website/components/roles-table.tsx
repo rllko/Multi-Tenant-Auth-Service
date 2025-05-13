@@ -4,20 +4,20 @@ import {useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Badge} from "@/components/ui/badge"
@@ -25,14 +25,14 @@ import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Textarea} from "@/components/ui/textarea"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {Edit, KeyRound, Loader2, MoreHorizontal, Plus, Shield, Trash, Users} from "lucide-react"
 import {CreateRoleModal} from "./create-role-modal"
@@ -68,7 +68,7 @@ export function RolesTable({
 
     const filteredRoles = roles.filter(
         (role) =>
-            (role.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (role.roleName?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (role.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()),
     )
 
@@ -91,7 +91,7 @@ export function RolesTable({
         }
 
         if (selectedRole) {
-            onRoleUpdate(selectedRole.id, roleData)
+            onRoleUpdate(selectedRole.roleId, roleData)
         } else {
             onRoleCreate(roleData)
         }
@@ -100,7 +100,7 @@ export function RolesTable({
 
     const handleDelete = () => {
         if (selectedRole) {
-            onRoleDelete(selectedRole.id)
+            onRoleDelete(selectedRole.roleId)
             setConfirmDelete(false)
             setSelectedRole(null)
         }
@@ -163,14 +163,14 @@ export function RolesTable({
                                 ) : (
                                     filteredRoles.map((role) => (
                                         <TableRow
-                                            key={role.id}
+                                            key={role.roleId}
                                             className="hover:bg-muted/50 cursor-pointer"
                                             onClick={() => onRoleSelect(role)}
                                         >
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
                                                     <Shield className="h-4 w-4 text-muted-foreground"/>
-                                                    <span className="font-medium">{role.name}</span>
+                                                    <span className="font-medium">{role.roleName}</span>
                                                     {role.isDefault && (
                                                         <Badge variant="outline" className="ml-2">
                                                             Default
@@ -252,7 +252,7 @@ export function RolesTable({
                                 <Input
                                     id="name"
                                     name="name"
-                                    defaultValue={selectedRole?.name || ""}
+                                    defaultValue={selectedRole?.roleName || ""}
                                     placeholder="e.g. Admin, Editor, Viewer"
                                     required
                                     disabled={selectedRole?.isSystemRole}
@@ -320,7 +320,7 @@ export function RolesTable({
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Role</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete the role "{selectedRole?.name}"? This action cannot be
+                            Are you sure you want to delete the role "{selectedRole?.roleName}"? This action cannot be
                             undone and will
                             remove this role from all users who have it assigned.
                         </AlertDialogDescription>

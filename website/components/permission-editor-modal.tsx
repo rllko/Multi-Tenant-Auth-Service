@@ -16,6 +16,7 @@ import {AlertTriangle, Loader2, RefreshCw} from "lucide-react"
 import {useToast} from "@/hooks/use-toast"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {permissionsApi, rolesApi, teamsApi} from "@/lib/api-service";
+import {Role} from "@/models/role";
 
 interface PermissionEditorModalProps {
     isOpen: boolean
@@ -25,26 +26,8 @@ interface PermissionEditorModalProps {
     type: "team" | "app"
 }
 
-const DEFAULT_ROLES = [
-    {
-        id: "admin",
-        name: "Admin",
-        description: "Full access to all resources",
-    },
-    {
-        id: "editor",
-        name: "Editor",
-        description: "Can view and edit resources",
-    },
-    {
-        id: "viewer",
-        name: "Viewer",
-        description: "Read-only access to resources",
-    },
-]
-
 export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: PermissionEditorModalProps) {
-    const [roles, setRoles] = useState<any[]>([])
+    const [roles, setRoles] = useState<Role[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [selectedRole, setSelectedRole] = useState("")
@@ -64,25 +47,24 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
 
         if (!teamId) {
             console.error("No teamId available, using default data")
-            setRoles(DEFAULT_ROLES)
             setIsLoading(false)
             return
         }
+        const loadRoles = async () => {
+            try {
+                const data = await rolesApi.getRoles(teamId)
+                setRoles(data)
 
-        try {
-            const data = rolesApi.getRoles(teamId)
+            } catch (err) {
+                console.error("Error fetching roles:", err)
 
-            setRoles(data)
+                setError("Failed to load roles. Using default values.")
+            }
 
-        } catch (err) {
-            console.error("Error fetching roles:", err)
-
-            setRoles(DEFAULT_ROLES)
-            setError("Failed to load roles. Using default values.")
+            setIsLoading(false)
         }
 
-        setIsLoading(false)
-
+        loadRoles();
     }, [isOpen, member, teamId])
 
     const handleRoleChange = (roleId: string) => {
@@ -195,9 +177,9 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
                                         {roles.length === 0 ? (
                                             <div className="p-2 text-muted-foreground text-sm">No roles available.</div>
                                         ) : (
-                                            roles.map((role) => (
-                                                <SelectItem key={role.id} value={role.id}>
-                                                    {role.name}
+                                            roles.map((role: Role) => (
+                                                <SelectItem key={role.roleId} value={role.roleId.toString()}>
+                                                    {role.roleName}
                                                 </SelectItem>
                                             ))
                                         )}
@@ -211,11 +193,11 @@ export function PermissionEditorModal({isOpen, onClose, member, teamId, type}: P
                             {selectedRole && (
                                 <div className="p-3 bg-muted/50 rounded-md">
                                     <h5 className="font-medium text-sm">
-                                        {roles.find((r) => r.id === selectedRole)?.name ||
+                                        {roles.find((r) => r.roleId.toString() === selectedRole)?.roleName ||
                                             selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}
                                     </h5>
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        {roles.find((r) => r.id === selectedRole)?.description || "No description available."}
+                                        {roles.find((r) => r.roleId.toString() === selectedRole)?.description || "No description available."}
                                     </p>
                                 </div>
                             )}

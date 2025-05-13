@@ -10,6 +10,7 @@ import {Input} from "@/components/ui/input"
 import {useToast} from "@/hooks/use-toast"
 import {CONSTANTS} from "@/app/const";
 import {authApi} from "@/lib/api-service";
+import {LoginType} from "@/models/auth";
 
 export default function Login() {
     const router = useRouter()
@@ -30,7 +31,7 @@ export default function Login() {
         setIsLoading(true)
 
         try {
-            const data = await authApi.login(formData.email, formData.password);
+            const data: LoginType = await authApi.login(formData.email, formData.password) as LoginType;
 
             if (data.token) {
                 localStorage.setItem(CONSTANTS.TOKEN_NAME, data.token)

@@ -156,39 +156,43 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
     public async Task<IEnumerable<TenantDto>> GetTenantsInTeamAsync(Guid teamId)
     {
         var sql = @"
-            SELECT ten.*
-            FROM tenants ten
-            JOIN team_tenants tt ON ten.id = tt.tenant
+            SELECT t.id as Id,
+                   discordid as DiscordId,
+                   name as Name,
+                   Email as Email,
+                   r.role_name as Role
+            FROM tenants t
+            JOIN team_tenants tt ON t.id = tt.tenant
+            JOIN roles r on tt.role = r.role_id
             WHERE tt.team = @TeamId;
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
 
-        var tenants = await conn.QueryAsync<Tenant>(sql, new { TeamId = teamId });
+        var tenants = await conn.QueryAsync<TenantDto>(sql, new { TeamId = teamId });
 
-        return tenants.Select(tenant => tenant.ToDto()).ToList();
+        return tenants.ToList();
     }
 
     public async Task<TenantDto> GetTenantInTeamAsync(Guid teamId, Guid tenantId)
     {
         var sql = @"
-            SELECT id as Id,
+            SELECT t.id as Id,
                    discordid as DiscordId,
                    name as Name,
                    Email as Email,
-                   role as RoleId,
-                   created_at as CreationDate,
-                   activated_at as ActivatedAt
+                   r.role_name as Role
             FROM tenants t
             JOIN team_tenants tt ON t.id = tt.tenant
+            JOIN roles r on tt.role = r.role_id
             WHERE tt.team = @TeamId;
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
 
-        var tenant = await conn.QuerySingleAsync<Tenant>(sql, new { TeamId = teamId });
+        var tenant = await conn.QuerySingleAsync<TenantDto>(sql, new { TeamId = teamId });
 
-        return tenant.ToDto();
+        return tenant;
     }
 
     public async Task<Option<IEnumerable<Role>>> GetTeamRolesAsync(Guid teamId)
@@ -198,6 +202,7 @@ public class TeamService(IDbConnectionFactory connectionFactory) : ITeamService
                    r.role_name as RoleName,
                    r.role_type as RoleType,
                    r.created_by as CreatedBy,
+                   r.description as Description,
                    r.slug as Slug
             FROM teams t
                  RIGHT JOIN roles r on r.created_by = t.id

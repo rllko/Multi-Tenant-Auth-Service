@@ -207,7 +207,7 @@ export const teamsApi = {
         return fetchApi(`/teams/${teamId}/members/${userId}`, {
             method: "PATCH",
             body: JSON.stringify({roleId}),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -232,10 +232,10 @@ export const appsApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}`, {
             method: "PUT",
             body: JSON.stringify(data),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
     deleteApp: async (teamId: string, appId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/apps/${appId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -257,10 +257,10 @@ export const licensesApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {
             method: "PUT",
             body: JSON.stringify(data),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
     deleteLicense: async (teamId: string, appId: string, licenseId: string): Promise<void> => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -270,7 +270,7 @@ export const sessionsApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}/sessions`)
     },
     terminateSession: async (teamId: string, appId: string, sessionId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/sessions/${sessionId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/apps/${appId}/sessions/${sessionId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -289,10 +289,10 @@ export const oauthApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {
             method: "PUT",
             body: JSON.stringify(data),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
     deleteClient: async (teamId: string, appId: string, clientId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
     getClientSessions: async (teamId: string, appId: string, clientId: string) => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}/sessions`)
@@ -301,19 +301,19 @@ export const oauthApi = {
 
 // Roles API
 export const rolesApi = {
-    getRoles: async (teamId: string) => {
+    getRoles: async (teamId: string): Promise<Role[]> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch roles")
         }
         return fetchApi(`/teams/${teamId}/roles`)
     },
-    getRole: async (teamId: string, roleId: string) => {
+    getRole: async (teamId: string, roleId: string): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch role details")
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}`)
     },
-    createRole: async (teamId: string, data: Role) => {
+    createRole: async (teamId: string, data: Role): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to create a role")
         }
@@ -322,32 +322,32 @@ export const rolesApi = {
             body: JSON.stringify(data),
         })
     },
-    updateRole: async (teamId: string, roleId: string, data: object) => {
+    updateRole: async (teamId: string, roleId: string, data: object): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to update a role")
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}`, {
             method: "PATCH",
             body: JSON.stringify(data),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
-    deleteRole: async (teamId: string, roleId: string) => {
+    deleteRole: async (teamId: string, roleId: string): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to delete a role")
         }
-        return fetchApi(`/teams/${teamId}/roles/${roleId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/roles/${roleId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
 }
 
 // Permissions API
 export const permissionsApi = {
-    getPermission: async (teamId: string, permissionID: string) => {
+    getPermission: async (teamId: string, permissionID: string): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch permissions")
         }
         return fetchApi(`/teams/${teamId}/permissions/${permissionID}`)
     },
-    getPermissions: async (teamId: string) => {
+    getPermissions: async (teamId: string): Promise<Role[]> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch permissions")
         }
@@ -363,7 +363,7 @@ export const permissionsApi = {
             action: string
             impact?: string
         },
-    ) => {
+    ): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to create a permission")
         }
@@ -372,20 +372,20 @@ export const permissionsApi = {
             body: JSON.stringify(data),
         })
     },
-    assignPermission: async (teamId: string, roleId: string, permissionId: string) => {
+    assignPermission: async (teamId: string, roleId: string, permissionId: string): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to assign a permission")
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions`, {
             method: "POST",
             body: JSON.stringify({permissionId}),
-        })
+        }, DEFAULT_TIMEOUT, false)
     },
-    removePermission: async (teamId: string, roleId: string, permissionId: string) => {
+    removePermission: async (teamId: string, roleId: string, permissionId: string): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to remove a permission")
         }
-        return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions/${permissionId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions/${permissionId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
 }
 

@@ -1,5 +1,4 @@
 using Authentication.Attributes;
-using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
@@ -27,9 +26,7 @@ public class GetTeamMemberEndpoint : EndpointWithoutRequest<TenantDto>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var teamId = Route<Guid>("teamId");
-        var memberId = Route<Guid>("teamId");
-
-        var session = HttpContext.Items["Session"] as TenantSessionInfo;
+        var memberId = Route<Guid>("memberId");
 
         var tenants = await _teamService.GetTenantInTeamAsync(teamId, memberId);
         await SendOkAsync(tenants, ct);

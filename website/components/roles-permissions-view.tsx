@@ -43,7 +43,7 @@ export function RolesPermissionsView({
         setSelectedRole(role)
         toast({
             title: "Role selected",
-            description: `Selected role: ${role.role_name}`,
+            description: `Selected role: ${role.roleName}`,
         })
     }
 

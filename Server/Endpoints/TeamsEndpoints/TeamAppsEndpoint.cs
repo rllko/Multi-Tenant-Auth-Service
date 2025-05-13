@@ -1,5 +1,4 @@
 using Authentication.Attributes;
-using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Applications;
@@ -28,7 +27,6 @@ public class TeamAppsEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationDt
     public override async Task HandleAsync(CancellationToken ct)
     {
         var teamId = Route<Guid>("teamId");
-        var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
         var apps = await _applicationService.GetApplicationsByTeamIdAsync(teamId);
 

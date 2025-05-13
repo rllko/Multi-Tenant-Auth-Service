@@ -1,28 +1,22 @@
-export type Role = {
-    role_id: number;
-    role_name: string;
-    description?: string
-    slug: string;
-    role_type: number;
-    created_by: string;
-    is_default: boolean
-    scopes?: string[]
-    isSystemRole?: boolean;
-};
+import {z} from "zod";
 
-export type CreateRoleDto = {
-    role_name: string;
-    slug: string;
-    role_type: number;
-    impact: string
-    created_by: string;
-    is_default: boolean;
-};
+export const RoleSchema = z.object({
+    roleId: z.number(),
+    teamId: z.string(),
+    roleName: z.string(),
+    description: z.string(),
+    slug: z.string(),
+    roleType: z.string(),
+});
 
-export type UpdateRoleDto = {
-    role_name: string;
-    slug: string;
-    role_type: number;
-    created_by: string;
-    is_default: boolean;
-};
+export type Role = z.infer<typeof RoleSchema>;
+
+export const UpdateRoleSchema = z.object({
+    roleName: z.string(),
+    slug: z.string(),
+    description: z.string(),
+    roleType: z.number(),
+    createdByTeam: z.string().uuid(),
+});
+
+export type UpdateRoleDto = z.infer<typeof UpdateRoleSchema>;

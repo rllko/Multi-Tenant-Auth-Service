@@ -36,7 +36,7 @@ public class Tenant
             Id = Id,
             Name = Name,
             Email = Email,
-            RoleId = RoleId
+            Role = ""
         };
     }
 }
@@ -44,7 +44,8 @@ public class Tenant
 public class TenantDto
 {
     public Guid Id { get; set; }
+    public string DiscordId { get; set; }
     public required string Email { get; set; }
-    public Guid RoleId { get; set; }
+    public required string Role { get; set; }
     public required string Name { get; set; }
 }

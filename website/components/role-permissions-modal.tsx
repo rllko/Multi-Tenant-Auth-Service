@@ -22,6 +22,7 @@ import {useToast} from "@/hooks/use-toast"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {permissionsApi, rolesApi} from "@/lib/api-service";
+import {Permission} from "@/lib/schemas";
 
 interface RolePermissionsModalProps {
     isOpen: boolean
@@ -31,89 +32,6 @@ interface RolePermissionsModalProps {
     onPermissionsUpdated: () => void
 }
 
-const DEFAULT_PERMISSIONS = [
-    {
-        id: "user.read",
-        name: "View Users",
-        description: "Can view user profiles",
-        resource: "user",
-        action: "read",
-        impact: "low",
-    },
-    {
-        id: "user.write",
-        name: "Edit Users",
-        description: "Can edit user profiles",
-        resource: "user",
-        action: "write",
-        impact: "medium",
-    },
-    {
-        id: "license.read",
-        name: "View Licenses",
-        description: "Can view license details",
-        resource: "license",
-        action: "read",
-        impact: "low",
-    },
-    {
-        id: "license.write",
-        name: "Manage Licenses",
-        description: "Can create and modify licenses",
-        resource: "license",
-        action: "write",
-        impact: "medium",
-    },
-    {
-        id: "app.read",
-        name: "View Applications",
-        description: "Can view application details",
-        resource: "app",
-        action: "read",
-        impact: "low",
-    },
-    {
-        id: "app.write",
-        name: "Manage Applications",
-        description: "Can create and modify applications",
-        resource: "app",
-        action: "write",
-        impact: "medium",
-    },
-    {
-        id: "team.read",
-        name: "View Team",
-        description: "Can view team details",
-        resource: "team",
-        action: "read",
-        impact: "low",
-    },
-    {
-        id: "team.write",
-        name: "Manage Team",
-        description: "Can modify team settings",
-        resource: "team",
-        action: "write",
-        impact: "medium",
-    },
-    {
-        id: "analytics.read",
-        name: "View Analytics",
-        description: "Can view analytics data",
-        resource: "analytics",
-        action: "read",
-        impact: "low",
-    },
-    {
-        id: "analytics.export",
-        name: "Export Analytics",
-        description: "Can export analytics data",
-        resource: "analytics",
-        action: "export",
-        impact: "medium",
-    },
-]
-
 export function RolePermissionsModal({
                                          isOpen,
                                          onClose,
@@ -121,7 +39,7 @@ export function RolePermissionsModal({
                                          teamId,
                                          onPermissionsUpdated,
                                      }: RolePermissionsModalProps) {
-    const [permissions, setPermissions] = useState<any[]>([])
+    const [permissions, setPermissions] = useState<Permission[] | null>([])
     const [categories, setCategories] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -146,52 +64,15 @@ export function RolePermissionsModal({
         }
 
         if (!teamId) {
-            console.error("No teamId available, using default data")
-            setPermissions(DEFAULT_PERMISSIONS)
-
-            const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-            const categoriesData = uniqueResources.map((resource) => ({
-                id: resource,
-                name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-            }))
-
-            setCategories(categoriesData)
-
-            if (categoriesData.length > 0) {
-                setSelectedCategory(categoriesData[0].id)
-            }
-
-            setIsLoading(false)
-            return
+            throw new Error("teamId must be provided")
         }
 
         try {
-            const data = permissionsApi.getPermissions(teamId)
+            const perms = async () => { // Create a new async function: clear
+                const data = await permissionsApi.getPermissions(teamId)
 
-            // If API returns empty array, use default permissions
-            if (Array.isArray(data) && data.length === 0) {
-                setPermissions(DEFAULT_PERMISSIONS)
-
-                // Extract categories from default permissions
-                const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-                const categoriesData = uniqueResources.map((resource) => ({
-                    id: resource,
-                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                    count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-                }))
-
-                setCategories(categoriesData)
-
-                if (categoriesData.length > 0) {
-                    setSelectedCategory(categoriesData[0].id)
-                }
-            } else {
                 setPermissions(data)
 
-                // Extract categories
                 const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
                 const categoriesData = uniqueResources.map((resource) => ({
                     id: resource,
@@ -206,27 +87,9 @@ export function RolePermissionsModal({
                     setSelectedCategory(categoriesData[0].id)
                 }
             }
+            perms();
         } catch (err) {
             console.error("Error fetching permissions:", err)
-            // Use default permissions as fallback
-            setPermissions(DEFAULT_PERMISSIONS)
-
-            // Extract categories from default permissions
-            const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-            const categoriesData = uniqueResources.map((resource) => ({
-                id: resource,
-                name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-            }))
-
-            setCategories(categoriesData)
-
-            if (categoriesData.length > 0) {
-                setSelectedCategory(categoriesData[0].id)
-            }
-
-            setError("Failed to load permissions. Using default values.")
         } finally {
             setIsLoading(false)
         }
@@ -295,7 +158,8 @@ export function RolePermissionsModal({
 
 
     const handleSave = async () => {
-        if (!role?.id || !teamId) {
+
+        if (!role?.roleId || !teamId) {
             onClose()
             return
         }
@@ -303,7 +167,7 @@ export function RolePermissionsModal({
         try {
             setIsSaving(true)
 
-            await rolesApi.updateRole(teamId, role.id, role);
+            await rolesApi.updateRole(teamId, role.roleId, role);
 
             toast({
                 title: "Success",
@@ -344,34 +208,19 @@ export function RolePermissionsModal({
 
             const data = await permissionsApi.getPermissions(teamId);
 
-            if (Array.isArray(data) && data.length === 0) {
-                setPermissions(DEFAULT_PERMISSIONS)
+            setPermissions(data)
 
-                // Extract categories from default permissions
-                const uniqueResources = [...new Set(DEFAULT_PERMISSIONS.map((p) => p.resource || "other"))]
-                const categoriesData = uniqueResources.map((resource) => ({
-                    id: resource,
-                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                    count: DEFAULT_PERMISSIONS.filter((p) => p.resource === resource).length,
-                }))
+            // Extract categories
+            const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
+            const categoriesData = uniqueResources.map((resource) => ({
+                id: resource,
+                name: resource.charAt(0).toUpperCase() + resource.slice(1),
+                description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
+                count: data.filter((p) => p.resource === resource).length,
+            }))
 
-                setCategories(categoriesData)
-            } else {
-                setPermissions(data)
-
-                // Extract categories
-                const uniqueResources = [...new Set(data.map((p) => p.resource || "other"))]
-                const categoriesData = uniqueResources.map((resource) => ({
-                    id: resource,
-                    name: resource.charAt(0).toUpperCase() + resource.slice(1),
-                    description: `${resource.charAt(0).toUpperCase() + resource.slice(1)} related permissions`,
-                    count: data.filter((p) => p.resource === resource).length,
-                }))
-
-                setCategories(categoriesData)
-            }
-
+            setCategories(categoriesData)
+            
         } catch (err) {
             console.error("Error refreshing permissions:", err)
             setError("Failed to refresh permissions.")
@@ -406,7 +255,7 @@ export function RolePermissionsModal({
             <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-blue-600">Edit Role Permissions</DialogTitle>
-                    <DialogDescription>Manage the permissions for the "{role?.name}" role</DialogDescription>
+                    <DialogDescription>Manage the permissions for the "{role?.roleName}" role</DialogDescription>
                 </DialogHeader>
 
                 {isLoading ? (
@@ -427,7 +276,7 @@ export function RolePermissionsModal({
                     <>
                         <div className="flex items-center gap-3 py-2">
                             <div>
-                                <h3 className="font-medium">{role?.name}</h3>
+                                <h3 className="font-medium">{role?.roleName}</h3>
                                 <p className="text-sm text-muted-foreground">{role?.description || "No description available"}</p>
                             </div>
                         </div>
@@ -528,12 +377,6 @@ export function RolePermissionsModal({
                                                                     >
                                                                         {permission.name}
                                                                     </Label>
-                                                                    {permission.impact && (
-                                                                        <Badge
-                                                                            className={getImpactColor(permission.impact)}>
-                                                                            {permission.impact.charAt(0).toUpperCase() + permission.impact.slice(1)}
-                                                                        </Badge>
-                                                                    )}
                                                                     <TooltipProvider>
                                                                         <Tooltip>
                                                                             <TooltipTrigger asChild>
@@ -587,31 +430,6 @@ export function RolePermissionsModal({
                                                             className="mt-1"
                                                         />
                                                         <div className="grid gap-1 leading-none">
-                                                            <div className="flex items-center gap-1">
-                                                                <Label
-                                                                    htmlFor={`all-${permission.id}`}
-                                                                    className="text-sm font-medium leading-none cursor-pointer"
-                                                                >
-                                                                    {permission.name}
-                                                                </Label>
-                                                                {permission.impact && (
-                                                                    <Badge
-                                                                        className={getImpactColor(permission.impact)}>
-                                                                        {permission.impact.charAt(0).toUpperCase() + permission.impact.slice(1)}
-                                                                    </Badge>
-                                                                )}
-                                                                <TooltipProvider>
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger asChild>
-                                                                            <Info
-                                                                                className="h-3.5 w-3.5 text-muted-foreground"/>
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p className="max-w-xs">{permission.description}</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                </TooltipProvider>
-                                                            </div>
                                                             <p className="text-xs text-muted-foreground">{permission.description}</p>
                                                             <div className="flex gap-2 mt-1">
                                                                 <Badge variant="outline">{permission.resource}</Badge>

@@ -1,5 +1,7 @@
+using System.Data;
 using Authentication.Database;
 using Authentication.Endpoints.Authentication.TenantAuthentication;
+using Authentication.Endpoints.TeamsEndpoints;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.Services.Logger;
@@ -166,6 +168,27 @@ public class TenantService(
 
         foreach (var s in sessions)
             await _sessions.DeleteAsync(s);
+    }
+
+    public async Task<bool> UpdateTenantRoleAsync(UpdateTenantRoleDto req, Guid tenantGuid,
+        IDbTransaction? transaction = null)
+    {
+        const string sql = @"
+            UPDATE team_tenants
+            SET role = @RoleId
+            WHERE tenant = @TenantGuid;
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var transact = transaction ?? conn.BeginTransaction();
+
+        var affected = await conn.ExecuteAsync(sql, new { RoleId = req.roleId, TenantGuid = tenantGuid }
+            , transact);
+
+        transact.Commit();
+
+        return affected > 0;
     }
 
 

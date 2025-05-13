@@ -1,5 +1,4 @@
 using Authentication.Attributes;
-using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
 using FastEndpoints;
@@ -26,7 +25,6 @@ public class TeamCreateRoleEndpoint : EndpointWithoutRequest
     public override async Task HandleAsync(CancellationToken ct)
     {
         var teamId = Route<Guid>("teamId");
-        var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
         var teams = await _teamService.GetTeamRolesAsync(teamId);
 
