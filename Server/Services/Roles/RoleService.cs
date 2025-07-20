@@ -8,7 +8,7 @@ namespace Authentication.Services.Roles;
 
 public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
 {
-    public async Task<Option<Role>> GetRoleByIdAsync(Guid roleId)
+    public async Task<Option<Role>> GetRoleByIdAsync(int roleId)
     {
         const string sql = "SELECT * FROM roles WHERE role_id = @Id;";
 
@@ -53,7 +53,7 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
         return role;
     }
 
-    public async Task<bool> UpdateRoleAsync(Guid roleId, UpdateRoleDto dto, IDbTransaction? transaction = null)
+    public async Task<bool> UpdateRoleAsync(int roleId, UpdateRoleDto dto, IDbTransaction? transaction = null)
     {
         using var conn = await connectionFactory.CreateConnectionAsync();
         var localTransaction = transaction ?? conn.BeginTransaction();
@@ -70,7 +70,6 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
             {
                 if (r.CreatedBy != dto.CreatedBy)
                     return false;
-
 
                 try
                 {
@@ -99,7 +98,7 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
         );
     }
 
-    public async Task<bool> DeleteRoleAsync(Guid roleId, IDbTransaction? transaction = null)
+    public async Task<bool> DeleteRoleAsync(int roleId, IDbTransaction? transaction = null)
     {
         const string sql = "DELETE FROM roles WHERE role_id = @Id;";
 
@@ -112,7 +111,7 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
         return affected > 0;
     }
 
-    public async Task<bool> AssignScopeToRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null)
+    public async Task<bool> AssignScopeToRoleAsync(int roleId, int scopeId, IDbTransaction? transaction = null)
     {
         const string sql = @"
             INSERT INTO role_scopes (role_id, scope_id)
@@ -126,19 +125,24 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
 
         var affected = await conn.ExecuteAsync(sql, new { RoleId = roleId, ScopeId = scopeId }, transact);
 
+        transact.Commit();
+
         return affected > 0;
     }
 
-    public async Task<bool> RemoveScopeFromRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null)
+    public async Task<bool> RemoveScopeFromRoleAsync(int roleId, int scopeId, IDbTransaction? transaction = null)
     {
         const string sql = @"
             DELETE FROM role_scopes
-            WHERE role_id = @RoleId AND scope_id = @ScopeId;
+            WHERE role_id = @RoleId AND scope_id = @ScopeId
+            ;
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
         var transact = transaction ?? conn.BeginTransaction();
         var affected = await conn.ExecuteAsync(sql, new { RoleId = roleId, ScopeId = scopeId }, transact);
+
+        transact.Commit();
 
         return affected > 0;
     }

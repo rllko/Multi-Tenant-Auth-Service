@@ -147,7 +147,7 @@ export const authApi = {
         })
     },
     getCurrentUser: async () => {
-        return fetchApi("/auth/tenant/me", {
+        return fetchApi("/auth/me", {
             method: "GET",
         })
     },
@@ -328,6 +328,15 @@ export const rolesApi = {
             throw new Error("Team ID is required to update a role")
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        }, DEFAULT_TIMEOUT, false)
+    },
+    updateRolePermissions: async (teamId: string, roleId: string, data: object): Promise<Role> => {
+        if (!teamId) {
+            throw new Error("Team ID is required to update a role")
+        }
+        return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions`, {
             method: "PATCH",
             body: JSON.stringify(data),
         }, DEFAULT_TIMEOUT, false)

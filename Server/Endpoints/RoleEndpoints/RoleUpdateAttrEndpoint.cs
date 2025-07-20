@@ -28,7 +28,7 @@ public class RoleUpdateAttrEndpoint : Endpoint<UpdateRoleDto>
         var teamId = Route<Guid>("teamId");
         var roleId = Route<Guid>("roleId");
 
-        var tenants = await _roleService.UpdateRoleAsync(roleId, req);
-        await SendOkAsync(tenants, ct);
+        //var tenants = await _roleService.UpdateRoleAsync(roleId, req);
+        //await SendOkAsync(tenants, ct);
     }
 }

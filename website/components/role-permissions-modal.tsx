@@ -126,7 +126,9 @@ export function RolePermissionsModal({
     const handleSave = async () => {
         setIsSaving(true)
         try {
-            await rolesApi.updateRole(teamId, role.roleId, {scopes: selectedPermissions})
+            await rolesApi.updateRolePermissions(teamId, role.roleId, {
+                scopes: selectedPermissions
+            })
             toast({title: "Success", description: "Permissions updated successfully."})
             onPermissionsUpdated()
             onClose()

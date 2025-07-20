@@ -6,13 +6,13 @@ namespace Authentication.Services.Roles;
 
 public interface IRoleService
 {
-    Task<Option<Role>> GetRoleByIdAsync(Guid roleId);
+    Task<Option<Role>> GetRoleByIdAsync(int roleId);
     Task<IEnumerable<Role>> GetAllRolesAsync();
     Task<Role> CreateRoleAsync(CreateRoleDto roleDto, IDbTransaction? transaction = null);
-    Task<bool> UpdateRoleAsync(Guid roleId, UpdateRoleDto roleDto, IDbTransaction? transaction = null);
-    Task<bool> DeleteRoleAsync(Guid roleId, IDbTransaction? transaction = null);
+    Task<bool> UpdateRoleAsync(int roleId, UpdateRoleDto roleDto, IDbTransaction? transaction = null);
+    Task<bool> DeleteRoleAsync(int roleId, IDbTransaction? transaction = null);
 
-    Task<bool> AssignScopeToRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null);
-    Task<bool> RemoveScopeFromRoleAsync(Guid roleId, Guid scopeId, IDbTransaction? transaction = null);
+    Task<bool> AssignScopeToRoleAsync(int roleId, int scopeId, IDbTransaction? transaction = null);
+    Task<bool> RemoveScopeFromRoleAsync(int roleId, int scopeId, IDbTransaction? transaction = null);
     Task<IEnumerable<int>> GetScopesInRoleAsync(int roleId);
 }
