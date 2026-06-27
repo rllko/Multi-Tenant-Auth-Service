@@ -15,5 +15,11 @@ Deployment Instructions:
 
 6. Once running, visit the domain associated with your SSL certificate to access the Authio platform.
 
+First Login:
+	- The migrations seed a bootstrap admin tenant (Team Owner of the 'test' team).
+	- Email: admin@authio.com
+	- Password: admin123
+	- Change or remove this account before going to production.
+
 Note:
 	- The environment variables are found on the docker compose file,please avoid using default credentials in production environments.

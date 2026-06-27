@@ -38,6 +38,17 @@ docker compose up
 
 > If you intend to run this on a VM, deployment is as simple as uploading the project to your VPS and configuring the files provided [here](https://github.com/rllko/Multi-Tenant-Auth-Service/releases).
 
+### 4. First Login
+
+The database migrations seed a bootstrap admin tenant so you can log in out-of-the-box:
+
+- **Email:** `admin@authio.com`
+- **Password:** `admin123`
+
+This account is the Team Owner of the seeded `test` team.
+
+> Change the password or remove this account before deploying to production.
+
 ---
 
 ## External Database (Optional)
@@ -56,4 +67,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authio_se
 GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 ```
 
-> ⚠️ Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.
+> Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.
