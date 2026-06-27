@@ -1,4 +1,3 @@
-using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
@@ -21,7 +20,6 @@ public class TenantPendingInvitesEndpoint : EndpointWithoutRequest<IEnumerable<T
         Get("teams/invites/pending");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("global.invite_management")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

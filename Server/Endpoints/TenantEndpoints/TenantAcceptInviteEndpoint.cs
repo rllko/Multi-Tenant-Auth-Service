@@ -1,4 +1,3 @@
-using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Invites;
@@ -20,7 +19,6 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
         Post("/teams/invites/{inviteToken}/accept");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("global.invite_management")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

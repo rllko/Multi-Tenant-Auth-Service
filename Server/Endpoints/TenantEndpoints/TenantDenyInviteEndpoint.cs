@@ -1,4 +1,3 @@
-using Authentication.Attributes;
 using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Invites;
@@ -20,7 +19,6 @@ public class TenantDenyInviteEndpoint : EndpointWithoutRequest
         Post("/teams/invites/{inviteToken}/decline");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("global.invite_management")));
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -40,7 +38,7 @@ public class TenantDenyInviteEndpoint : EndpointWithoutRequest
 
         await invite.Match(async inv =>
             {
-                var teams = await _inviteService.DeleteInviteAsync(token);
+                var teams = await _inviteService.DeclineInviteAsync(token);
 
                 if (teams)
                     await SendOkAsync(ct);

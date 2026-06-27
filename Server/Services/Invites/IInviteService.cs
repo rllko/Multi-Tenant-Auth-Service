@@ -17,5 +17,6 @@ public interface IInviteService
     Task<bool> AcceptInviteAsync(string token, Guid teamId, Guid userId, Guid invitedBy,
         IDbTransaction? transaction = null);
 
-    Task<bool> DeleteInviteAsync(string id, IDbTransaction? transaction = null);
+    Task<bool> DeclineInviteAsync(string token, IDbTransaction? transaction = null);
+
 }

@@ -21,7 +21,7 @@ public class InviteTenantEndpoint : Endpoint<TenantInviteCreateDto>
         Post("/teams/{teamId:guid}/members");
         PreProcessor<TenantProcessor<TenantInviteCreateDto>>();
         DontThrowIfValidationFails();
-        Options(x => x.WithMetadata(new RequiresScopeAttribute("global.invite_management")));
+        Options(x => x.WithMetadata(new RequiresScopeAttribute("team.invite")));
     }
 
     public override async Task HandleAsync(TenantInviteCreateDto req, CancellationToken ct)
