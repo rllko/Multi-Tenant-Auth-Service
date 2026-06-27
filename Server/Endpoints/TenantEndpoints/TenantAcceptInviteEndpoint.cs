@@ -38,6 +38,13 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
 
         await invite.Match(async inv =>
             {
+                if (inv.TenantId != session.TenantId)
+                {
+                    await SendForbiddenAsync(ct);
+
+                    return;
+                }
+
                 var teams = await _inviteService.AcceptInviteAsync(token, inv.TeamId, inv.TenantId, inv.CreatedBy);
 
                 if (teams)

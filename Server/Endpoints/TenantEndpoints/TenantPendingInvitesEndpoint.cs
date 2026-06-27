@@ -26,7 +26,7 @@ public class TenantPendingInvitesEndpoint : EndpointWithoutRequest<IEnumerable<T
     {
         var session = HttpContext.Items["Session"] as TenantSessionInfo;
 
-        var teams = await _inviteService.GetInvitesByTenantIdAsync(session.TenantId);
+        var teams = await _inviteService.GetInvitesPendingByTenantIdAsync(session.TenantId);
 
         await SendOkAsync(teams, ct);
     }

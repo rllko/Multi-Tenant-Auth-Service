@@ -6,7 +6,7 @@ namespace Authentication.Models.Entities;
 [Table("tenants")]
 public class Tenant
 {
-    public Tenant(Guid id, long discordId, string name, string email, long? activatedAt)
+    public Tenant(Guid id, long discordId, string name, string email, DateTime? activatedAt)
     {
         Id = id;
         DiscordId = discordId;
@@ -25,9 +25,9 @@ public class Tenant
     public string Email { get; set; }
     public string Name { get; set; }
     public Guid RoleId { get; set; }
-    public long CreationDate { get; set; }
+    public DateTime CreationDate { get; set; }
     public string? Password { get; set; }
-    public long? ActivatedAt { get; set; }
+    public DateTime? ActivatedAt { get; set; }
 
     public TenantDto ToDto()
     {

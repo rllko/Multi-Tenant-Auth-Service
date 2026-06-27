@@ -33,8 +33,8 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
         var typesql = "select id from role_types where role_types.slug = 'TEAM_ROLE' ";
 
         const string sql = @"
-            INSERT INTO roles (role_name, slug, role_type, created_by)
-            VALUES (@Name, @Slug,@RoleType , @CreatedBy)
+            INSERT INTO roles (role_name, slug, role_type, description, created_by)
+            VALUES (@Name, @Slug,@RoleType , @Description, @CreatedBy)
             RETURNING role_id as RoleId,
                       role_name as RoleName,
                       role_type as RoleType,
