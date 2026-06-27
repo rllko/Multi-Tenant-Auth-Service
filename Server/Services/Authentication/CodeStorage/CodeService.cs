@@ -1,6 +1,5 @@
 ﻿using Authentication.Database;
-using Authentication.Endpoints.Authentication.OAuth.AuthorizationEndpoint;
-using Authentication.Models;
+using Authentication.Models.Entities;
 using Authentication.Models.OAuth;
 using Authentication.Services.Logger;
 using Dapper;
@@ -26,7 +25,7 @@ public class CodeService(
 
     public async Task<string?> CreateAuthorizationCodeAsync(AuthorizationCodeRequest authorizationCodeRequest)
     {
-        var connection = await _connectionFactory.CreateConnectionAsync();
+        using var connection = await _connectionFactory.CreateConnectionAsync();
 
         var getDiscordIdQuery = @"SELECT * FROM clients WHERE client_identifier = @identifier;";
 

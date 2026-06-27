@@ -11,7 +11,9 @@ public interface IApplicationService
     Task<Option<IEnumerable<ApplicationDto>>> GetApplicationsByTeamIdAsync(Guid teamId);
 
     Task<Result<ApplicationDto, ValidationFailed>> RegisterApplicationAsync(Guid teamId,
-        CreateApplicationDto applicationDto);
+        IEnumerable<ScopeDto> scopes,
+        CreateApplicationDto applicationDto, IDbTransaction? transaction);
+
     Task<ApplicationDto> UpdateApplicationAsync(Guid applicationId, UpdateApplicationDto applicationDto,
         IDbTransaction transaction);
 
