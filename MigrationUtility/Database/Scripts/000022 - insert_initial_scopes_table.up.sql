@@ -140,7 +140,7 @@ ON CONFLICT DO NOTHING;
 
 
 WITH SCOPE AS (SELECT (SELECT id FROM scope_types WHERE slug = 'GLOBAL_ROLE')                AS type,
-                      (SELECT id FROM scope_categories WHERE slug = 'GLOBAL_MANAGEMENT')     AS category,
+                      (SELECT id FROM scope_categories WHERE slug = 'GLOBAL_OPERATIONS')     AS category,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'HIGH_IMPACT')   AS high_impact,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'LOW_IMPACT')    AS low_impact,
                       (SELECT id FROM permission_impact_levels WHERE slug = 'MEDIUM_IMPACT') AS medium_impact)
