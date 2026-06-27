@@ -1,163 +1,206 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ActivityFeed } from "@/components/activity-feed"
-import { AlertCircle, Loader2 } from "lucide-react"
-import { useTeam } from "@/contexts/team-context"
-import { Button } from "@/components/ui/button"
+import {useState} from "react"
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Calendar} from "@/components/ui/calendar"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
+import {format} from "date-fns"
+import {CalendarIcon, Download, Filter, RefreshCw, Search} from "lucide-react"
+import {cn} from "@/lib/utils"
 
-export function ActivityView() {
-  const [activities, setActivities] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const { selectedTeam } = useTeam()
+interface ActivityViewProps {
+    activities: any[]
+    teamId: string
+    onRefresh?: () => void
+    isRefreshing?: boolean
+}
 
-  useEffect(() => {
-    const loadActivityLogs = async () => {
-      if (!selectedTeam) return
+export function ActivityView({activities = [], teamId, onRefresh, isRefreshing = false}: ActivityViewProps) {
+    const [date, setDate] = useState<Date>()
+    const [isFiltering, setIsFiltering] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [activityType, setActivityType] = useState("all")
 
-      try {
-        setIsLoading(true)
+    const filteredActivities = activities.filter((activity) => {
+        const matchesSearch =
+            searchQuery === "" ||
+            activity.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            activity.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
 
-        // Real API call to fetch activity logs
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/teams/${selectedTeam.id}/activity?page=${page}&limit=20`,
-        )
+        const matchesType = activityType === "all" || activity.type === activityType
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch activity logs: ${response.status}`)
-        }
+        return matchesSearch && matchesType
+    })
 
-        const data = await response.json()
-        setActivities((prev) => (page === 1 ? data : [...prev, ...data]))
-        setHasMore(data.length === 20) // If we got less than 20 items, there's no more data
-        setError(null)
-      } catch (err) {
-        console.error("Failed to fetch activity logs:", err)
-        setError("Failed to load activity logs. Please try again.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadActivityLogs()
-  }, [page, selectedTeam])
-
-  const loadMore = () => {
-    if (!isLoading && hasMore) {
-      setPage((prev) => prev + 1)
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Team context banner */}
-      {selectedTeam && (
-        <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <span className="font-semibold text-primary">{selectedTeam.name.charAt(0)}</span>
-            </div>
-            <div>
-              <h3 className="font-medium">Team: {selectedTeam.name}</h3>
-              <p className="text-xs text-muted-foreground">Viewing activity logs for this team</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center mb-4">
-          <AlertCircle className="h-5 w-5 mr-2" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">All Activity</TabsTrigger>
-          <TabsTrigger value="auth">Authentication</TabsTrigger>
-          <TabsTrigger value="apps">Applications</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity Log</CardTitle>
-              <CardDescription>A detailed log of all activities in your account.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading && page === 1 ? (
-                <div className="flex items-center justify-center h-32">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2">Loading activity logs...</span>
+    return (
+        <Tabs defaultValue="all" className="space-y-4">
+            <div className="flex items-center justify-between">
+                <TabsList>
+                    <TabsTrigger value="all">All Activity</TabsTrigger>
+                    <TabsTrigger value="user">User Activity</TabsTrigger>
+                    <TabsTrigger value="system">System Events</TabsTrigger>
+                    <TabsTrigger value="security">Security</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setIsFiltering(!isFiltering)}>
+                        <Filter className="mr-2 h-4 w-4"/>
+                        Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                        <Download className="mr-2 h-4 w-4"/>
+                        Export
+                    </Button>
+                    {onRefresh && (
+                        <Button variant="outline" size="sm" onClick={onRefresh} disabled={isRefreshing}>
+                            <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")}/>
+                            {isRefreshing ? "Refreshing..." : "Refresh"}
+                        </Button>
+                    )}
                 </div>
-              ) : (
-                <>
-                  <ActivityFeed activities={activities} />
+            </div>
 
-                  {activities.length === 0 && !isLoading && (
-                    <div className="text-center py-8 text-muted-foreground">No activity logs found</div>
-                  )}
+            {isFiltering && (
+                <Card>
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
+                            <div className="flex-1 space-y-2">
+                                <Label htmlFor="search">Search</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+                                    <Input
+                                        id="search"
+                                        type="search"
+                                        placeholder="Search activities..."
+                                        className="pl-8"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="activity-type">Activity Type</Label>
+                                <Select value={activityType} onValueChange={setActivityType}>
+                                    <SelectTrigger id="activity-type" className="w-full md:w-[180px]">
+                                        <SelectValue placeholder="Select type"/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Types</SelectItem>
+                                        <SelectItem value="login">Login</SelectItem>
+                                        <SelectItem value="create">Create</SelectItem>
+                                        <SelectItem value="update">Update</SelectItem>
+                                        <SelectItem value="delete">Delete</SelectItem>
+                                        <SelectItem value="permission">Permission Change</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Date</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full justify-start text-left font-normal md:w-[240px]",
+                                                !date && "text-muted-foreground",
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                                            {date ? format(date, "PPP") : "Pick a date"}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus/>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-                  {hasMore && (
-                    <div className="mt-4 text-center">
-                      <Button onClick={loadMore} disabled={isLoading} variant="outline">
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Loading...
-                          </>
+            <TabsContent value="all" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Activity</CardTitle>
+                        <CardDescription>
+                            Showing {filteredActivities.length} activities for team {teamId}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {filteredActivities.length === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground">No activity records found</div>
                         ) : (
-                          "Load More"
+                            filteredActivities.map((activity, index) => (
+                                <div key={index} className="flex items-start space-x-4 rounded-md border p-4">
+                                    <div className="flex-1 space-y-1">
+                                        <p className="text-sm font-medium">{activity.description || "Activity description"}</p>
+                                        <div className="flex items-center text-xs text-muted-foreground">
+                                            <span>{activity.user?.name || "Unknown user"}</span>
+                                            <span className="mx-1">•</span>
+                                            <span>{activity.timestamp || new Date().toISOString()}</span>
+                                            <span className="mx-1">•</span>
+                                            <span className="capitalize">{activity.type || "action"}</span>
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={cn(
+                                            "rounded-full px-2 py-1 text-xs font-medium",
+                                            activity.type === "login" && "bg-blue-100 text-blue-800",
+                                            activity.type === "create" && "bg-green-100 text-green-800",
+                                            activity.type === "update" && "bg-amber-100 text-amber-800",
+                                            activity.type === "delete" && "bg-red-100 text-red-800",
+                                            activity.type === "permission" && "bg-purple-100 text-purple-800",
+                                        )}
+                                    >
+                                        {activity.type || "Action"}
+                                    </div>
+                                </div>
+                            ))
                         )}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="auth" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Authentication Activity</CardTitle>
-              <CardDescription>Login, logout, and authentication-related activities.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityFeed activities={activities.filter((a) => a.resource === "auth")} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="apps" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Application Activity</CardTitle>
-              <CardDescription>Activities related to application management.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityFeed activities={activities.filter((a) => a.resource === "app")} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="team" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Activity</CardTitle>
-              <CardDescription>Team member and role management activities.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityFeed activities={activities.filter((a) => a.resource === "team")} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="user" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>User Activity</CardTitle>
+                        <CardDescription>User-initiated actions and events</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-6 text-muted-foreground">Filter set to user activity</div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="system" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>System Events</CardTitle>
+                        <CardDescription>Automated system events and notifications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-6 text-muted-foreground">Filter set to system events</div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="security" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Security Events</CardTitle>
+                        <CardDescription>Security-related events and alerts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-6 text-muted-foreground">Filter set to security events</div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
+    )
 }
