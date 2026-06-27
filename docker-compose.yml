@@ -17,7 +17,7 @@ services:
       - nginx-network
 
   database:
-    image: postgres
+    image: postgres:17
     ports:
       - "5432:5432"  #DEV STUFF, REMOVE LATER
     environment:
