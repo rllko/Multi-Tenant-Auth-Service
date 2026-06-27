@@ -35,7 +35,11 @@ public class RoleService(IDbConnectionFactory connectionFactory) : IRoleService
         const string sql = @"
             INSERT INTO roles (role_name, slug, role_type, created_by)
             VALUES (@Name, @Slug,@RoleType , @CreatedBy)
-            RETURNING *;
+            RETURNING role_id as RoleId,
+                      role_name as RoleName,
+                      role_type as RoleType,
+                      created_by as CreatedBy,
+                      description as Description;
         ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();

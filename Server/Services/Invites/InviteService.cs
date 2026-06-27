@@ -133,7 +133,15 @@ public class InviteService(
                     """
                         INSERT INTO tenant_invites (tenant_id, invite_token,message, expires_at,status ,created_by,team_id)
                         VALUES (@TenantId, @InviteToken,@Message ,@ExpiresAt,@Status, @CreatedBy,@TeamId)
-                        RETURNING *;
+                        RETURNING id as Id,
+                                  tenant_id as TenantId,
+                                  team_id as TeamId,
+                                  status as Status,
+                                  invite_token as InviteToken,
+                                  expires_at as ExpiresAt,
+                                  created_by as CreatedBy,
+                                  created_at as CreatedAt,
+                                  accepted_at as AcceptedAt;
                     """;
 
                 var status = await conn.QueryFirstOrDefaultAsync<int>("""
@@ -192,14 +200,20 @@ public class InviteService(
         return true;
     }
 
-    public async Task<bool> DeleteInviteAsync(string token, IDbTransaction? transaction = null)
+    public async Task<bool> DeclineInviteAsync(string token, IDbTransaction? transaction = null)
     {
-        const string sql = "DELETE FROM tenant_invites WHERE invite_token = @Id;";
+        const string sql = @"
+            UPDATE tenant_invites
+            SET status = (SELECT id FROM tenant_invite_statuses WHERE slug = 'DECLINED')
+            WHERE invite_token = @Token
+              AND accepted_at IS NULL;
+        ";
 
         using var conn = await connectionFactory.CreateConnectionAsync();
 
-        var affected = await conn.ExecuteAsync(sql, new { Id = token }, transaction);
+        var affected = await conn.ExecuteAsync(sql, new { Token = token }, transaction);
 
         return affected > 0;
     }
+
 }
