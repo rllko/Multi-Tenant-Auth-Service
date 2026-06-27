@@ -16,7 +16,8 @@ public class DatabaseInitializer
         EnsureDatabase.For.PostgresqlDatabase(ConnectionString);
 
         var upgrade = DeployChanges.To.PostgresqlDatabase(ConnectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(DatabaseInitializer).Assembly).LogToConsole().Build();
+            .WithScriptsEmbeddedInAssembly(typeof(DatabaseInitializer).Assembly).LogToConsole().WithVariablesDisabled()
+            .Build();
 
         if (upgrade.IsUpgradeRequired())
         {

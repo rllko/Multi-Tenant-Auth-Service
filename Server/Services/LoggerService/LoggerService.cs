@@ -1,5 +1,5 @@
 using System.Data;
-using Authentication.Misc;
+using Authentication.Services.LoggerService;
 using Npgsql;
 using Serilog;
 using Serilog.Sinks.PostgreSQL.ColumnWriters;
@@ -20,6 +20,7 @@ public class LoggerService : ILoggerService
     {
         var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync(token);
+
         return connection;
     }
 
