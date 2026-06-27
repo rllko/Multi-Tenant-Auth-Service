@@ -46,6 +46,7 @@ public class License
 
 public class LicenseDto
 {
+    public long Id { get; init; }
     public required string Value { get; init; }
     public long CreationDate { get; init; }
     public bool Activated { get; init; }

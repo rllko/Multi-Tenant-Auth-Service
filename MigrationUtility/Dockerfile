@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0.0-preview.3-noble-amd64 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080

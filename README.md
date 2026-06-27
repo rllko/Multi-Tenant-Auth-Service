@@ -30,13 +30,36 @@ cp .env.example .env
 
 ### 3. Start the Services
 
-To spin up the stack using Docker:
+To build and spin up the stack using Docker:
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
+The first run builds the images and may take a few minutes. This starts PostgreSQL, Redis, the key generator, the database migrator, the API server, NGINX, and the web app. The `migration` service applies the database migrations once and then exits — a `migration_utility_c ... Exited (0)` status is **expected** and means it succeeded, not that it crashed.
+
+Once running, the stack is reachable at:
+
+| Service | URL |
+| --- | --- |
+| API server (direct) | <http://localhost:8080> |
+| Web app / API via NGINX | <http://localhost> |
+| PostgreSQL | `localhost:5432` (user `postgres`, database `auth`) |
+
+Use `docker compose up -d` to run in the background, and `docker compose down` to stop the stack — add `-v` to also wipe the database volume and start completely fresh.
+
 > If you intend to run this on a VM, deployment is as simple as uploading the project to your VPS and configuring the files provided [here](https://github.com/rllko/Multi-Tenant-Auth-Service/releases).
+
+### 4. First Login
+
+The database migrations seed a bootstrap admin tenant so you can log in out-of-the-box:
+
+- **Email:** `admin@authio.com`
+- **Password:** `admin123`
+
+This account is the Team Owner of the seeded `test` team.
+
+> Change the password or remove this account before deploying to production.
 
 ---
 
@@ -56,4 +79,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authio_se
 GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 ```
 
-> ⚠️ Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.
+> Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.

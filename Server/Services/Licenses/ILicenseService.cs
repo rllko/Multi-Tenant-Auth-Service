@@ -8,6 +8,7 @@ public interface ILicenseService
 {
     Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId);
     Task<License?> GetLicenseByUsername(string username);
+    Task<Option<IEnumerable<LicenseDto>>> GetLicenseByApplication(Guid application);
 
     Task<Result<LicenseDto, ValidationFailed>> ActivateLicense(Guid licenseValue, string username,
         string password, string email,
