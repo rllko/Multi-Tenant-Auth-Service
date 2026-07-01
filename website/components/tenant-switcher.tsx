@@ -34,7 +34,7 @@ import {toast} from "@/components/ui/use-toast"
 import {CONSTANTS} from "@/app/const";
 import {teamsApi} from "@/lib/api-service";
 
-export function TenantSwitcher() {
+export function TenantSwitcher({isCollapsed = false}: { isCollapsed?: boolean }) {
     const [open, setOpen] = React.useState(false)
     const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
     const {teams, selectedTeam, setSelectedTeam, isLoading, teamsLoaded, setTeams} = useTeam()
@@ -43,9 +43,10 @@ export function TenantSwitcher() {
 
     if (isLoading) {
         return (
-            <Button variant="outline" className="w-[200px] justify-start">
-                <div className="h-5 w-5 rounded-full bg-muted animate-pulse mr-2"/>
-                <span className="w-20 h-4 bg-muted animate-pulse rounded"></span>
+            <Button variant="outline"
+                    className={cn("justify-start", isCollapsed ? "w-full px-0 justify-center" : "w-full")}>
+                <div className={cn("h-5 w-5 rounded-full bg-muted animate-pulse", !isCollapsed && "mr-2")}/>
+                {!isCollapsed && <span className="w-20 h-4 bg-muted animate-pulse rounded"></span>}
             </Button>
         )
     }
@@ -118,23 +119,24 @@ export function TenantSwitcher() {
                         role="combobox"
                         aria-expanded={open}
                         aria-label="Select a team"
-                        className={cn("w-[200px] justify-between")}
+                        title={isCollapsed ? (selectedTeam?.name ?? "Select a team") : undefined}
+                        className={cn("w-full", isCollapsed ? "justify-center px-0" : "justify-between")}
                     >
                         {selectedTeam ? (
                             <>
-                                <Avatar className="mr-2 h-5 w-5">
+                                <Avatar className={cn("h-5 w-5", !isCollapsed && "mr-2")}>
                                     <AvatarImage
                                         src={selectedTeam.logo || `/placeholder.svg?height=32&width=32`}
                                         alt={selectedTeam.name}
                                     />
                                     <AvatarFallback>{selectedTeam.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                {selectedTeam.name}
+                                {!isCollapsed && <span className="truncate">{selectedTeam.name}</span>}
                             </>
                         ) : (
-                            <>Select a team</>
+                            !isCollapsed && <>Select a team</>
                         )}
-                        <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50"/>
+                        {!isCollapsed && <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50"/>}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
