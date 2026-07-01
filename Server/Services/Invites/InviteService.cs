@@ -216,4 +216,18 @@ public class InviteService(
         return affected > 0;
     }
 
+    public async Task<int> CountPendingInvitesByTeamAsync(Guid teamId)
+    {
+        const string sql = @"
+            SELECT count(*)
+            FROM tenant_invites ti
+            JOIN tenant_invite_statuses s ON ti.status = s.id
+            WHERE ti.team_id = @TeamId
+              AND s.slug = 'PENDING';";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        return await conn.ExecuteScalarAsync<int>(sql, new { TeamId = teamId });
+    }
+
 }

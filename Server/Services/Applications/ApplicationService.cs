@@ -117,6 +117,19 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
         };
     }
 
+    public async Task<ApplicationCounts> CountApplicationsByTeamAsync(Guid teamId)
+    {
+        const string sql = @"
+            SELECT count(*)::int as Total,
+                   (count(*) FILTER (WHERE status <> 'active'))::int as Inactive
+            FROM applications
+            WHERE team = @TeamId;";
+
+        using var connection = await connectionFactory.CreateConnectionAsync();
+
+        return await connection.QuerySingleAsync<ApplicationCounts>(sql, new { TeamId = teamId });
+    }
+
     private string GenerateClientSecret()
     {
 #warning move this away to the client

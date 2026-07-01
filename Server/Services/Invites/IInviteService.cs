@@ -19,4 +19,6 @@ public interface IInviteService
 
     Task<bool> DeclineInviteAsync(string token, IDbTransaction? transaction = null);
 
+    Task<int> CountPendingInvitesByTeamAsync(Guid teamId);
+
 }

@@ -291,4 +291,22 @@ public class TeamService(IDbConnectionFactory connectionFactory, IRoleService ro
 
         return rows > 0;
     }
+
+    public async Task<int> CountTenantsInTeamAsync(Guid teamId)
+    {
+        const string sql = "SELECT count(*) FROM team_tenants WHERE team = @TeamId;";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        return await conn.ExecuteScalarAsync<int>(sql, new { TeamId = teamId });
+    }
+
+    public async Task<int> CountTeamRolesAsync(Guid teamId)
+    {
+        const string sql = "SELECT count(*) FROM roles WHERE created_by = @TeamId;";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        return await conn.ExecuteScalarAsync<int>(sql, new { TeamId = teamId });
+    }
 }

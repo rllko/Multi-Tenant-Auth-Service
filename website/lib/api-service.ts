@@ -5,6 +5,7 @@ import {Team} from "@/lib/schemas";
 import {Tenant} from "@/models/tenant";
 import {CreateRoleDto, Role} from "@/models/role";
 import {TenantInvite} from "@/models/invite";
+import {Dashboard} from "@/models/dashboard";
 import {Application, UpdateApplicationDto} from "@/models/application";
 import {License} from "@/models/license";
 import {Permission} from "@/models/permission";
@@ -395,7 +396,7 @@ export const activityApi = {
 }
 
 export const dashboardApi = {
-    getDashboard: async (teamId: string) => {
+    getDashboard: async (teamId: string): Promise<Dashboard> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch activity logs")
         }
@@ -455,6 +456,9 @@ export const invitesApi = {
     },
     declineInvite: async (inviteToken: string) => {
         return fetchApi(`/teams/invites/${inviteToken}/decline`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+    },
+    cancelInvite: async (inviteToken: string) => {
+        return fetchApi(`/teams/invites/${inviteToken}/cancel`, {method: "POST"}, DEFAULT_TIMEOUT, false)
     },
 }
 
