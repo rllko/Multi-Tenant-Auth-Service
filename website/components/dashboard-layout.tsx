@@ -82,6 +82,9 @@ export function DashboardLayout({children, userRole = "admin"}: DashboardLayoutP
         }
 
         fetchApps()
+
+        window.addEventListener("apps-changed", fetchApps)
+        return () => window.removeEventListener("apps-changed", fetchApps)
     }, [selectedTeam])
 
     const toggleSection = (section: keyof typeof expandedSections) => {

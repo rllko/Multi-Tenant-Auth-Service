@@ -237,6 +237,7 @@ export function ApplicationsView() {
                     description: `The application "${newApp.name}" has been created successfully.`,
                 })
             }
+            window.dispatchEvent(new Event("apps-changed"))
         } catch (err) {
             toast({
                 title: "Error",
@@ -261,6 +262,7 @@ export function ApplicationsView() {
             setLoading(true)
             await apiService.apps.deleteApp(selectedTeam.id, appId)
             setApps(apps.filter((app) => app.id !== appId))
+            window.dispatchEvent(new Event("apps-changed"))
 
             toast({
                 title: "Application deleted",
