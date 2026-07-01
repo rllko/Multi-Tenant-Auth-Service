@@ -221,7 +221,7 @@ export function ApplicationsView() {
             if (selectedApp) {
                 // Update existing app
                 const updatedApp = await apiService.apps.updateApp(selectedTeam.id, selectedApp.id, appData)
-                setApps(apps.map((app) => (app.id === selectedApp.id ? updatedApp : app)))
+                setApps(apps.map((app) => (app.id === selectedApp.id ? {...app, ...updatedApp} : app)))
 
                 toast({
                     title: "Application updated",
@@ -289,7 +289,7 @@ export function ApplicationsView() {
                 status: newStatus,
             })
 
-            setApps(apps.map((app) => (app.id === appId ? updatedApp : app)))
+            setApps(apps.map((app) => (app.id === appId ? {...app, ...updatedApp} : app)))
 
             toast({
                 title: `Application ${newStatus}`,
@@ -325,7 +325,7 @@ export function ApplicationsView() {
                 regenerateCredentials: true,
             })
 
-            setApps(apps.map((app) => (app.id === appId ? updatedApp : app)))
+            setApps(apps.map((app) => (app.id === appId ? {...app, ...updatedApp} : app)))
 
             toast({
                 title: "Credentials regenerated",

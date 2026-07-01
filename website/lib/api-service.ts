@@ -217,7 +217,7 @@ export const appsApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}`, {
             method: "PUT",
             body: JSON.stringify(data),
-        }, DEFAULT_TIMEOUT, false)
+        })
     },
     deleteApp: async (teamId: string, appId: string) => {
         return fetchApi(`/teams/${teamId}/apps/${appId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)

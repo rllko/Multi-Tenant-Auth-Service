@@ -4,7 +4,8 @@ import {z} from "zod";
 export const ApplicationSchema = z.object({
     id: z.string(),
     name: z.string(),
-    description: z.string()
+    description: z.string().optional(),
+    status: z.string().optional(),
 })
 
 export type Application = z.infer<typeof ApplicationSchema>;
@@ -24,6 +25,8 @@ export const CreateApplicationDto = z.object({
 export type UpdateApplicationDto = {
     name?: string;
     description?: string;
-    scopes: string[];
+    status?: string;
+    scopes?: string[];
     default_key_schema?: string;
+    [key: string]: unknown;
 };
