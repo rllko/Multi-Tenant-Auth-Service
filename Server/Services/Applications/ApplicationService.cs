@@ -45,10 +45,10 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
         const string getApplicationTeamsQuery = @"SELECT * FROM applications WHERE team = @Id;";
 
-        var application =
-            await connection.QueryFirstOrDefaultAsync<ApplicationDto>(getApplicationTeamsQuery, new { Id = teamId });
+        var applications =
+            await connection.QueryAsync<ApplicationDto>(getApplicationTeamsQuery, new { Id = teamId });
 
-        return application == null ? Option<ApplicationDto>.None : Option<ApplicationDto>.Some(application);
+        return Option<IEnumerable<ApplicationDto>>.Some(applications);
     }
 
     public async Task<ApplicationDto> UpdateApplicationAsync(Guid applicationId, UpdateApplicationDto applicationDto,
@@ -98,23 +98,22 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
         var transact = transaction ?? connection.BeginTransaction();
 
         var query =
-            @"insert into applications (name, description,team) values (@name,@description,@team)";
+            @"insert into applications (name, description,team) values (@name,@description,@team)
+              returning id as Id, name as Name, description as Description";
 
-        var newLicense =
-            await connection.ExecuteAsync(query,
+        var newApplication =
+            await connection.QuerySingleAsync<ApplicationDto>(query,
                 new
                 {
                     name = applicationDto.Name,
                     description = applicationDto.Description,
-                    applicationDto.Team
+                    team = teamId
                 }, transact);
 
+        if (transaction == null)
+            transact.Commit();
 
-        return new ApplicationDto
-        {
-            Name = applicationDto.Name,
-            Description = applicationDto.Description
-        };
+        return newApplication;
     }
 
     private string GenerateClientSecret()

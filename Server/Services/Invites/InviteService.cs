@@ -127,7 +127,7 @@ public class InviteService(
             {
                 var invite = await conn.QueryAsync<TenantInvite>(sql2, new { Token = tenant.Id, TeamId = teamId });
 
-                if (invite.Any()) return null;
+                if (invite.Any()) return Option<TenantInvite>.None;
 
                 const string sql =
                     """
@@ -150,7 +150,7 @@ public class InviteService(
                                                                           WHERE slug = 'PENDING'
                                                                       """);
 
-                return await conn.QuerySingleAsync<TenantInvite>(sql,
+                var created = await conn.QuerySingleAsync<TenantInvite>(sql,
                     new
                     {
                         tenantId = tenant.Id,
@@ -162,8 +162,10 @@ public class InviteService(
                         TeamId = teamId
                     },
                     transaction);
+
+                return Option<TenantInvite>.Some(created);
             },
-            () => null);
+            () => Task.FromResult(Option<TenantInvite>.None));
     }
 
     public async Task<bool> AcceptInviteAsync(string token, Guid teamId, Guid userId, Guid invitedBy,
