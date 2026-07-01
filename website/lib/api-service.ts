@@ -3,7 +3,8 @@ import {CONSTANTS} from '@/app/const'
 import {DEFAULT_TIMEOUT, handleApiError, withTimeout} from "./api-timeout"
 import {Team} from "@/lib/schemas";
 import {Tenant} from "@/models/tenant";
-import {Role} from "@/models/role";
+import {CreateRoleDto, Role} from "@/models/role";
+import {TenantInvite} from "@/models/invite";
 import {Application, UpdateApplicationDto} from "@/models/application";
 import {License} from "@/models/license";
 import {Permission} from "@/models/permission";
@@ -11,13 +12,12 @@ import {Permission} from "@/models/permission";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-const getAuthHeader = () => {
+const getAuthHeader = (): { Authorization?: string } => {
     if (typeof window !== "undefined") {
         const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
         if (token) {
             return {Authorization: `Bearer ${token}`}
         }
-        throw new Error("No token provided")
     }
     return {}
 }
@@ -37,7 +37,7 @@ export const refreshToken = async () => {
     }
 
     try {
-        const data: refresh = await fetchApi(`${API_URL}/auth/tenant/refresh`, {
+        const data: refresh = await fetchApi("/auth/tenant/refresh", {
             method: "POST"
         })
 
@@ -97,14 +97,11 @@ export async function fetchApi<T>(
             ...(options.headers || {}),
         } as { [key: string]: string }
 
-        const needsAuth = [
-            "/teams",
-            "/auth/tenant/me",
-            "/apps",
-            "/settings",
-        ].some(path => endpoint.startsWith(path) || endpoint.includes(path))
+        const isPublicAuthRoute = ["/auth/tenant/login", "/auth/tenant/register"].some(path =>
+            endpoint.startsWith(path),
+        )
 
-        if (needsAuth) {
+        if (!isPublicAuthRoute) {
             const authHeaders = getAuthHeader()
 
             if (authHeaders?.Authorization) {
@@ -146,9 +143,9 @@ export const authApi = {
             method: "DELETE",
         })
     },
-    getCurrentUser: async () => {
-        return fetchApi("/auth/me", {
-            method: "GET",
+    getCurrentUser: async (): Promise<Tenant> => {
+        return fetchApi("/me", {
+            method: "POST",
         })
     },
 }
@@ -167,19 +164,6 @@ export const teamsApi = {
             body: JSON.stringify({name}),
         })
     },
-    getPendingInvites: async (teamId: string) => {
-        return fetchApi(`/teams/${teamId}/invites/pending`)
-    },
-    resendInvite: async (teamId: string, inviteId: string) => {
-        return fetchApi(`/teams/${teamId}/invites/${inviteId}/resend`, {
-            method: "POST",
-        })
-    },
-    cancelInvite: async (teamId: string, inviteId: string) => {
-        return fetchApi(`/teams/${teamId}/invites/${inviteId}/cancel`, {
-            method: "POST",
-        })
-    },
     updateTeam: async (teamId: string, data: object): Promise<void> => {
         return fetchApi(`/teams/${teamId}`, {
             method: "PUT",
@@ -189,25 +173,25 @@ export const teamsApi = {
     deleteTeam: async (teamId: string) => {
         return fetchApi(`/teams/${teamId}`, {method: "DELETE"})
     },
-    getTeamMembers: async (teamId: string) => {
+    getTeamMembers: async (teamId: string): Promise<Tenant[]> => {
         return fetchApi(`/teams/${teamId}/members`)
     },
-    getTeamMember: async (teamId: string, tenantId: string) => {
+    getTeamMember: async (teamId: string, tenantId: string): Promise<Tenant> => {
         return fetchApi(`/teams/${teamId}/members/${tenantId}`)
     },
-    inviteTeamMember: async (teamId: string, email: string, role: string, inviteMessage: string) => {
+    inviteTeamMember: async (teamId: string, email: string, inviteMessage: string) => {
         return fetchApi(`/teams/${teamId}/members`, {
             method: "POST",
-            body: JSON.stringify({email, role, inviteMessage}),
+            body: JSON.stringify({email, inviteMessage}),
         })
     },
     removeTeamMember: async (teamId: string, userId: string,) => {
         return fetchApi(`/teams/${teamId}/members/${userId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
     },
-    updateTeamMember: async (teamId: string, userId: string, roleId: string) => {
+    updateTeamMember: async (teamId: string, userId: string, roleId: string | number) => {
         return fetchApi(`/teams/${teamId}/members/${userId}`, {
             method: "PATCH",
-            body: JSON.stringify({roleId}),
+            body: JSON.stringify({roleId: Number(roleId)}),
         }, DEFAULT_TIMEOUT, false)
     },
 }
@@ -242,8 +226,8 @@ export const appsApi = {
 
 // Licenses API
 export const licensesApi = {
-    getLicenses: async (teamId: string, appId: string, params: string): Promise<License[]> => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses?${params}`)
+    getLicenses: async (teamId: string, appId: string, params?: string): Promise<License[]> => {
+        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses${params ? `?${params}` : ""}`)
     },
     getLicense: async (teamId: string, appId: string, licenseId: string): Promise<License[]> => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`)
@@ -314,7 +298,7 @@ export const rolesApi = {
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}`)
     },
-    createRole: async (teamId: string, data: Role): Promise<Role> => {
+    createRole: async (teamId: string, data: CreateRoleDto): Promise<Role> => {
         if (!teamId) {
             throw new Error("Team ID is required to create a role")
         }
@@ -332,7 +316,7 @@ export const rolesApi = {
             body: JSON.stringify(data),
         }, DEFAULT_TIMEOUT, false)
     },
-    updateRolePermissions: async (teamId: string, roleId: string, data: object): Promise<Role> => {
+    updateRolePermissions: async (teamId: string, roleId: string | number, data: { scopes: number[] }): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to update a role")
         }
@@ -351,7 +335,7 @@ export const rolesApi = {
 
 // Permissions API
 export const permissionsApi = {
-    getPermission: async (teamId: string, permissionID: string): Promise<Permission> => {
+    getPermission: async (teamId: string, permissionID: string | number): Promise<Permission> => {
         if (!teamId) {
             throw new Error("Team ID is required to fetch permissions")
         }
@@ -457,29 +441,20 @@ export const settingsApi = {
 
 // Invites API
 export const invitesApi = {
-    getInvites: async () => {
-        return fetchApi("/teams/invites")
-    },
-    getReceivedInvites: async () => {
+    getReceivedInvites: async (): Promise<TenantInvite[]> => {
         return fetchApi("/teams/invites/received")
     },
-    getSentInvites: async () => {
+    getSentInvites: async (): Promise<TenantInvite[]> => {
         return fetchApi("/teams/invites/sent")
     },
-    getPendingInvites: async () => {
+    getPendingInvites: async (): Promise<TenantInvite[]> => {
         return fetchApi("/teams/invites/pending")
     },
-    acceptInvite: async (inviteId: string) => {
-        return fetchApi(`/teams/invites/${inviteId}/accept`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+    acceptInvite: async (inviteToken: string) => {
+        return fetchApi(`/teams/invites/${inviteToken}/accept`, {method: "POST"}, DEFAULT_TIMEOUT, false)
     },
-    declineInvite: async (inviteId: string) => {
-        return fetchApi(`/teams/invites/${inviteId}/decline`, {method: "POST"})
-    },
-    cancelInvite: async (inviteId: string) => {
-        return fetchApi(`/teams/invites/${inviteId}`, {method: "DELETE"})
-    },
-    resendInvite: async (inviteId: string) => {
-        return fetchApi(`/teams/invites/${inviteId}/resend`, {method: "POST"})
+    declineInvite: async (inviteToken: string) => {
+        return fetchApi(`/teams/invites/${inviteToken}/decline`, {method: "POST"}, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -540,6 +515,7 @@ export const apiService = {
     analytics: analyticsApi,
     settings: settingsApi,
     tenants: tenantsApi,
+    invites: invitesApi,
 }
 
 export default apiService

@@ -125,9 +125,14 @@ export function TeamMembersView({teamId, onRefresh}: TeamMembersViewProps) {
 
             const data = await apiService.teams.getTeamMembers(teamId)
 
-            const formattedMembers = data.map((member) => ({
-                ...member,
-                tenants: member.tenants || [{id: "tenant_1", name: "Default Tenant", color: "#4f46e5"}],
+            const formattedMembers: TeamMember[] = data.map((member) => ({
+                id: member.id,
+                name: member.name,
+                email: member.email,
+                role: member.role,
+                status: "active",
+                lastActive: "",
+                tenants: [{id: "tenant_1", name: "Default Tenant", color: "#4f46e5"}],
             }))
 
             setMembers(formattedMembers)
@@ -210,7 +215,7 @@ export function TeamMembersView({teamId, onRefresh}: TeamMembersViewProps) {
                 throw new Error("Authentication required")
             }
 
-            await apiService.teams.inviteTeamMember(teamId, inviteEmail, inviteRole, inviteMessage)
+            await apiService.teams.inviteTeamMember(teamId, inviteEmail, inviteMessage)
 
             toast({
                 title: "Invitation sent",
@@ -584,7 +589,7 @@ export function TeamMembersView({teamId, onRefresh}: TeamMembersViewProps) {
                                     </td>
                                     <td className="p-3">
                                         <Badge
-                                            variant={statusBadgeVariants[member.status as keyof typeof statusBadgeVariants] || "secondary"}
+                                            variant={(statusBadgeVariants[member.status as keyof typeof statusBadgeVariants] || "secondary") as "default" | "outline" | "secondary"}
                                         >
                                             {member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : "Unknown"}
                                         </Badge>

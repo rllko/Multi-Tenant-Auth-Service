@@ -271,15 +271,6 @@ export function useTenants(teamId: string | null) {
     )
 }
 
-export function useFiles(teamId: string | null, appId: string | null) {
-    return useFetch(
-        () => (teamId && appId ? apiService.files.getFiles(teamId, appId) : Promise.resolve([])),
-        [teamId, appId],
-        [],
-        "Failed to fetch files",
-    )
-}
-
 export function useCurrentUser() {
     return useFetch(() => apiService.auth.getCurrentUser(), [], null, "Failed to fetch user profile")
 }

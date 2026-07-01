@@ -21,7 +21,7 @@ import {useToast} from "@/hooks/use-toast"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {permissionsApi, rolesApi} from "@/lib/api-service";
-import {Permission} from "@/lib/schemas";
+import {Permission} from "@/models/permission";
 
 interface RolePermissionsModalProps {
     isOpen: boolean
@@ -41,7 +41,7 @@ export function RolePermissionsModal({
     const [permissions, setPermissions] = useState<Permission[] | null>([])
     const [categories, setCategories] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
+    const [selectedPermissions, setSelectedPermissions] = useState<number[]>([])
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedTab, setSelectedTab] = useState("categories")
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -87,7 +87,7 @@ export function RolePermissionsModal({
         perms()
     }, [isOpen, role, teamId])
 
-    const handlePermissionToggle = async (permissionId: string) => {
+    const handlePermissionToggle = async (permissionId: number) => {
         const isAlreadySelected = selectedPermissions.includes(permissionId)
 
         if (!isAlreadySelected && !permissions?.some((p) => p.id === permissionId)) {
@@ -230,7 +230,7 @@ export function RolePermissionsModal({
                                                 <p className="text-xs text-muted-foreground">{permission.description}</p>
                                                 <div className="flex gap-2 mt-1">
                                                     <Badge variant="outline">{permission.resource}</Badge>
-                                                    <Badge variant="secondary">{permission.action}</Badge>
+                                                    <Badge variant="secondary">{permission.impact}</Badge>
                                                 </div>
                                             </div>
                                         </div>
@@ -253,8 +253,8 @@ export function RolePermissionsModal({
                                         onChange={(e) => {
                                             const newPermissions = e.target.value
                                                 .split(",")
-                                                .map((p) => p.trim())
-                                                .filter(Boolean)
+                                                .map((p) => Number.parseInt(p.trim(), 10))
+                                                .filter((p) => !Number.isNaN(p))
                                             setSelectedPermissions(newPermissions)
                                         }}
                                     />

@@ -1,11 +1,10 @@
+// Matches the backend TenantDto (Server/Models/Entities/Tenant.cs)
 export type Tenant = {
     id: string;
-    discordId?: number;
-    email?: string;
+    discordId?: string | null;
+    email: string;
+    role: string;
     name: string;
-    creation_date?: string;
-    password?: string | null;
-    activated_at?: string | null;
 };
 
 export type UpdateTenantDto = {

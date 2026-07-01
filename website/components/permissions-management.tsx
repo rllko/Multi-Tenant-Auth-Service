@@ -194,7 +194,6 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                                                         <p className="text-sm text-muted-foreground">{permission.description}</p>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <Badge variant="outline">{permission.resource}</Badge>
-                                                            <Badge variant="secondary">{permission.action}</Badge>
                                                         </div>
                                                     </div>
 
@@ -221,8 +220,7 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                                 <div className="col-span-3">Permission</div>
                                 <div className="col-span-4">Description</div>
                                 <div className="col-span-2">Resource</div>
-                                <div className="col-span-1">Action</div>
-                                <div className="col-span-1">Impact</div>
+                                <div className="col-span-2">Impact</div>
                                 <div className="col-span-1"></div>
                             </div>
 
@@ -256,10 +254,7 @@ export function PermissionsManagement({teamId, onRefresh, isRefreshing = false}:
                                         <div className="col-span-2">
                                             <Badge variant="outline">{permission.resource}</Badge>
                                         </div>
-                                        <div className="col-span-1">
-                                            <Badge variant="secondary">{permission.action}</Badge>
-                                        </div>
-                                        <div className="col-span-1">
+                                        <div className="col-span-2">
                                             <Badge>
                                                 {permission.impact?.charAt(0).toUpperCase() + permission.impact?.slice(1)}
                                             </Badge>

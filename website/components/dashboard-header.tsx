@@ -1,6 +1,7 @@
 "use client"
 
-import {useState} from "react"
+import {useEffect, useState} from "react"
+import {useRouter} from "next/navigation"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -16,61 +17,61 @@ import {
 import {useToast} from "@/hooks/use-toast"
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select"
 import {ThemeToggle} from "@/components/theme-toggle"
-
-const notifications = [
-    {
-        id: "notif_1",
-        title: "New team member joined",
-        description: "Jane Smith has joined your organization",
-        time: "2 minutes ago",
-    },
-    {
-        id: "notif_2",
-        title: "License key activated",
-        description: "A license key was activated by user@example.com",
-        time: "1 hour ago",
-    },
-    {
-        id: "notif_3",
-        title: "Storage limit warning",
-        description: "You're approaching your storage limit (85% used)",
-        time: "3 hours ago",
-    },
-]
-
-const organizations = [
-    {id: "org_1", name: "Acme Inc.", members: 12},
-    {id: "org_2", name: "Globex Corporation", members: 8},
-    {id: "org_3", name: "Initech", members: 5},
-]
+import {useTeam} from "@/contexts/team-context"
+import {authApi} from "@/lib/api-service"
+import {Tenant} from "@/models/tenant"
+import {CONSTANTS} from "@/app/const"
 
 export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
+    const router = useRouter()
     const [showSearch, setShowSearch] = useState(false)
     const {toast} = useToast()
-    const [selectedOrganization, setSelectedOrganization] = useState(organizations[0])
+    const {teams, selectedTeam, setSelectedTeam} = useTeam()
+    const [user, setUser] = useState<Tenant | null>(null)
 
-    const handleNotificationClick = () => {
-        const latestNotification = notifications[0]
+    useEffect(() => {
+        let cancelled = false
 
-        toast({
-            title: latestNotification.title,
-            description: latestNotification.description,
-            duration: 5000,
-        })
-
-        setTimeout(() => {
-            toast({
-                title: `${notifications.length - 1} more notifications`,
-                description: "Click to view all notifications",
-                duration: 4000,
+        authApi
+            .getCurrentUser()
+            .then((profile) => {
+                if (!cancelled) setUser(profile)
             })
-        }, 1000)
+            .catch((err) => {
+                console.error("Error fetching profile:", err)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    const handleTeamChange = (value: string) => {
+        const team = teams.find((team) => team.id === value)
+        if (team) {
+            setSelectedTeam(team)
+        }
     }
 
-    const handleOrganizationChange = (value) => {
-        const org = organizations.find((org) => org.id === value)
-        setSelectedOrganization(org)
+    const handleLogout = async () => {
+        try {
+            await authApi.logout()
+        } catch (err) {
+            console.error("Error logging out:", err)
+        } finally {
+            localStorage.removeItem(CONSTANTS.TOKEN_NAME)
+            router.push("/login")
+        }
     }
+
+    const userInitials = user?.name
+        ? user.name
+              .split(" ")
+              .map((part) => part.charAt(0))
+              .slice(0, 2)
+              .join("")
+              .toUpperCase()
+        : "U"
 
     return (
         <header
@@ -82,20 +83,20 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                     </Button>
 
                     <div className="hidden md:flex items-center">
-                        <Select value={selectedOrganization.id} onValueChange={handleOrganizationChange}>
+                        <Select value={selectedTeam?.id ?? ""} onValueChange={handleTeamChange}>
                             <SelectTrigger
                                 className="w-[180px] h-8 border-none bg-transparent hover:bg-secondary focus:ring-0">
                                 <div className="flex items-center gap-2">
                                     <Building className="h-4 w-4 text-authio-blue"/>
-                                    <span className="text-sm font-medium">{selectedOrganization.name}</span>
+                                    <span className="text-sm font-medium">{selectedTeam?.name ?? "Select team"}</span>
                                 </div>
                             </SelectTrigger>
                             <SelectContent>
-                                {organizations.map((org) => (
-                                    <SelectItem key={org.id} value={org.id}>
+                                {teams.map((team) => (
+                                    <SelectItem key={team.id} value={team.id}>
                                         <div className="flex items-center gap-2">
                                             <Building className="h-4 w-4 text-authio-blue"/>
-                                            <span>{org.name}</span>
+                                            <span>{team.name}</span>
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -127,16 +128,16 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 md:hidden">
-                            <DropdownMenuLabel>Select Organization</DropdownMenuLabel>
+                            <DropdownMenuLabel>Select Team</DropdownMenuLabel>
                             <DropdownMenuSeparator/>
-                            {organizations.map((org) => (
+                            {teams.map((team) => (
                                 <DropdownMenuItem
-                                    key={org.id}
-                                    onClick={() => setSelectedOrganization(org)}
-                                    className={selectedOrganization.id === org.id ? "bg-secondary" : ""}
+                                    key={team.id}
+                                    onClick={() => setSelectedTeam(team)}
+                                    className={selectedTeam?.id === team.id ? "bg-secondary" : ""}
                                 >
                                     <Building className="mr-2 h-4 w-4 text-authio-blue"/>
-                                    <span>{org.name}</span>
+                                    <span>{team.name}</span>
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>
@@ -144,35 +145,41 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
 
                     <ThemeToggle/>
 
-                    <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={handleNotificationClick}>
+                    <Button variant="ghost" size="icon" className="relative h-8 w-8">
                         <Bell className="h-4 w-4"/>
-                        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-authio-red"></span>
                     </Button>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="gap-1 hidden md:flex h-8 sm:h-9">
                                 <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
-                                    <AvatarImage src="/placeholder.svg?height=28&width=28" alt="User"/>
-                                    <AvatarFallback className="bg-secondary text-foreground text-xs">JD</AvatarFallback>
+                                    <AvatarImage src="/placeholder.svg?height=28&width=28" alt={user?.name ?? "User"}/>
+                                    <AvatarFallback
+                                        className="bg-secondary text-foreground text-xs">{userInitials}</AvatarFallback>
                                 </Avatar>
-                                <span className="hidden lg:inline-block text-xs sm:text-sm">John Doe</span>
+                                <span className="hidden lg:inline-block text-xs sm:text-sm">{user?.name ?? "Account"}</span>
                                 <ChevronDown className="h-3.5 w-3.5 opacity-50"/>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                <div className="flex flex-col">
+                                    <span>{user?.name ?? "My Account"}</span>
+                                    {user?.email && (
+                                        <span className="text-xs font-normal text-muted-foreground">{user.email}</span>
+                                    )}
+                                </div>
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem>Profile</DropdownMenuItem>
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>Settings</DropdownMenuItem>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem>Log out</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
                     <Avatar className="h-7 w-7 md:hidden">
-                        <AvatarImage src="/placeholder.svg?height=28&width=28" alt="User"/>
-                        <AvatarFallback className="bg-secondary text-foreground text-xs">JD</AvatarFallback>
+                        <AvatarImage src="/placeholder.svg?height=28&width=28" alt={user?.name ?? "User"}/>
+                        <AvatarFallback className="bg-secondary text-foreground text-xs">{userInitials}</AvatarFallback>
                     </Avatar>
                 </div>
             </div>

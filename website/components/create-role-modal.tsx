@@ -51,8 +51,6 @@ export function CreateRoleModal({isOpen, onClose, teamId, onRoleCreated}: Create
             await rolesApi.createRole(teamId, {
                 name,
                 description,
-                isDefault,
-                scopes: [],
             })
 
             toast({
