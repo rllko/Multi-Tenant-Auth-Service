@@ -8,7 +8,6 @@ import { OrganizationSelector } from "./organization-selector"
 import { Card, CardContent } from "@/components/ui/card"
 import { Building } from "lucide-react"
 
-// Mock data for organizations
 const organizations = [
   { id: "org_1", name: "Acme Inc.", members: 12 },
   { id: "org_2", name: "Globex Corporation", members: 8 },
@@ -24,14 +23,12 @@ export function ScopesView() {
 
   return (
     <div className="space-y-6">
-      {/* Organization Selector */}
       <OrganizationSelector
         organizations={organizations}
         selectedOrganization={selectedOrganization}
         onOrganizationChange={handleOrganizationChange}
       />
 
-      {/* Organization Context Banner */}
       <Card className="bg-primary/5 border-primary/10">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">

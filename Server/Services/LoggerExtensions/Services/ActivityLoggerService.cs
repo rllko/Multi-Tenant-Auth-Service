@@ -14,6 +14,6 @@ public class ActivityLoggerService : IActivityLoggerService
             .ForContext("EventType", eventType.ToString())
             .ForContext("ExtraData", extraData, true)
             .Information("User activity {EventType} for User {UserId} on Tenant {TenantId}",
-                eventType, userId ?? "unknown", tenantId ?? "unknown");
+                eventType.ToString(), userId ?? "unknown", tenantId ?? "unknown");
     }
 }

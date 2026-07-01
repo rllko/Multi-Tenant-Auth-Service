@@ -4,80 +4,53 @@
 
 @layer base {
   :root {
-    /* Dark theme base colors */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-
-    /* Primary: Blue accent color */
     --primary: 214 100% 60%;
     --primary-foreground: 210 40% 98%;
-
-    /* Secondary: Darker shade for backgrounds */
     --secondary: 222 47% 15%;
     --secondary-foreground: 210 40% 98%;
-
-    /* Accent: Slightly different blue for highlights */
     --accent: 214 100% 50%;
     --accent-foreground: 210 40% 98%;
-
     --card: 222 47% 13%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222 47% 13%;
     --popover-foreground: 210 40% 98%;
-
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-
-    /* Status colors - vibrant for clear indicators */
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-
     --success: 142 76% 36%;
     --success-foreground: 210 40% 98%;
-
     --warning: 38 92% 50%;
     --warning-foreground: 210 40% 98%;
-
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 214 100% 60%;
-
     --radius: 0.5rem;
   }
 
   .light {
-    /* Light theme - inverted from dark */
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
-
     --primary: 214 100% 50%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
-
     --accent: 214 100% 50%;
     --accent-foreground: 210 40% 98%;
-
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-
     --muted: 210 40% 96%;
     --muted-foreground: 215 25% 27%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-
     --success: 142 76% 36%;
     --success-foreground: 210 40% 98%;
-
     --warning: 38 92% 50%;
     --warning-foreground: 210 40% 98%;
-
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 214 100% 50%;
@@ -93,7 +66,6 @@
   }
 }
 
-/* Code syntax highlighting */
 .syntax-highlight {
   color: #f8f8f2;
   background-color: #282a36;
@@ -115,7 +87,6 @@
   color: #6272a4;
 }
 
-/* Alternating table rows */
 tbody tr:nth-child(odd) {
   background-color: hsl(var(--card));
 }
@@ -128,7 +99,6 @@ thead tr {
   background-color: hsl(var(--secondary));
 }
 
-/* Button styles matching KeyAuth */
 .btn-blue {
   background-color: #1a73e8;
   color: white;
@@ -179,7 +149,6 @@ thead tr {
   background-color: #e56e10;
 }
 
-/* Status indicators */
 .status-dot {
   display: inline-block;
   width: 8px;
@@ -203,7 +172,6 @@ thead tr {
   box-shadow: 0 0 6px rgba(234, 67, 53, 0.6);
 }
 
-/* Card styles */
 .card-dark {
   background-color: #1a1d24;
   border: 1px solid #2a2f38;
@@ -219,7 +187,6 @@ thead tr {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* Navigation styles */
 .nav-item {
   padding: 0.75rem 1rem;
   border-radius: 0.375rem;
@@ -235,7 +202,6 @@ thead tr {
   color: #1a73e8;
 }
 
-/* Badge styles */
 .badge {
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
@@ -258,7 +224,6 @@ thead tr {
   color: white;
 }
 
-/* Code block styles */
 .code-block {
   background-color: #0f1117;
   border-radius: 8px;
@@ -266,7 +231,6 @@ thead tr {
   overflow-x: auto;
 }
 
-/* Tab styles */
 .tab {
   padding: 0.5rem 1rem;
   border-bottom: 2px solid transparent;
@@ -282,7 +246,6 @@ thead tr {
   color: #1a73e8;
 }
 
-/* Form input styles */
 .input-dark {
   background-color: #1a1d24;
   border: 1px solid #2a2f38;
@@ -297,19 +260,16 @@ thead tr {
   box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
-/* Sidebar styles */
 .sidebar-dark {
   background-color: #0f1117;
   border-right: 1px solid #2a2f38;
 }
 
-/* Header styles */
 .header-dark {
   background-color: #0f1117;
   border-bottom: 1px solid #2a2f38;
 }
 
-/* Footer styles */
 .footer-dark {
   background-color: #0f1117;
   border-top: 1px solid #2a2f38;

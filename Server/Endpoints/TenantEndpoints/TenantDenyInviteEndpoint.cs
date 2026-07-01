@@ -1,17 +1,21 @@
 using Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Invites;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.TenantEndpoints;
 
 public class TenantDenyInviteEndpoint : EndpointWithoutRequest
 {
+    private readonly IActivityLoggerService _activityLogger;
     private readonly IInviteService _inviteService;
 
-    public TenantDenyInviteEndpoint(IInviteService inviteService)
+    public TenantDenyInviteEndpoint(IInviteService inviteService, IActivityLoggerService activityLogger)
     {
         _inviteService = inviteService;
+        _activityLogger = activityLogger;
     }
 
     public override void Configure()
@@ -48,9 +52,16 @@ public class TenantDenyInviteEndpoint : EndpointWithoutRequest
                 var teams = await _inviteService.DeclineInviteAsync(token);
 
                 if (teams)
+                {
+                    _activityLogger.LogEvent(ActivityEventType.InviteDeclined, inv.TenantId.ToString(),
+                        session!.TenantId.ToString(), new { inv.TeamId });
+
                     await SendOkAsync(ct);
+                }
                 else
+                {
                     await SendErrorsAsync(cancellation: ct);
+                }
             }, async () => await SendForbiddenAsync(ct)
         );
     }

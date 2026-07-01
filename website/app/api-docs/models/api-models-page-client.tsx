@@ -1,294 +1,203 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { fetchApiModels } from "@/lib/api-service"
-import type { ApiModelSchema } from "@/lib/schemas"
-import type { z } from "zod"
-import { AlertCircle, Search } from "lucide-react"
+import {useState} from "react"
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {Badge} from "@/components/ui/badge"
+import {Input} from "@/components/ui/input"
+import {Search} from "lucide-react"
+
+interface ModelField {
+    name: string
+    type: string
+    description: string
+    nullable?: boolean
+}
+
+interface Model {
+    name: string
+    description: string
+    fields: ModelField[]
+}
+
+const models: Model[] = [
+    {
+        name: "Tenant",
+        description: "A dashboard user account. Returned by POST /me and team member endpoints.",
+        fields: [
+            {name: "id", type: "uuid", description: "Unique tenant identifier."},
+            {name: "discordId", type: "string", description: "Linked Discord account id.", nullable: true},
+            {name: "email", type: "string", description: "Email address used to log in."},
+            {name: "name", type: "string", description: "Display name."},
+            {name: "role", type: "string", description: "Role of the tenant in the current context."},
+        ],
+    },
+    {
+        name: "Team",
+        description: "A group of tenants that share applications, roles, and licenses.",
+        fields: [
+            {name: "id", type: "uuid", description: "Unique team identifier."},
+            {name: "name", type: "string", description: "Team display name."},
+            {name: "createdBy", type: "uuid", description: "Tenant that created the team.", nullable: true},
+            {name: "createdAt", type: "datetime", description: "Creation timestamp (UTC)."},
+        ],
+    },
+    {
+        name: "Role",
+        description: "A named set of permission scopes that can be assigned to team members.",
+        fields: [
+            {name: "roleId", type: "int", description: "Unique role identifier."},
+            {name: "roleName", type: "string", description: "Role display name."},
+            {name: "description", type: "string", description: "What the role is for."},
+            {name: "createdBy", type: "uuid", description: "Team that created the role. Null for system roles.", nullable: true},
+            {name: "scopes", type: "int[]", description: "Ids of the permission scopes assigned to the role."},
+        ],
+    },
+    {
+        name: "Scope (Permission)",
+        description: "A single permission that can be granted through a role.",
+        fields: [
+            {name: "id", type: "int", description: "Unique scope identifier."},
+            {name: "name", type: "string", description: "Machine name, e.g. team.invite."},
+            {name: "description", type: "string", description: "Human-readable explanation."},
+            {name: "createdBy", type: "uuid", description: "Creator. Null for system scopes.", nullable: true},
+            {name: "impact", type: "string", description: "Impact level of granting this scope."},
+            {name: "resource", type: "string", description: "Resource category the scope belongs to."},
+        ],
+    },
+    {
+        name: "Application",
+        description: "An application owned by a team that issues licenses and OAuth clients.",
+        fields: [
+            {name: "id", type: "uuid", description: "Unique application identifier."},
+            {name: "name", type: "string", description: "Application display name."},
+            {name: "description", type: "string", description: "Optional description.", nullable: true},
+            {name: "role", type: "ApplicationRole[]", description: "Roles defined at the application level."},
+        ],
+    },
+    {
+        name: "License",
+        description: "A license key issued for an application.",
+        fields: [
+            {name: "id", type: "long", description: "Unique license identifier."},
+            {name: "value", type: "string", description: "The license key string."},
+            {name: "creationDate", type: "unix timestamp", description: "When the license was created."},
+            {name: "activated", type: "bool", description: "Whether the license has been activated."},
+            {name: "paused", type: "bool", description: "Whether the license is currently paused."},
+            {name: "expirationDate", type: "unix timestamp", description: "When the license expires."},
+            {name: "email", type: "string", description: "Email bound to the license.", nullable: true},
+            {name: "discord", type: "long", description: "Discord account bound to the license.", nullable: true},
+        ],
+    },
+    {
+        name: "TeamInvite",
+        description: "An invitation for a tenant to join a team.",
+        fields: [
+            {name: "inviteToken", type: "string", description: "Token used to accept or decline the invite."},
+            {name: "createdBy", type: "string", description: "Name of the tenant that sent the invite."},
+            {name: "createdByEmail", type: "string", description: "Email of the tenant that sent the invite."},
+            {name: "teamName", type: "string", description: "Name of the team the invite is for."},
+            {name: "status", type: "string", description: "pending, accepted, declined, expired, or revoked."},
+            {name: "createdAt", type: "datetime", description: "When the invite was sent."},
+            {name: "expiresAt", type: "datetime", description: "When the invite expires."},
+        ],
+    },
+    {
+        name: "OAuthClient",
+        description: "An OAuth client registered under an application.",
+        fields: [
+            {name: "clientId", type: "int", description: "Unique client identifier."},
+            {name: "clientIdentifier", type: "string", description: "Public client identifier.", nullable: true},
+            {name: "clientSecret", type: "string", description: "Client secret.", nullable: true},
+            {name: "grantType", type: "string", description: "OAuth grant type of the client.", nullable: true},
+            {name: "role", type: "int", description: "Application role assigned to the client.", nullable: true},
+            {name: "team", type: "uuid", description: "Owning team.", nullable: true},
+            {name: "clientUri", type: "string", description: "Redirect/base URI of the client.", nullable: true},
+        ],
+    },
+]
 
 export function ApiModelsPageClient() {
-  const [models, setModels] = useState<z.infer<typeof ApiModelSchema>[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedModel, setSelectedModel] = useState<z.infer<typeof ApiModelSchema> | null>(null)
+    const [searchQuery, setSearchQuery] = useState("")
 
-  useEffect(() => {
-    const loadApiModels = async () => {
-      try {
-        setIsLoading(true)
-        const apiModels = await fetchApiModels()
-        setModels(apiModels)
-        if (apiModels.length > 0) {
-          setSelectedModel(apiModels[0])
-        }
-        setError(null)
-      } catch (err) {
-        console.error("Failed to fetch API models:", err)
-        setError("Failed to load API models. Please try again.")
-        // Set fallback data
-        const fallbackModels = [
-          {
-            name: "User",
-            description: "User model representing an authenticated user",
-            schema: {
-              type: "object",
-              properties: {
-                id: { type: "string", format: "uuid" },
-                email: { type: "string", format: "email" },
-                name: { type: "string" },
-                role: { type: "string", enum: ["admin", "user", "guest"] },
-                createdAt: { type: "string", format: "date-time" },
-              },
-              required: ["id", "email", "role"],
-            },
-            endpoints: [
-              {
-                path: "/users",
-                method: "GET",
-                description: "List all users",
-              },
-              {
-                path: "/users/{id}",
-                method: "GET",
-                description: "Get a user by ID",
-                parameters: [
-                  {
-                    name: "id",
-                    type: "string",
-                    required: true,
-                    description: "User ID",
-                  },
-                ],
-              },
-            ],
-            examples: [
-              {
-                title: "User object",
-                code: JSON.stringify(
-                  {
-                    id: "123e4567-e89b-12d3-a456-426614174000",
-                    email: "user@example.com",
-                    name: "John Doe",
-                    role: "admin",
-                    createdAt: "2023-01-01T00:00:00Z",
-                  },
-                  null,
-                  2,
-                ),
-                language: "json",
-              },
-            ],
-          },
-          {
-            name: "Application",
-            description: "Application model representing an OAuth client",
-            schema: {
-              type: "object",
-              properties: {
-                id: { type: "string", format: "uuid" },
-                name: { type: "string" },
-                clientId: { type: "string" },
-                clientSecret: { type: "string" },
-                redirectUris: { type: "array", items: { type: "string" } },
-                createdAt: { type: "string", format: "date-time" },
-              },
-              required: ["id", "name", "clientId", "clientSecret"],
-            },
-            endpoints: [
-              {
-                path: "/applications",
-                method: "GET",
-                description: "List all applications",
-              },
-              {
-                path: "/applications/{id}",
-                method: "GET",
-                description: "Get an application by ID",
-                parameters: [
-                  {
-                    name: "id",
-                    type: "string",
-                    required: true,
-                    description: "Application ID",
-                  },
-                ],
-              },
-            ],
-          },
-        ]
-        setModels(fallbackModels)
-        setSelectedModel(fallbackModels[0])
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    const filteredModels = models.filter((model) => {
+        if (!searchQuery) return true
+        const query = searchQuery.toLowerCase()
+        return (
+            model.name.toLowerCase().includes(query) ||
+            model.description.toLowerCase().includes(query) ||
+            model.fields.some((field) => field.name.toLowerCase().includes(query))
+        )
+    })
 
-    loadApiModels()
-  }, [])
-
-  const filteredModels = models.filter((model) => model.name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-  return (
-    <div className="container mx-auto py-6 max-w-7xl">
-      {/* Error message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center mb-4">
-          <AlertCircle className="h-5 w-5 mr-2" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-1/3">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle>API Models</CardTitle>
-              <CardDescription>Browse available data models in the API</CardDescription>
-              <div className="mt-2 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Search models..."
-                  className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-10 bg-muted rounded-md animate-pulse"></div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {filteredModels.length > 0 ? (
-                    filteredModels.map((model) => (
-                      <button
-                        key={model.name}
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm ${
-                          selectedModel?.name === model.name ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                        }`}
-                        onClick={() => setSelectedModel(model)}
-                      >
-                        {model.name}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">No models found</div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:w-2/3">
-          {isLoading ? (
-            <Card>
-              <CardHeader className="animate-pulse bg-muted h-24 rounded-t-lg"></CardHeader>
-              <CardContent className="animate-pulse bg-muted/50 h-96 rounded-b-lg"></CardContent>
-            </Card>
-          ) : selectedModel ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>{selectedModel.name}</CardTitle>
-                <CardDescription>{selectedModel.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="schema">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="schema">Schema</TabsTrigger>
-                    <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
-                    {selectedModel.examples && selectedModel.examples.length > 0 && (
-                      <TabsTrigger value="examples">Examples</TabsTrigger>
-                    )}
-                  </TabsList>
-
-                  <TabsContent value="schema">
-                    <div className="rounded-md bg-muted p-4">
-                      <pre className="text-sm overflow-auto max-h-[500px]">
-                        {JSON.stringify(selectedModel.schema, null, 2)}
-                      </pre>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="endpoints">
-                    {selectedModel.endpoints && selectedModel.endpoints.length > 0 ? (
-                      <div className="space-y-4">
-                        {selectedModel.endpoints.map((endpoint, index) => (
-                          <div key={index} className="border rounded-md p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span
-                                className={`px-2 py-1 text-xs font-bold rounded ${
-                                  endpoint.method === "GET"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : endpoint.method === "POST"
-                                      ? "bg-green-100 text-green-800"
-                                      : endpoint.method === "PUT"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : endpoint.method === "DELETE"
-                                          ? "bg-red-100 text-red-800"
-                                          : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {endpoint.method}
-                              </span>
-                              <code className="text-sm font-mono">{endpoint.path}</code>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">{endpoint.description}</p>
-
-                            {endpoint.parameters && endpoint.parameters.length > 0 && (
-                              <div className="mt-2">
-                                <h4 className="text-sm font-medium mb-1">Parameters:</h4>
-                                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                  {endpoint.parameters.map((param, pIndex) => (
-                                    <li key={pIndex}>
-                                      <code>{param.name}</code> ({param.type})
-                                      {param.required && <span className="text-red-500">*</span>}
-                                      {param.description && ` - ${param.description}`}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">No endpoints defined</div>
-                    )}
-                  </TabsContent>
-
-                  {selectedModel.examples && selectedModel.examples.length > 0 && (
-                    <TabsContent value="examples">
-                      <div className="space-y-4">
-                        {selectedModel.examples.map((example, index) => (
-                          <div key={index}>
-                            <h4 className="text-sm font-medium mb-2">{example.title}</h4>
-                            <div className="rounded-md bg-muted p-4">
-                              <pre className="text-sm overflow-auto max-h-[300px]">{example.code}</pre>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  )}
-                </Tabs>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="flex items-center justify-center h-64 border rounded-lg">
-              <p className="text-muted-foreground">Select a model to view details</p>
+    return (
+        <div className="container px-4 py-8 md:py-12 mx-auto max-w-5xl">
+            <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Data Models</h1>
+                <p className="mt-2 text-lg text-muted-foreground">
+                    The objects returned by the Authio API and the fields they contain.
+                </p>
             </div>
-          )}
+
+            <div className="relative w-full max-w-md mb-8">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                <Input
+                    type="search"
+                    placeholder="Search models and fields..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+
+            <div className="space-y-6">
+                {filteredModels.length === 0 ? (
+                    <Card>
+                        <CardContent className="py-8 text-center text-muted-foreground">
+                            No models match your search.
+                        </CardContent>
+                    </Card>
+                ) : (
+                    filteredModels.map((model) => (
+                        <Card key={model.name} id={model.name.toLowerCase()}>
+                            <CardHeader>
+                                <CardTitle className="font-mono text-lg">{model.name}</CardTitle>
+                                <CardDescription>{model.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="border rounded-md overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-muted/50">
+                                        <tr>
+                                            <th className="text-left p-3 font-medium">Field</th>
+                                            <th className="text-left p-3 font-medium">Type</th>
+                                            <th className="text-left p-3 font-medium">Description</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                        {model.fields.map((field) => (
+                                            <tr key={field.name}>
+                                                <td className="p-3 font-mono text-xs">{field.name}</td>
+                                                <td className="p-3">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Badge variant="outline"
+                                                               className="font-mono text-xs">{field.type}</Badge>
+                                                        {field.nullable && (
+                                                            <Badge variant="secondary"
+                                                                   className="text-xs">nullable</Badge>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-muted-foreground">{field.description}</td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  )
+    )
 }

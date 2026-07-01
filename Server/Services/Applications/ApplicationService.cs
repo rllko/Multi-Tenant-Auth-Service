@@ -45,10 +45,10 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
         const string getApplicationTeamsQuery = @"SELECT * FROM applications WHERE team = @Id;";
 
-        var application =
-            await connection.QueryFirstOrDefaultAsync<ApplicationDto>(getApplicationTeamsQuery, new { Id = teamId });
+        var applications =
+            await connection.QueryAsync<ApplicationDto>(getApplicationTeamsQuery, new { Id = teamId });
 
-        return application == null ? Option<ApplicationDto>.None : Option<ApplicationDto>.Some(application);
+        return Option<IEnumerable<ApplicationDto>>.Some(applications);
     }
 
     public async Task<ApplicationDto> UpdateApplicationAsync(Guid applicationId, UpdateApplicationDto applicationDto,
@@ -59,33 +59,40 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
         const string query = @"
             UPDATE applications
-            SET 
+            SET
                 name = COALESCE(@Name,name),
-                description = COALESCE(@Username,description),
-                default_key_schema = COALESCE(@DiscordId,default_key_schema)
-            WHERE id = @Id returning *";
+                description = COALESCE(@Description,description),
+                status = COALESCE(@Status,status),
+                default_key_schema = COALESCE(@DefaultKeySchema,default_key_schema)
+            WHERE id = @Id
+            returning id as Id, name as Name, description as Description, status as Status";
 
-        var updatedLicense =
+        var updatedApplication =
             await connection.QuerySingleAsync<ApplicationDto>(query, new
             {
                 applicationDto.Name,
                 applicationDto.Description,
-                applicationDto.DefaultKeySchema
+                applicationDto.Status,
+                applicationDto.DefaultKeySchema,
+                Id = applicationId
             }, transact);
 
-        return updatedLicense;
+        if (transaction == null)
+            transact.Commit();
+
+        return updatedApplication;
     }
 
     public async Task<bool> DeleteApplicationAsync(Guid applicationId, IDbTransaction? transaction)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        const string addDiscordIdQuery = @"DELETE FROM applications WHERE id = @id;";
+        const string deleteApplicationQuery = @"DELETE FROM applications WHERE id = @Id;";
 
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { applicationId }, transaction);
+        var affectedRows =
+            await connection.ExecuteAsync(deleteApplicationQuery, new { Id = applicationId }, transaction);
 
-        return affectedRows1 > 0;
+        return affectedRows > 0;
     }
 
     public async Task<Result<ApplicationDto, ValidationFailed>> RegisterApplicationAsync(Guid teamId,
@@ -98,23 +105,22 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
         var transact = transaction ?? connection.BeginTransaction();
 
         var query =
-            @"insert into applications (name, description,team) values (@name,@description,@team)";
+            @"insert into applications (name, description,team) values (@name,@description,@team)
+              returning id as Id, name as Name, description as Description, status as Status";
 
-        var newLicense =
-            await connection.ExecuteAsync(query,
+        var newApplication =
+            await connection.QuerySingleAsync<ApplicationDto>(query,
                 new
                 {
                     name = applicationDto.Name,
                     description = applicationDto.Description,
-                    applicationDto.Team
+                    team = teamId
                 }, transact);
 
+        if (transaction == null)
+            transact.Commit();
 
-        return new ApplicationDto
-        {
-            Name = applicationDto.Name,
-            Description = applicationDto.Description
-        };
+        return newApplication;
     }
 
     private string GenerateClientSecret()
