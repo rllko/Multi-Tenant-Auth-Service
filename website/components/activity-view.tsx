@@ -37,6 +37,48 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
         return matchesSearch && matchesType
     })
 
+    // login/token events are security; known users doing things is user activity;
+    // anything unattributed is a system event
+    const securityActivities = filteredActivities.filter((activity) => activity.type === "login")
+    const userActivities = filteredActivities.filter(
+        (activity) => activity.type !== "login" && activity.user?.name && activity.user.name !== "Unknown user",
+    )
+    const systemActivities = filteredActivities.filter(
+        (activity) => activity.type !== "login" && (!activity.user?.name || activity.user.name === "Unknown user"),
+    )
+
+    const renderActivityList = (list: any[], emptyMessage: string) =>
+        list.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">{emptyMessage}</div>
+        ) : (
+            list.map((activity, index) => (
+                <div key={index} className="flex items-start space-x-4 rounded-md border p-4">
+                    <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{activity.description || "Activity description"}</p>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                            <span>{activity.user?.name || "Unknown user"}</span>
+                            <span className="mx-1">•</span>
+                            <span>{activity.timestamp || new Date().toISOString()}</span>
+                            <span className="mx-1">•</span>
+                            <span className="capitalize">{activity.type || "action"}</span>
+                        </div>
+                    </div>
+                    <div
+                        className={cn(
+                            "rounded-full px-2 py-1 text-xs font-medium",
+                            activity.type === "login" && "bg-blue-100 text-blue-800",
+                            activity.type === "create" && "bg-green-100 text-green-800",
+                            activity.type === "update" && "bg-amber-100 text-amber-800",
+                            activity.type === "delete" && "bg-red-100 text-red-800",
+                            activity.type === "permission" && "bg-purple-100 text-purple-800",
+                        )}
+                    >
+                        {activity.type || "Action"}
+                    </div>
+                </div>
+            ))
+        )
+
     return (
         <Tabs defaultValue="all" className="space-y-4">
             <div className="flex items-center justify-between">
@@ -132,36 +174,7 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {filteredActivities.length === 0 ? (
-                            <div className="text-center py-6 text-muted-foreground">No activity records found</div>
-                        ) : (
-                            filteredActivities.map((activity, index) => (
-                                <div key={index} className="flex items-start space-x-4 rounded-md border p-4">
-                                    <div className="flex-1 space-y-1">
-                                        <p className="text-sm font-medium">{activity.description || "Activity description"}</p>
-                                        <div className="flex items-center text-xs text-muted-foreground">
-                                            <span>{activity.user?.name || "Unknown user"}</span>
-                                            <span className="mx-1">•</span>
-                                            <span>{activity.timestamp || new Date().toISOString()}</span>
-                                            <span className="mx-1">•</span>
-                                            <span className="capitalize">{activity.type || "action"}</span>
-                                        </div>
-                                    </div>
-                                    <div
-                                        className={cn(
-                                            "rounded-full px-2 py-1 text-xs font-medium",
-                                            activity.type === "login" && "bg-blue-100 text-blue-800",
-                                            activity.type === "create" && "bg-green-100 text-green-800",
-                                            activity.type === "update" && "bg-amber-100 text-amber-800",
-                                            activity.type === "delete" && "bg-red-100 text-red-800",
-                                            activity.type === "permission" && "bg-purple-100 text-purple-800",
-                                        )}
-                                    >
-                                        {activity.type || "Action"}
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                        {renderActivityList(filteredActivities, "No activity records found")}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -172,8 +185,8 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
                         <CardTitle>User Activity</CardTitle>
                         <CardDescription>User-initiated actions and events</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-center py-6 text-muted-foreground">Filter set to user activity</div>
+                    <CardContent className="space-y-4">
+                        {renderActivityList(userActivities, "No user activity found")}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -184,8 +197,8 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
                         <CardTitle>System Events</CardTitle>
                         <CardDescription>Automated system events and notifications</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-center py-6 text-muted-foreground">Filter set to system events</div>
+                    <CardContent className="space-y-4">
+                        {renderActivityList(systemActivities, "No system events found")}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -196,8 +209,8 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
                         <CardTitle>Security Events</CardTitle>
                         <CardDescription>Security-related events and alerts</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-center py-6 text-muted-foreground">Filter set to security events</div>
+                    <CardContent className="space-y-4">
+                        {renderActivityList(securityActivities, "No security events found")}
                     </CardContent>
                 </Card>
             </TabsContent>
