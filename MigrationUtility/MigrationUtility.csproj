@@ -85,6 +85,8 @@
         <EmbeddedResource Include="Database\Scripts\000028 - insert_initial_application_table.up.sql"/>
         <None Remove="Database\Scripts\000029 - insert_declined_invite_status.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000029 - insert_declined_invite_status.up.sql"/>
+        <None Remove="Database\Scripts\000030 - add_status_to_applications.up.sql"/>
+        <EmbeddedResource Include="Database\Scripts\000030 - add_status_to_applications.up.sql"/>
     </ItemGroup>
 
 

@@ -59,21 +59,28 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
         const string query = @"
             UPDATE applications
-            SET 
+            SET
                 name = COALESCE(@Name,name),
-                description = COALESCE(@Username,description),
-                default_key_schema = COALESCE(@DiscordId,default_key_schema)
-            WHERE id = @Id returning *";
+                description = COALESCE(@Description,description),
+                status = COALESCE(@Status,status),
+                default_key_schema = COALESCE(@DefaultKeySchema,default_key_schema)
+            WHERE id = @Id
+            returning id as Id, name as Name, description as Description, status as Status";
 
-        var updatedLicense =
+        var updatedApplication =
             await connection.QuerySingleAsync<ApplicationDto>(query, new
             {
                 applicationDto.Name,
                 applicationDto.Description,
-                applicationDto.DefaultKeySchema
+                applicationDto.Status,
+                applicationDto.DefaultKeySchema,
+                Id = applicationId
             }, transact);
 
-        return updatedLicense;
+        if (transaction == null)
+            transact.Commit();
+
+        return updatedApplication;
     }
 
     public async Task<bool> DeleteApplicationAsync(Guid applicationId, IDbTransaction? transaction)
@@ -99,7 +106,7 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
         var query =
             @"insert into applications (name, description,team) values (@name,@description,@team)
-              returning id as Id, name as Name, description as Description";
+              returning id as Id, name as Name, description as Description, status as Status";
 
         var newApplication =
             await connection.QuerySingleAsync<ApplicationDto>(query,
