@@ -96,7 +96,7 @@ builder.Host.UseSerilog(Log.Logger);
 //builder.Logging.ClearProviders();
 #warning add this when testing
 
-var yuh = await loggerService.GetLoggerConnectionAsync();
+await loggerService.EnsureLogTableAsync();
 
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
