@@ -2,7 +2,7 @@
 
 **Authio** is a multi-tenant SaaS platform designed for secure license and session management.
 
-**Update:** in a rush i tried to make a frontend, ended up trying to use AI to speedup the development but its still unfinished. If you're interested you can always check out the old auth [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef)  for the backend without any frontend slop.
+**Update:** in a rush i tried to make a frontend. If you're interested you can always check out the old auth [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef)  for the backend without any frontend slop.
 
 This is a personal side project where i took my old license authentication sytem and tried to implement a multi tenancy architecture.
 The old auth that can be found here. Contributions and pull requests are welcome!
