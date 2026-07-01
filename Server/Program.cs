@@ -1,13 +1,14 @@
 using Authentication.AuthenticationHandlers;
 using Authentication.Database;
-using Authentication.Endpoints;
 using Authentication.HostedServices;
+using Authentication.Services.Applications;
 using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Clients;
 using Authentication.Services.Discords;
 using Authentication.Services.Hwids;
+using Authentication.Services.Invites;
 using Authentication.Services.Licenses;
 using Authentication.Services.Licenses.Accounts;
 using Authentication.Services.Licenses.Builder;
@@ -15,6 +16,9 @@ using Authentication.Services.Licenses.Sessions;
 using Authentication.Services.Logger;
 using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Logging.Services;
+using Authentication.Services.Roles;
+using Authentication.Services.Scopes;
+using Authentication.Services.Teams;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -23,7 +27,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Redis.OM;
 using Serilog;
-using Serilog.Debugging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +76,13 @@ builder.Services.AddScoped<ILicenseBuilder, LicenseBuilder>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IAuthLoggerService, AuthLoggerService>();
 builder.Services.AddScoped<IActivityLoggerService, ActivityLoggerService>();
+
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IScopeService, ScopeService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
 
 //SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();

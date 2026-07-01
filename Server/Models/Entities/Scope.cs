@@ -4,8 +4,8 @@ namespace Authentication.Models.Entities;
 
 public class Scope
 {
-    [Key]
-    public int ScopeId { get; set; }
+    [Key] public int ScopeId { get; set; }
+
     public string ScopeName { get; set; }
     public int ScopeType { get; set; }
     public string Slug { get; set; }
@@ -13,6 +13,19 @@ public class Scope
     public int? ImpactLevelId { get; set; }
     public int? CategoryId { get; set; }
 }
+
+public class TenantScopeDto
+{
+}
+
+public record ScopeDto(
+    int Id,
+    string Name,
+    string Description,
+    string? CreatedBy,
+    string Impact,
+    string Resource
+);
 
 public record ScopeCreateDto(
     string ScopeName,
