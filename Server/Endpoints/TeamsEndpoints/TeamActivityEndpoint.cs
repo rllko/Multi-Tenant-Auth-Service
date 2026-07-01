@@ -83,6 +83,15 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
             "TokenIssued" => $"Token issued for {userName}",
             "TokenRefreshed" => $"{userName} refreshed their session",
             "TokenRevoked" => $"Token revoked for {userName}",
+            "UserInvited" => $"{userName} invited a new member",
+            "InviteAccepted" => $"{userName} accepted a team invite",
+            "InviteDeclined" => $"{userName} declined a team invite",
+            "MemberRemoved" => $"{userName} removed a team member",
+            "RoleCreated" => $"{userName} created a role",
+            "RoleUpdated" => $"{userName} updated role permissions",
+            "ApplicationCreated" => $"{userName} created an application",
+            "ApplicationUpdated" => $"{userName} updated an application",
+            "ApplicationDeleted" => $"{userName} deleted an application",
             _ => null
         };
     }
@@ -92,8 +101,10 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
         return eventType switch
         {
             "LoginSuccess" or "LoginFailed" or "Logout" or "TokenIssued" or "TokenRefreshed" => "login",
-            "AccountCreated" => "create",
-            "TokenRevoked" => "delete",
+            "AccountCreated" or "UserInvited" or "InviteAccepted" or "RoleCreated" or "ApplicationCreated" => "create",
+            "ApplicationUpdated" => "update",
+            "TokenRevoked" or "MemberRemoved" or "ApplicationDeleted" => "delete",
+            "RoleUpdated" => "permission",
             _ => "action"
         };
     }

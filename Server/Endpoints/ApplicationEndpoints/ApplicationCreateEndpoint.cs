@@ -1,18 +1,23 @@
 using Authentication.Attributes;
+using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Applications;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.ApplicationEndpoints;
 
 public class ApplicationCreateEndpoint : Endpoint<CreateApplicationDto, ApplicationDto>
 {
+    private readonly IActivityLoggerService _activityLogger;
     private readonly IApplicationService _applicationService;
 
-    public ApplicationCreateEndpoint(IApplicationService applicationService)
+    public ApplicationCreateEndpoint(IApplicationService applicationService, IActivityLoggerService activityLogger)
     {
         _applicationService = applicationService;
+        _activityLogger = activityLogger;
     }
 
     public override void Configure()
@@ -38,7 +43,14 @@ public class ApplicationCreateEndpoint : Endpoint<CreateApplicationDto, Applicat
         var result = await _applicationService.RegisterApplicationAsync(teamId, [], req, null);
 
         await result.Match(
-            async app => await SendOkAsync(app, ct),
+            async app =>
+            {
+                var session = HttpContext.Items["Session"] as TenantSessionInfo;
+                _activityLogger.LogEvent(ActivityEventType.ApplicationCreated, app.Name,
+                    session!.TenantId.ToString(), new { TeamId = teamId, AppId = app.Id });
+
+                await SendOkAsync(app, ct);
+            },
             async failed =>
             {
                 foreach (var error in failed.Errors)

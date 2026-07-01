@@ -1,18 +1,23 @@
 using Authentication.Attributes;
+using Authentication.Models;
 using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Applications;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.ApplicationEndpoints;
 
 public class ApplicationUpdateEndpoint : Endpoint<UpdateApplicationDto, ApplicationDto>
 {
+    private readonly IActivityLoggerService _activityLogger;
     private readonly IApplicationService _applicationService;
 
-    public ApplicationUpdateEndpoint(IApplicationService applicationService)
+    public ApplicationUpdateEndpoint(IApplicationService applicationService, IActivityLoggerService activityLogger)
     {
         _applicationService = applicationService;
+        _activityLogger = activityLogger;
     }
 
     public override void Configure()
@@ -33,6 +38,11 @@ public class ApplicationUpdateEndpoint : Endpoint<UpdateApplicationDto, Applicat
             async _ =>
             {
                 var updated = await _applicationService.UpdateApplicationAsync(appId, req, null);
+
+                var session = HttpContext.Items["Session"] as TenantSessionInfo;
+                _activityLogger.LogEvent(ActivityEventType.ApplicationUpdated, updated.Name,
+                    session!.TenantId.ToString(), new { AppId = appId, req.Status });
+
                 await SendOkAsync(updated, ct);
             },
             async () => await SendNotFoundAsync(ct));
