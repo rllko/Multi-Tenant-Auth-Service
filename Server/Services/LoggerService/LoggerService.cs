@@ -26,31 +26,6 @@ public class LoggerService : ILoggerService
         return connection;
     }
 
-    public async Task EnsureLogTableAsync(CancellationToken token = default)
-    {
-        const string sql =
-            """
-                CREATE TABLE IF NOT EXISTS activity_logs
-                (
-                    id           uuid,
-                    tenant_id    text,
-                    event_type   text,
-                    level        varchar(50),
-                    message      text,
-                    timestamp    timestamp,
-                    exception    text,
-                    properties   jsonb,
-                    machine_name text
-                );
-            """;
-
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync(token);
-
-        await using var command = new NpgsqlCommand(sql, connection);
-        await command.ExecuteNonQueryAsync(token);
-    }
-
     public LoggerConfiguration ConfigureLogger()
     {
         Serilog.Debugging.SelfLog.Enable(Console.Error);
@@ -87,8 +62,7 @@ public class LoggerService : ILoggerService
                 .WriteTo.PostgreSQL(
                     _connectionString,
                     "activity_logs",
-                    columnWriters,
-                    needAutoCreateTable: true
+                    columnWriters
                 ));
     }
 

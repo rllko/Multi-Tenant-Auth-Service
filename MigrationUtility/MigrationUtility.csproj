@@ -89,6 +89,8 @@
         <EmbeddedResource Include="Database\Scripts\000030 - add_status_to_applications.up.sql"/>
         <None Remove="Database\Scripts\000031 - cascade_application_deletes.up.sql"/>
         <EmbeddedResource Include="Database\Scripts\000031 - cascade_application_deletes.up.sql"/>
+        <None Remove="Database\LoggerScripts\000001 - create_activity_logs_table.up.sql"/>
+        <EmbeddedResource Include="Database\LoggerScripts\000001 - create_activity_logs_table.up.sql"/>
     </ItemGroup>
 
 
