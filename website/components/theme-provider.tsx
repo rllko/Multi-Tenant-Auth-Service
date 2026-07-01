@@ -24,12 +24,7 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "ui-theme",
-  ...props
-}: ThemeProviderProps) {
+export function ThemeProvider({ children, defaultTheme = "system", storageKey = "ui-theme" }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme)
   const [mounted, setMounted] = useState(false)
 
@@ -59,7 +54,6 @@ export function ThemeProvider({
 
     root.classList.add(theme)
 
-    // Force a re-render of components by toggling a data attribute
     const currentValue = root.getAttribute("data-theme-refresh") || "0"
     root.setAttribute("data-theme-refresh", currentValue === "0" ? "1" : "0")
   }, [theme, mounted])
@@ -72,12 +66,7 @@ export function ThemeProvider({
     },
   }
 
-  // Prevent flash of incorrect theme
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  )
+  return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
 }
 
 export const useTheme = () => {

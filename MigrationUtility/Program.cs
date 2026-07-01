@@ -1,12 +1,16 @@
-using Authentication.Database;
 using MigrationUtility.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(_ => new DatabaseInitializer(
-    Environment.GetEnvironmentVariable("DATABASE_URL")));
-
 var app = builder.Build();
 
-var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+// main auth database
+var databaseInitializer = new DatabaseInitializer(
+    Environment.GetEnvironmentVariable("DATABASE_URL"));
 databaseInitializer.InitializeAsync();
+
+// serilog activity log database
+var loggerDatabaseInitializer = new DatabaseInitializer(
+    Environment.GetEnvironmentVariable("DATABASE_LOGGER_URL"),
+    script => script.Contains(".LoggerScripts."));
+loggerDatabaseInitializer.InitializeAsync();

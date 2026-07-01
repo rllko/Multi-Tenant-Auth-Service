@@ -1,11 +1,15 @@
 using Authentication.Attributes;
+using Authentication.Models;
 using Authentication.RequestProcessors;
+using Authentication.Services.Logging.Enums;
+using Authentication.Services.Logging.Interfaces;
 using Authentication.Services.Roles;
 using FastEndpoints;
 
 namespace Authentication.Endpoints.RoleEndpoints;
 
-public class UpdateRolePermissionsEndpoint(IRoleService roleService) : Endpoint<UpdateRoleScopesDto>
+public class UpdateRolePermissionsEndpoint(IRoleService roleService, IActivityLoggerService activityLogger)
+    : Endpoint<UpdateRoleScopesDto>
 {
     public override void Configure()
     {
@@ -31,6 +35,10 @@ public class UpdateRolePermissionsEndpoint(IRoleService roleService) : Endpoint<
                 await roleService.RemoveScopeFromRoleAsync(roleId, scope);
             else
                 await roleService.AssignScopeToRoleAsync(roleId, scope);
+
+        var session = HttpContext.Items["Session"] as TenantSessionInfo;
+        activityLogger.LogEvent(ActivityEventType.RoleUpdated, roleId.ToString(),
+            session!.TenantId.ToString(), new { TeamId = teamId, req.Scopes });
 
         await SendOkAsync(ct);
     }

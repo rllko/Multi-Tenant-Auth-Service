@@ -12,8 +12,16 @@ public enum ActivityEventType
     FileDownloaded,
     UserInvited,
     InviteAccepted,
+    InviteDeclined,
+    InviteRevoked,
     SettingsChanged,
     MessageSent,
     TeamJoined,
-    TeamLeft
+    TeamLeft,
+    MemberRemoved,
+    RoleCreated,
+    RoleUpdated,
+    ApplicationCreated,
+    ApplicationUpdated,
+    ApplicationDeleted
 }
