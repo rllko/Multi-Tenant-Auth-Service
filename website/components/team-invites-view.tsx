@@ -182,6 +182,33 @@ export function TeamInvitesView() {
         }
     }
 
+    const cancelInvite = async (invite: TenantInvite) => {
+        try {
+            await invitesApi.cancelInvite(invite.inviteToken)
+
+            setSentInvites((prevInvites) =>
+                prevInvites.map((inv) =>
+                    inv.inviteToken === invite.inviteToken ? {...inv, status: "revoked"} : inv,
+                ),
+            )
+
+            toast({
+                title: "Invite Cancelled",
+                description: "The invitation has been cancelled successfully.",
+                variant: "default",
+            })
+        } catch (err) {
+            console.error("Error cancelling invite:", err)
+            const errorMessage = err instanceof Error ? err.message : "Failed to cancel invite"
+
+            toast({
+                title: "Error",
+                description: errorMessage,
+                variant: "destructive",
+            })
+        }
+    }
+
     // Filter invites based on search query and status filter
     const getFilteredInvites = () => {
         const currentInvites = activeTab === "received" ? invites : sentInvites
@@ -226,6 +253,12 @@ export function TeamInvitesView() {
                 return (
                     <Badge variant="secondary" className="bg-gray-100 text-gray-800 border-gray-300">
                         Expired
+                    </Badge>
+                )
+            case "revoked":
+                return (
+                    <Badge variant="secondary" className="bg-gray-100 text-gray-800 border-gray-300">
+                        Cancelled
                     </Badge>
                 )
             default:
@@ -514,10 +547,21 @@ export function TeamInvitesView() {
                                                     className="text-xs text-muted-foreground">{getTimeAgo(invite.expiresAt)}</div>
                                             </td>
                                             <td className="p-3 text-right">
-                                                <Button variant="outline" size="sm"
-                                                        onClick={() => handleViewDetails(invite)}>
-                                                    Details
-                                                </Button>
+                                                {invite.status?.toLowerCase() === "pending" && !isExpired(invite.expiresAt) ? (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => cancelInvite(invite)}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                ) : (
+                                                    <Button variant="outline" size="sm"
+                                                            onClick={() => handleViewDetails(invite)}>
+                                                        Details
+                                                    </Button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

@@ -218,4 +218,21 @@ public class InviteService(
         return affected > 0;
     }
 
+    public async Task<bool> RevokeInviteAsync(string token, IDbTransaction? transaction = null)
+    {
+        const string sql = @"
+            UPDATE tenant_invites
+            SET status = (SELECT id FROM tenant_invite_statuses WHERE slug = 'REVOKED')
+            WHERE invite_token = @Token
+              AND accepted_at IS NULL
+              AND status = (SELECT id FROM tenant_invite_statuses WHERE slug = 'PENDING');
+        ";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        var affected = await conn.ExecuteAsync(sql, new { Token = token }, transaction);
+
+        return affected > 0;
+    }
+
 }

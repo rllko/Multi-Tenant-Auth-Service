@@ -86,6 +86,7 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
             "UserInvited" => $"{userName} invited a new member",
             "InviteAccepted" => $"{userName} accepted a team invite",
             "InviteDeclined" => $"{userName} declined a team invite",
+            "InviteRevoked" => $"{userName} cancelled a team invite",
             "MemberRemoved" => $"{userName} removed a team member",
             "RoleCreated" => $"{userName} created a role",
             "RoleUpdated" => $"{userName} updated role permissions",
@@ -103,7 +104,7 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
             "LoginSuccess" or "LoginFailed" or "Logout" or "TokenIssued" or "TokenRefreshed" => "login",
             "AccountCreated" or "UserInvited" or "InviteAccepted" or "RoleCreated" or "ApplicationCreated" => "create",
             "ApplicationUpdated" => "update",
-            "TokenRevoked" or "MemberRemoved" or "ApplicationDeleted" => "delete",
+            "TokenRevoked" or "MemberRemoved" or "ApplicationDeleted" or "InviteRevoked" => "delete",
             "RoleUpdated" => "permission",
             _ => "action"
         };

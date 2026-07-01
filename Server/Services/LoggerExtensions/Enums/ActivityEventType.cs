@@ -13,6 +13,7 @@ public enum ActivityEventType
     UserInvited,
     InviteAccepted,
     InviteDeclined,
+    InviteRevoked,
     SettingsChanged,
     MessageSent,
     TeamJoined,

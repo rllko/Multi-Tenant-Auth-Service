@@ -456,6 +456,9 @@ export const invitesApi = {
     declineInvite: async (inviteToken: string) => {
         return fetchApi(`/teams/invites/${inviteToken}/decline`, {method: "POST"}, DEFAULT_TIMEOUT, false)
     },
+    cancelInvite: async (inviteToken: string) => {
+        return fetchApi(`/teams/invites/${inviteToken}/cancel`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+    },
 }
 
 // Tenants API
