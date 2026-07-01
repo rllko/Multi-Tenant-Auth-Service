@@ -87,12 +87,12 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        const string addDiscordIdQuery = @"DELETE FROM applications WHERE id = @id;";
+        const string deleteApplicationQuery = @"DELETE FROM applications WHERE id = @Id;";
 
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { applicationId }, transaction);
+        var affectedRows =
+            await connection.ExecuteAsync(deleteApplicationQuery, new { Id = applicationId }, transaction);
 
-        return affectedRows1 > 0;
+        return affectedRows > 0;
     }
 
     public async Task<Result<ApplicationDto, ValidationFailed>> RegisterApplicationAsync(Guid teamId,
