@@ -445,8 +445,8 @@ export const invitesApi = {
     getReceivedInvites: async (): Promise<TenantInvite[]> => {
         return fetchApi("/teams/invites/received")
     },
-    getSentInvites: async (): Promise<TenantInvite[]> => {
-        return fetchApi("/teams/invites/sent")
+    getSentInvites: async (teamId: string): Promise<TenantInvite[]> => {
+        return fetchApi(`/teams/${teamId}/invites/sent`)
     },
     getPendingInvites: async (): Promise<TenantInvite[]> => {
         return fetchApi("/teams/invites/pending")

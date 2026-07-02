@@ -46,8 +46,10 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {CONSTANTS} from "@/app/const"
 import {invitesApi} from "@/lib/api-service"
 import {TenantInvite} from "@/models/invite"
+import {useTeam} from "@/contexts/team-context"
 
 export function TeamInvitesView() {
+    const {selectedTeam} = useTeam()
     const [invites, setInvites] = useState<TenantInvite[]>([])
     const [sentInvites, setSentInvites] = useState<TenantInvite[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -62,10 +64,10 @@ export function TeamInvitesView() {
     const [confirmAction, setConfirmAction] = useState<"accept" | "decline" | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
 
-    // Fetch invites
+    // Fetch invites; sent tab is scoped to the team selected in the sidebar
     useEffect(() => {
         fetchInvites()
-    }, [activeTab])
+    }, [activeTab, selectedTeam])
 
     const fetchInvites = async (showRefreshing = false) => {
         try {
@@ -81,12 +83,12 @@ export function TeamInvitesView() {
                 throw new Error("Authentication required")
             }
 
-            const data = activeTab === "received" ? await invitesApi.getReceivedInvites() : await invitesApi.getSentInvites()
-
             if (activeTab === "received") {
-                setInvites(data)
+                setInvites(await invitesApi.getReceivedInvites())
+            } else if (selectedTeam) {
+                setSentInvites(await invitesApi.getSentInvites(selectedTeam.id))
             } else {
-                setSentInvites(data)
+                setSentInvites([])
             }
         } catch (err) {
             console.error("Error fetching invites:", err)
