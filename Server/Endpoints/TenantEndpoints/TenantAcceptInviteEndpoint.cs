@@ -30,7 +30,7 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
             s.Description = "Accepts the invitation identified by its token and joins the team. Only the invited tenant may accept. Bearer auth.";
             s.Params["inviteToken"] = "Invite token from the invite listing";
             s.Response(200, "Joined the team");
-            s.Response(400, "Invite expired or already handled");
+            s.Response<ErrorResponse>(400, "Invite expired or already handled");
             s.Response(403, "Invite belongs to another tenant");
         });
     }

@@ -26,7 +26,7 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
             s.Summary = "Refresh a license session";
             s.Description = "Extends the current end-user license session and rotates its token.";
             s.Response(200, "Refreshed session with rotated token");
-            s.Response(400, "Session invalid or expired");
+            s.Response<ErrorResponse>(400, "Session invalid or expired");
         });
     }
 

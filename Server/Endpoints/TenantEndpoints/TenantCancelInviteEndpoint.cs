@@ -30,7 +30,7 @@ public class TenantCancelInviteEndpoint : EndpointWithoutRequest
             s.Description = "Revokes a pending invitation. Only the tenant that sent the invite may cancel it. Bearer auth.";
             s.Params["inviteToken"] = "Invite token from the sent invites listing";
             s.Response(200, "Invite revoked");
-            s.Response(400, "Invite no longer pending");
+            s.Response<ErrorResponse>(400, "Invite no longer pending");
             s.Response(403, "Only the sender may cancel");
         });
     }

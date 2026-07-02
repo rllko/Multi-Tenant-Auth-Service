@@ -28,7 +28,7 @@ public class GetTeamMemberEndpoint : EndpointWithoutRequest<TenantDto>
             s.Description = "Returns one member of the team (id, name, email, role). Bearer auth; requires the team.fetch_team_members scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["memberId"] = "Tenant id of the member (GUID)";
-            s.Response(200, "The member: { id, name, email, role }");
+            s.Response<TenantDto>(200, "The member: { id, name, email, role }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

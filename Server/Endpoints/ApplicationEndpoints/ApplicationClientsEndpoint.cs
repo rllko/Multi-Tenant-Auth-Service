@@ -27,7 +27,7 @@ public class ApplicationClientsEndpoint : EndpointWithoutRequest<IEnumerable<Cli
             s.Description = "Returns every OAuth client registered under the application. Bearer auth; requires the application.retrieve scope in the team.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
-            s.Response(200, "Array of OAuth clients: { clientId, clientIdentifier, clientSecret, grantType, role, team, clientUri }");
+            s.Response<IEnumerable<Client>>(200, "Array of OAuth clients: { clientId, clientIdentifier, clientSecret, grantType, role, team, clientUri }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

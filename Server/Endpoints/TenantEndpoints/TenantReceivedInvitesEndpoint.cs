@@ -25,7 +25,7 @@ public class TenantReceivedInvitesEndpoint : EndpointWithoutRequest<IEnumerable<
         {
             s.Summary = "List my received invites";
             s.Description = "Returns every invitation addressed to the authenticated tenant across all teams, any status. Bearer auth.";
-            s.Response(200, "Array of invites: { inviteToken, createdBy, createdByEmail, teamName, status, createdAt, expiresAt }");
+            s.Response<IEnumerable<TenantInviteDto>>(200, "Array of invites: { inviteToken, createdBy, createdByEmail, teamName, status, createdAt, expiresAt }");
         });
     }
 

@@ -27,7 +27,7 @@ public class ApplicationLicensesEndpoint : EndpointWithoutRequest<IEnumerable<Li
             s.Description = "Returns all licenses issued for the application, including activation, pause state, and expiry (unix seconds). Bearer auth; requires the license.retrieve_info scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
-            s.Response(200, "Array of licenses: { id, value, creationDate (unix), activated, paused, expirationDate (unix), email, discord }");
+            s.Response<IEnumerable<LicenseDto>>(200, "Array of licenses: { id, value, creationDate (unix), activated, paused, expirationDate (unix), email, discord }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

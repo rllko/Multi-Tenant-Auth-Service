@@ -27,8 +27,8 @@ public class TeamAppIdEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationD
             s.Description = "Returns a single application by id. Bearer auth; requires the application.retrieve scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
-            s.Response(200, "The application: { id, name, description, status }");
-            s.Response(400, "Application not found");
+            s.Response<IEnumerable<ApplicationDto>>(200, "The application: { id, name, description, status }");
+            s.Response<ErrorResponse>(400, "Application not found");
             s.Response(403, "Not a team member or missing scope");
         });
     }

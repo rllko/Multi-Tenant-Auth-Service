@@ -27,7 +27,7 @@ public class TeamScopesEndpoint : EndpointWithoutRequest<IEnumerable<ScopeDto>>
             s.Summary = "List team permission scopes";
             s.Description = "Returns every permission scope assignable within the team (id, name, description, impact, resource). Bearer auth; requires the team.fetch_team_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
-            s.Response(200, "Array of scopes: { id, name, description, createdBy, impact, resource }");
+            s.Response<IEnumerable<ScopeDto>>(200, "Array of scopes: { id, name, description, createdBy, impact, resource }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

@@ -32,8 +32,8 @@ public class ApplicationCreateEndpoint : Endpoint<CreateApplicationDto, Applicat
             s.Summary = "Create an application";
             s.Description = "Creates an application owned by the team and returns it (id, name, description, status). Name is required. Bearer auth; requires the application.create scope.";
             s.Params["teamId"] = "Team id (GUID)";
-            s.Response(200, "The created application: { id, name, description, status }");
-            s.Response(400, "Missing name or validation failure");
+            s.Response<ApplicationDto>(200, "The created application: { id, name, description, status }");
+            s.Response<ErrorResponse>(400, "Missing name or validation failure");
             s.Response(403, "Not a team member or missing scope");
         });
     }

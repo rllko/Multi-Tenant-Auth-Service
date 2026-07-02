@@ -32,7 +32,7 @@ public class TeamCreateRoleEndpoint : Endpoint<CreateRoleDto>
             s.Summary = "Create a team role";
             s.Description = "Creates a role in the team. Body: { name, description }; slug and role type are derived server-side. Returns the created role with its integer roleId. Bearer auth; requires the team.create_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
-            s.Response(200, "The created role: { roleId, roleName, description, createdBy }");
+            s.Response<Role>(200, "The created role: { roleId, roleName, description, createdBy }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

@@ -27,7 +27,7 @@ public class TeamAppsEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationDt
             s.Summary = "List team applications";
             s.Description = "Returns the applications owned by the team (id, name, description, status). Bearer auth; requires the application.retrieve scope.";
             s.Params["teamId"] = "Team id (GUID)";
-            s.Response(200, "Array of applications: { id, name, description, status }");
+            s.Response<IEnumerable<ApplicationDto>>(200, "Array of applications: { id, name, description, status }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

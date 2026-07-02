@@ -16,7 +16,7 @@ public class GetAllLicensesEndpoint(ILicenseService licenseService) : EndpointWi
         {
             s.Summary = "List all licenses (Discord bot)";
             s.Description = "Protected Discord-bot operation: returns every license.";
-            s.Response(200, "Array of all licenses");
+            s.Response<IEnumerable<License>>(200, "Array of all licenses");
         });
     }
 

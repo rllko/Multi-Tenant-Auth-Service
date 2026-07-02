@@ -1,4 +1,5 @@
 using Authentication.Models;
+using Authentication.Models.Entities;
 using Authentication.RequestProcessors;
 using Authentication.Services.Tenants;
 using FastEndpoints;
@@ -19,8 +20,8 @@ public class TenantProfileEndpoint(ITenantService tenantService) : EndpointWitho
         {
             s.Summary = "Get my profile";
             s.Description = "Returns the authenticated tenant's profile (id, name, email). Bearer auth.";
-            s.Response(200, "{ id, discordId, email, role, name }");
-            s.Response(400, "No valid session");
+            s.Response<TenantDto>(200, "{ id, discordId, email, role, name }");
+            s.Response<ErrorResponse>(400, "No valid session");
         });
     }
 
