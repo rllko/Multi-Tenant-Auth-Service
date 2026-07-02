@@ -23,6 +23,7 @@ using Authentication.Services.Teams;
 using Authentication.Services.Tenants;
 using FastEndpoints;
 using FastEndpoints.Security;
+using FastEndpoints.Swagger;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,6 +40,15 @@ builder.Services
         s.SigningKey = Environment.GetEnvironmentVariable(EnvironmentVariableService.SignKeyName);
     })
     .AddFastEndpoints()
+    .SwaggerDocument(o =>
+    {
+        o.DocumentSettings = s =>
+        {
+            s.Title = "Authio API";
+            s.Version = "v1";
+        };
+        o.EnableJWTBearerAuth = true;
+    })
     .AddAntiforgery()
     .AddAuthorization()
     .AddAuthentication(o =>
@@ -116,5 +126,7 @@ app.UseAuthentication()
     .UseAuthorization()
     .UseAntiforgeryFE()
     .UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
+
+app.UseSwaggerGen(uiConfig: u => u.Path = "/api/docs/ui");
 
 app.Run();
