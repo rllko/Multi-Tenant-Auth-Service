@@ -25,7 +25,7 @@ public class ActivateLicenseEndpoint(
             s.Summary = "Activate a license (Discord bot)";
             s.Description = "Protected Discord-bot operation: activates a license with username/password/email for a Discord user.";
             s.Response(200, "Activated license");
-            s.Response(400, "Invalid license or already activated");
+            s.Response<ErrorResponse>(400, "Invalid license or already activated");
         });
     }
 

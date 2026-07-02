@@ -27,7 +27,7 @@ public class TeamRolesEndpoint : EndpointWithoutRequest<IEnumerable<RoleDto>>
             s.Summary = "List team roles";
             s.Description = "Returns the team's roles including each role's assigned scope ids. Bearer auth; requires the team.fetch_team_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
-            s.Response(200, "Array of roles: { roleId, roleName, description, createdBy, scopes: int[] }");
+            s.Response<IEnumerable<RoleDto>>(200, "Array of roles: { roleId, roleName, description, createdBy, scopes: int[] }");
             s.Response(403, "Not a team member or missing scope");
         });
     }

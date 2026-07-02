@@ -25,7 +25,7 @@ public class SessionResumeEndpoint : EndpointWithoutRequest
             s.Summary = "Resume a license session";
             s.Description = "Resumes a previous end-user license session after an app restart.";
             s.Response(200, "Resumed session");
-            s.Response(400, "Session cannot be resumed");
+            s.Response<ErrorResponse>(400, "Session cannot be resumed");
         });
     }
 

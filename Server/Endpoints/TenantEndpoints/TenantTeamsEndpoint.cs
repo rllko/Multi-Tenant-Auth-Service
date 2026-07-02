@@ -1,4 +1,5 @@
 using Authentication.Models;
+using Models = Authentication.Models;
 using Authentication.RequestProcessors;
 using Authentication.Services.Teams;
 using FastEndpoints;
@@ -21,7 +22,7 @@ public class TenantTeamsEndpoint(ITeamService teamsService) : EndpointWithoutReq
         {
             s.Summary = "List my teams";
             s.Description = "Returns the teams the authenticated tenant belongs to. Use the team id for all /teams/{teamId}/... calls. Bearer auth.";
-            s.Response(200, "Array of teams: { id, name, createdBy, createdAt }");
+            s.Response<IEnumerable<Models.Entities.Team>>(200, "Array of teams: { id, name, createdBy, createdAt }");
         });
     }
 

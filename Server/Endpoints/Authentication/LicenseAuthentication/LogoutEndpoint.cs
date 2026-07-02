@@ -23,7 +23,7 @@ public class LogoutEndpoint(ILicenseSessionService sessionService) : EndpointWit
             s.Summary = "End a license session";
             s.Description = "Invalidates the current end-user license session token.";
             s.Response(200, "Session ended");
-            s.Response(400, "Invalid or expired session");
+            s.Response<ErrorResponse>(400, "Invalid or expired session");
         });
     }
 
