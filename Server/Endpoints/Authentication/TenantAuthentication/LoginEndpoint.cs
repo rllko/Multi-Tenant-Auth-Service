@@ -43,6 +43,8 @@ public class LoginEndpoint : Endpoint<LoginRequest>
         {
             s.Summary = "Log in to the dashboard";
             s.Description = "Authenticates a tenant with email and password. Returns a bearer JWT (use it in the Authorization header), expiry, and the tenant profile. Anonymous.";
+            s.Response(200, "{ token (bearer JWT), expires_in, token_type, user: { id, name, email, role } }");
+            s.Response(400, "Invalid credentials");
         });
     }
 

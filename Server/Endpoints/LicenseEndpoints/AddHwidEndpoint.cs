@@ -25,6 +25,8 @@ public class AddHwidEndpoint(ILicenseSessionService sessionService)
         {
             s.Summary = "Bind a hardware id to a session";
             s.Description = "Attaches a HWID to the current license session so future sign-ins are locked to the device.";
+            s.Response(200, "HWID bound to the session");
+            s.Response(400, "Invalid session");
         });
     }
 

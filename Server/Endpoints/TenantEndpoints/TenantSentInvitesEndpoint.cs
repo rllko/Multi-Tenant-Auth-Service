@@ -27,6 +27,7 @@ public class TenantSentInvitesEndpoint : EndpointWithoutRequest<IEnumerable<Tena
         {
             s.Summary = "List invites I sent";
             s.Description = "Returns every invitation created by the authenticated tenant across all teams. Prefer GET /teams/{teamId}/invites/sent for team-scoped listings. Bearer auth; requires the global.invite_management scope.";
+            s.Response(200, "Array of invites: { inviteToken, createdBy, createdByEmail, teamName, status, createdAt, expiresAt }");
         });
     }
 

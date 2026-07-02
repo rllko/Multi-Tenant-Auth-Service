@@ -24,6 +24,8 @@ public class UpdateRolePermissionsEndpoint(IRoleService roleService, IActivityLo
             s.Description = "Body: { scopes: int[] } — the full desired scope id set. The server diffs against current scopes and assigns/removes accordingly. Bearer auth; requires the team.update_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["roleId"] = "Role id (integer)";
+            s.Response(200, "Scopes replaced");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

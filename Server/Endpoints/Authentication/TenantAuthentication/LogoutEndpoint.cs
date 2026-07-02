@@ -27,6 +27,8 @@ public class TenantLogoutEndpoint(ITenantService tenantService, IAuthLoggerServi
         {
             s.Summary = "Log out of the dashboard";
             s.Description = "Invalidates the current tenant session. Bearer auth.";
+            s.Response(200, "Logged out");
+            s.Response(400, "Session already expired");
         });
     }
 

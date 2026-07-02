@@ -29,6 +29,9 @@ public class TenantDenyInviteEndpoint : EndpointWithoutRequest
             s.Summary = "Decline a team invite";
             s.Description = "Declines the invitation identified by its token. Only the invited tenant may decline. Bearer auth.";
             s.Params["inviteToken"] = "Invite token from the invite listing";
+            s.Response(200, "Invite declined");
+            s.Response(400, "Invite expired or already handled");
+            s.Response(403, "Invite belongs to another tenant");
         });
     }
 

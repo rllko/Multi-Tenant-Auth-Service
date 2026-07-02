@@ -16,6 +16,8 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
         {
             s.Summary = "Reset session hardware id (Discord bot)";
             s.Description = "Protected Discord-bot operation: clears the HWID bound to a license session.";
+            s.Response(200, "HWID cleared");
+            s.Response(400, "Session not found");
         });
     }
 

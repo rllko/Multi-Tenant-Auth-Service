@@ -27,6 +27,8 @@ public class TeamSentInvitesEndpoint : EndpointWithoutRequest<IEnumerable<Tenant
             s.Summary = "List invites sent for a team";
             s.Description = "Returns the team's outgoing invites with sender name/email, status (pending/accepted/declined/expired/revoked), and expiry. Bearer auth; requires the team.invite scope.";
             s.Params["teamId"] = "Team id (GUID)";
+            s.Response(200, "Array of invites: { inviteToken, createdBy, createdByEmail, teamName, status, createdAt, expiresAt }");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

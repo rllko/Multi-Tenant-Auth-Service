@@ -21,6 +21,7 @@ public class TenantTeamsEndpoint(ITeamService teamsService) : EndpointWithoutReq
         {
             s.Summary = "List my teams";
             s.Description = "Returns the teams the authenticated tenant belongs to. Use the team id for all /teams/{teamId}/... calls. Bearer auth.";
+            s.Response(200, "Array of teams: { id, name, createdBy, createdAt }");
         });
     }
 

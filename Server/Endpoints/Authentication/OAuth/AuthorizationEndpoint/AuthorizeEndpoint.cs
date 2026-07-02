@@ -18,6 +18,8 @@ public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
         {
             s.Summary = "OAuth authorization endpoint";
             s.Description = "Standard OAuth authorize step: validates the client and redirects with an authorization code.";
+            s.Response(302, "Redirect to the client redirect_uri with an authorization code");
+            s.Response(400, "Invalid client or request");
         });
     }
 

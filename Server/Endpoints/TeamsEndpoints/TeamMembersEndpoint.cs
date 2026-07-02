@@ -28,6 +28,8 @@ public class GetTeamMembersEndpoint : EndpointWithoutRequest<IEnumerable<TenantD
             s.Summary = "List team members";
             s.Description = "Returns all tenants in the team (id, name, email, role). Bearer auth; requires the team.fetch_team_members scope.";
             s.Params["teamId"] = "Team id (GUID)";
+            s.Response(200, "Array of members: { id, name, email, role }");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

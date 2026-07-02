@@ -27,6 +27,8 @@ public class ApplicationScopesEndpoint : EndpointWithoutRequest<IEnumerable<Scop
             s.Description = "Returns the permission scopes available to the application's OAuth clients. Bearer auth; requires the application.retrieve scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
+            s.Response(200, "Array of scopes: { id, name, description, createdBy, impact, resource }");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

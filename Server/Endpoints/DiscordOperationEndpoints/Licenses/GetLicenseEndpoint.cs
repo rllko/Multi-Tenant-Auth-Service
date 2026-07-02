@@ -17,6 +17,7 @@ public class GetLicenseEndpoint(ILicenseService licenseService) : EndpointWithou
             s.Summary = "List licenses of a Discord user (Discord bot)";
             s.Description = "Protected Discord-bot operation: returns the licenses owned by a Discord user.";
             s.Params["discordId"] = "Discord user id";
+            s.Response(200, "Array of the user's licenses");
         });
     }
 

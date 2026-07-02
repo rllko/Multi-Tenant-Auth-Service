@@ -21,6 +21,8 @@ public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)
         {
             s.Summary = "Redeem a license code (Discord bot)";
             s.Description = "Protected Discord-bot operation: binds an unclaimed license to a Discord user.";
+            s.Response(200, "License bound to the Discord user");
+            s.Response(400, "Code invalid or already claimed");
         });
     }
 

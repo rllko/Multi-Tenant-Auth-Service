@@ -25,6 +25,7 @@ public class TenantPendingInvitesEndpoint : EndpointWithoutRequest<IEnumerable<T
         {
             s.Summary = "List my pending invites";
             s.Description = "Returns invitations addressed to the authenticated tenant that are still pending. Bearer auth.";
+            s.Response(200, "Array of invites: { inviteToken, createdBy, createdByEmail, teamName, status, createdAt, expiresAt }");
         });
     }
 

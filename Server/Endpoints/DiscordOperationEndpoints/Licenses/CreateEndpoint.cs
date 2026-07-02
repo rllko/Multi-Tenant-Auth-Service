@@ -20,6 +20,7 @@ internal class CreateEndpoint(ILicenseBuilder licenseBuilder, IDiscordService di
             s.Summary = "Create a license (Discord bot)";
             s.Description = "Protected Discord-bot operation: creates a license for a Discord user.";
             s.Params["discordId"] = "Discord user id";
+            s.Response(200, "The created license key");
         });
     }
 

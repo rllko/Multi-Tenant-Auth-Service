@@ -32,6 +32,9 @@ public class InviteTenantEndpoint : Endpoint<TenantInviteCreateDto>
             s.Summary = "Invite a tenant to the team";
             s.Description = "Sends a team invitation to an existing tenant by email. Body: { email, inviteMessage }. 400 when the email is unknown or an invite is already pending. Bearer auth; requires the team.invite scope.";
             s.Params["teamId"] = "Team id (GUID)";
+            s.Response(200, "The created invite with inviteToken");
+            s.Response(400, "Email unknown or invite already pending");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

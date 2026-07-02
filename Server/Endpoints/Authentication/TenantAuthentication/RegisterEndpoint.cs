@@ -23,6 +23,8 @@ public class TenantRegisterEndpoint(ITenantService tenantService, IAuthLoggerSer
         {
             s.Summary = "Register a tenant account";
             s.Description = "Creates a dashboard account from email, name, and password. Anonymous; rate limited.";
+            s.Response(200, "Account created");
+            s.Response(400, "Validation errors (email taken, weak password, ...)");
         });
     }
 

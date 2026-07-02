@@ -26,6 +26,8 @@ public class CreateTeamEndpoint(ITeamService teamsService) : EndpointWithoutRequ
         {
             s.Summary = "Create a team";
             s.Description = "Creates a team owned by the authenticated tenant. Body: { name }. Returns the created team. Bearer auth.";
+            s.Response(200, "The created team: { id, name, createdBy, createdAt }");
+            s.Response(400, "Validation failure");
         });
     }
 
