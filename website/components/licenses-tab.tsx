@@ -73,11 +73,11 @@ const userPermissions = [
 ]
 
 // Helper function to check if user has permission
-const hasPermission = (permission) => {
+const hasPermission = (permission: string) => {
     return userPermissions.includes(permission)
 }
 
-export function LicensesTab({appId}) {
+export function LicensesTab({appId}: { appId: string }) {
     const [licenses, setLicenses] = useState([])
     const [plans, setPlans] = useState([])
     const {selectedTeam} = useTeam()
@@ -173,7 +173,13 @@ export function LicensesTab({appId}) {
             })
     }
 
-    const handleEdit = (license) => {
+    const handleEdit = (license: {
+        plan: string
+        expiresAt: string
+        maxUsages: number
+        notes: string
+        key: string
+    }) => {
         setSelectedLicense(license)
         setNewLicense({
             plan: license.plan.toLowerCase(),
@@ -261,16 +267,16 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target
         setNewLicense((prev) => ({...prev, [name]: value}))
     }
 
-    const handleSelectChange = (name, value) => {
+    const handleSelectChange = (name: string, value: string) => {
         setNewLicense((prev) => ({...prev, [name]: value}))
     }
 
-    const handleCheckboxChange = (e) => {
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, checked} = e.target
         setNewLicense((prev) => ({...prev, [name]: checked}))
     }
@@ -283,7 +289,7 @@ export function LicensesTab({appId}) {
         return `KEYAUTH-${segments.join("-")}`
     }
 
-    const copyToClipboard = (text) => {
+    const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
         toast({
             title: "Copied to clipboard",
@@ -292,7 +298,7 @@ export function LicensesTab({appId}) {
         })
     }
 
-    const getStatusBadge = (status) => {
+    const getStatusBadge = (status: string) => {
         switch (status) {
             case "active":
                 return (
@@ -327,7 +333,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleBulkAction = (actionId) => {
+    const handleBulkAction = (actionId: string) => {
         const action = {
             id: actionId,
             name:
@@ -538,7 +544,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleCreateUser = async (data) => {
+    const handleCreateUser = async (data: Record<string, unknown>) => {
         try {
             setIsSubmitting(true)
 
@@ -580,7 +586,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleDeleteLicense = async (licenseId) => {
+    const handleDeleteLicense = async (licenseId: string | number) => {
         try {
             setIsSubmitting(true)
 
@@ -614,7 +620,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleRevokeLicense = async (licenseId) => {
+    const handleRevokeLicense = async (licenseId: string | number) => {
         try {
             setIsSubmitting(true)
 
@@ -648,7 +654,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleBanLicense = async (licenseId) => {
+    const handleBanLicense = async (licenseId: string | number) => {
         try {
             setIsSubmitting(true)
 
@@ -682,7 +688,7 @@ export function LicensesTab({appId}) {
         }
     }
 
-    const handleUnbanLicense = async (licenseId) => {
+    const handleUnbanLicense = async (licenseId: string | number) => {
         try {
             setIsSubmitting(true)
 
@@ -718,7 +724,7 @@ export function LicensesTab({appId}) {
 
     const totalPages = Math.ceil(totalLicenses / itemsPerPage)
 
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber)
         // fetchLicenses will be called via the useEffect
     }

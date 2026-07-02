@@ -22,7 +22,10 @@ import {authApi} from "@/lib/api-service"
 import {Tenant} from "@/models/tenant"
 import {CONSTANTS} from "@/app/const"
 
-export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
+export function DashboardHeader({toggleSidebar, isSidebarOpen}: {
+    toggleSidebar: () => void
+    isSidebarOpen: boolean
+}) {
     const router = useRouter()
     const [showSearch, setShowSearch] = useState(false)
     const {toast} = useToast()

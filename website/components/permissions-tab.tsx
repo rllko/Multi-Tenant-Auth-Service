@@ -10,7 +10,7 @@ import {useTeam} from "@/contexts/team-context"
 import {EmptyState} from "./empty-state"
 import {appsApi} from "@/lib/api-service";
 
-export function PermissionsTab({appId}) {
+export function PermissionsTab({appId}: { appId: string }) {
     const [scopes, setScopes] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)

@@ -35,7 +35,7 @@ interface PermissionGroup {
     permissions: Permission[]
 }
 
-export function RolePermissionsManager({selectedOrganization}) {
+export function RolePermissionsManager({selectedOrganization}: { selectedOrganization: { id: string; name: string } }) {
     const {toast} = useToast()
     const [roles, setRoles] = useState<Role[]>([])
     const [selectedRole, setSelectedRole] = useState<string | null>(null)

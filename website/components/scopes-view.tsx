@@ -15,9 +15,9 @@ const organizations = [
 ]
 
 export function ScopesView() {
-  const [selectedOrganization, setSelectedOrganization] = useState(organizations[0])
+  const [selectedOrganization, setSelectedOrganization] = useState<{ id: string; name: string; members?: number }>(organizations[0])
 
-  const handleOrganizationChange = (org) => {
+  const handleOrganizationChange = (org: { id: string; name: string; members?: number }) => {
     setSelectedOrganization(org)
   }
 

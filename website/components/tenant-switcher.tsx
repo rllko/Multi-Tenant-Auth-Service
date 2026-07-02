@@ -60,7 +60,7 @@ export function TenantSwitcher({isCollapsed = false}: { isCollapsed?: boolean })
         </div>
     )
 
-    const handleCreateTeam = async (e) => {
+    const handleCreateTeam = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!newTeamName.trim()) {
             toast({

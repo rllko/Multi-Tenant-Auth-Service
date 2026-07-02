@@ -8,8 +8,8 @@ export function createTimeoutPromise(ms = DEFAULT_TIMEOUT) {
   })
 }
 
-export function withTimeout(promise, ms = DEFAULT_TIMEOUT) {
-  return Promise.race([promise, createTimeoutPromise(ms)])
+export function withTimeout<T>(promise: Promise<T>, ms = DEFAULT_TIMEOUT): Promise<T> {
+  return Promise.race([promise, createTimeoutPromise(ms)]) as Promise<T>
 }
 
 export interface ApiError {

@@ -4,6 +4,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Button} from "@/components/ui/button"
 import {CheckCircle, ChevronRight, Code, Copy, FileText, Terminal} from "lucide-react"
+import {NavListItem} from "@/components/nav-list-item"
 
 export const metadata: Metadata = {
     title: "Getting Started",
@@ -265,26 +266,5 @@ async function authenticateUser(username, password) {
                 </main>
             </div>
         </div>
-    )
-}
-
-function NavListItem({href, active = false, children}: {
-    href: string
-    active?: boolean
-    children: React.ReactNode
-}) {
-    return (
-        <li>
-            <Link
-                href={href}
-                className={
-                    active
-                        ? "text-primary font-medium flex py-1 px-2 rounded bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                }
-            >
-                {children}
-            </Link>
-        </li>
     )
 }

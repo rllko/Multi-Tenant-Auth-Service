@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import {CONSTANTS} from "@/app/const";
 
-const roleBadgeColors = {
+const roleBadgeColors: Record<string, string> = {
     admin: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
     editor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
     viewer: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
