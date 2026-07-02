@@ -26,6 +26,14 @@ public class ApplicationDeleteEndpoint : EndpointWithoutRequest
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.delete")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Delete an application";
+            s.Description = "Deletes the application and cascades its licenses, sessions, hwids, and OAuth clients. 404 when the application does not exist. Bearer auth; requires the application.delete scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

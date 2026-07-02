@@ -20,6 +20,14 @@ public class ApplicationClientsEndpoint : EndpointWithoutRequest<IEnumerable<Cli
         Get("/teams/{teamId:guid}/apps/{appId:guid}/oauth/clients");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List OAuth clients of an application";
+            s.Description = "Returns every OAuth client registered under the application. Bearer auth; requires the application.retrieve scope in the team.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
 

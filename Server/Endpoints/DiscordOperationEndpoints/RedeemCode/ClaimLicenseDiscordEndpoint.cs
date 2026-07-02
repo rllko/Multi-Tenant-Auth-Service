@@ -16,6 +16,12 @@ public class ClaimLicenseDiscordEndpoint(IDiscordService discordService)
         AuthSchemes(DiscordBasicAuth.SchemeName);
         AllowFormData();
         Put("/protected/redeem-code");
+    
+        Summary(s =>
+        {
+            s.Summary = "Redeem a license code (Discord bot)";
+            s.Description = "Protected Discord-bot operation: binds an unclaimed license to a Discord user.";
+        });
     }
 
     public override async Task<Result<Ok, BadRequest>> HandleAsync(RedeemLicenseRequestDto codeRequest,

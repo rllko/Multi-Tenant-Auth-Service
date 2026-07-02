@@ -20,6 +20,12 @@ public class TenantReceivedInvitesEndpoint : EndpointWithoutRequest<IEnumerable<
         Get("teams/invites/received");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "List my received invites";
+            s.Description = "Returns every invitation addressed to the authenticated tenant across all teams, any status. Bearer auth.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

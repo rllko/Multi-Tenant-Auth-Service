@@ -20,6 +20,14 @@ public class TeamAppIdEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationD
         Get("/teams/{teamId:guid}/apps/{appId:guid}");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Get an application";
+            s.Description = "Returns a single application by id. Bearer auth; requires the application.retrieve scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
 

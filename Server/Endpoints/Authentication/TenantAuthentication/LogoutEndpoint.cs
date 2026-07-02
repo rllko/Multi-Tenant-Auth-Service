@@ -22,6 +22,12 @@ public class TenantLogoutEndpoint(ITenantService tenantService, IAuthLoggerServi
             60
         );
         PreProcessor<TenantProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "Log out of the dashboard";
+            s.Description = "Invalidates the current tenant session. Bearer auth.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

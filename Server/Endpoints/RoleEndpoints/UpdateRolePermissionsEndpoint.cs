@@ -17,6 +17,14 @@ public class UpdateRolePermissionsEndpoint(IRoleService roleService, IActivityLo
         PreProcessor<TenantProcessor<UpdateRoleScopesDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.update_roles")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Replace a role's permission scopes";
+            s.Description = "Body: { scopes: int[] } — the full desired scope id set. The server diffs against current scopes and assigns/removes accordingly. Bearer auth; requires the team.update_roles scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["roleId"] = "Role id (integer)";
+        });
     }
 
     public override async Task HandleAsync(UpdateRoleScopesDto req, CancellationToken ct)

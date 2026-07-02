@@ -26,6 +26,13 @@ public class TeamCreateRoleEndpoint : Endpoint<CreateRoleDto>
         PreProcessor<TenantProcessor<CreateRoleDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.create_roles")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Create a team role";
+            s.Description = "Creates a role in the team. Body: { name, description }; slug and role type are derived server-side. Returns the created role with its integer roleId. Bearer auth; requires the team.create_roles scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CreateRoleDto req, CancellationToken ct)

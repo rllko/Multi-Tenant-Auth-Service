@@ -23,6 +23,12 @@ public class TenantRefreshEndpoint(ITenantService tenantService, IAuthLoggerServ
         );
 
         PreProcessor<TenantProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "Refresh the tenant session";
+            s.Description = "Refreshes the tenant session using the refresh token claim and returns the renewed session info.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

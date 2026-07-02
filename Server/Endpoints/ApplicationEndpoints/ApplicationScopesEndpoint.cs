@@ -20,6 +20,14 @@ public class ApplicationScopesEndpoint : EndpointWithoutRequest<IEnumerable<Scop
         Get("/teams/{teamId:guid}/apps/{appId:guid}/permissions");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List permission scopes of an application";
+            s.Description = "Returns the permission scopes available to the application's OAuth clients. Bearer auth; requires the application.retrieve scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

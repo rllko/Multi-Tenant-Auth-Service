@@ -26,6 +26,13 @@ public class InviteTenantEndpoint : Endpoint<TenantInviteCreateDto>
         PreProcessor<TenantProcessor<TenantInviteCreateDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.invite")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Invite a tenant to the team";
+            s.Description = "Sends a team invitation to an existing tenant by email. Body: { email, inviteMessage }. 400 when the email is unknown or an invite is already pending. Bearer auth; requires the team.invite scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(TenantInviteCreateDto req, CancellationToken ct)

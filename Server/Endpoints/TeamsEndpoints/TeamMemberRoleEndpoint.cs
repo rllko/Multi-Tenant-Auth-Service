@@ -20,6 +20,14 @@ public class TeamMemberRoleEndpoint : Endpoint<UpdateTenantRoleDto>
         PreProcessor<TenantProcessor<UpdateTenantRoleDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.team.update_roles")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Change a member's role";
+            s.Description = "Assigns a different role to the member. Body: { roleId: int }. Bearer auth; requires the team.update_roles scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["memberId"] = "Tenant id of the member (GUID)";
+        });
     }
 
     public override async Task HandleAsync(UpdateTenantRoleDto req, CancellationToken ct)

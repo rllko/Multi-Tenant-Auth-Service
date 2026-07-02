@@ -23,6 +23,13 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
         Post("/teams/invites/{inviteToken}/accept");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "Accept a team invite";
+            s.Description = "Accepts the invitation identified by its token and joins the team. Only the invited tenant may accept. Bearer auth.";
+            s.Params["inviteToken"] = "Invite token from the invite listing";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

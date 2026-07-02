@@ -24,6 +24,13 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("log.retrieve_all")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Team activity feed";
+            s.Description = "Returns recent events for the team's members (sign-ins, invites, role and application changes) with friendly descriptions, a type for badge coloring, timestamp, and user. Bearer auth; requires the log.retrieve_all scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

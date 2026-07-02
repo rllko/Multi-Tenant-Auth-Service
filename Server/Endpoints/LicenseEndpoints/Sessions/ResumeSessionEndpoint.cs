@@ -19,6 +19,12 @@ public class SessionResumeEndpoint : EndpointWithoutRequest
             60
         );
         PreProcessor<SessionProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "Resume a license session";
+            s.Description = "Resumes a previous end-user license session after an app restart.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

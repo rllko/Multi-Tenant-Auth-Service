@@ -20,6 +20,12 @@ public class TenantPendingInvitesEndpoint : EndpointWithoutRequest<IEnumerable<T
         Get("teams/invites/pending");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "List my pending invites";
+            s.Description = "Returns invitations addressed to the authenticated tenant that are still pending. Bearer auth.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

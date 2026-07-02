@@ -21,6 +21,13 @@ public class TeamScopesEndpoint : EndpointWithoutRequest<IEnumerable<ScopeDto>>
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_roles")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List team permission scopes";
+            s.Description = "Returns every permission scope assignable within the team (id, name, description, impact, resource). Bearer auth; requires the team.fetch_team_roles scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

@@ -21,6 +21,14 @@ public class GetTeamMemberEndpoint : EndpointWithoutRequest<TenantDto>
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_members")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Get a team member";
+            s.Description = "Returns one member of the team (id, name, email, role). Bearer auth; requires the team.fetch_team_members scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["memberId"] = "Tenant id of the member (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

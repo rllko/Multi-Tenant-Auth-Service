@@ -18,6 +18,12 @@ public class TenantRegisterEndpoint(ITenantService tenantService, IAuthLoggerSer
 
         Post("/auth/tenant/register");
         Throttle(5, 60);
+    
+        Summary(s =>
+        {
+            s.Summary = "Register a tenant account";
+            s.Description = "Creates a dashboard account from email, name, and password. Anonymous; rate limited.";
+        });
     }
 
     public override async Task HandleAsync(TenantRegisterRequestDTO req, CancellationToken ct)

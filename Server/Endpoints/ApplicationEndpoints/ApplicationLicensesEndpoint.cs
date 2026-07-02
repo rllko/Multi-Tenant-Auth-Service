@@ -20,6 +20,14 @@ public class ApplicationLicensesEndpoint : EndpointWithoutRequest<IEnumerable<Li
         Get("/teams/{teamId:guid}/apps/{appId:guid}/licenses");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("license.retrieve_info")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List licenses of an application";
+            s.Description = "Returns all licenses issued for the application, including activation, pause state, and expiry (unix seconds). Bearer auth; requires the license.retrieve_info scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
 

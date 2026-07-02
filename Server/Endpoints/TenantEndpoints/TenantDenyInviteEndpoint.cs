@@ -23,6 +23,13 @@ public class TenantDenyInviteEndpoint : EndpointWithoutRequest
         Post("/teams/invites/{inviteToken}/decline");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "Decline a team invite";
+            s.Description = "Declines the invitation identified by its token. Only the invited tenant may decline. Bearer auth.";
+            s.Params["inviteToken"] = "Invite token from the invite listing";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

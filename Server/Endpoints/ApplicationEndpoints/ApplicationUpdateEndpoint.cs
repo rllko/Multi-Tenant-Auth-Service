@@ -26,6 +26,14 @@ public class ApplicationUpdateEndpoint : Endpoint<UpdateApplicationDto, Applicat
         PreProcessor<TenantProcessor<UpdateApplicationDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.update")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Update an application";
+            s.Description = "Partially updates name, description, or status ('active'/'inactive'); omitted fields keep their value. Returns the updated application, 404 when missing. Bearer auth; requires the application.update scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(UpdateApplicationDto req, CancellationToken ct)

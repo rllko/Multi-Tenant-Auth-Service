@@ -14,6 +14,13 @@ internal class CreateEndpoint(ILicenseBuilder licenseBuilder, IDiscordService di
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
         Post("/protected/licenses/{discordId}");
+    
+        Summary(s =>
+        {
+            s.Summary = "Create a license (Discord bot)";
+            s.Description = "Protected Discord-bot operation: creates a license for a Discord user.";
+            s.Params["discordId"] = "Discord user id";
+        });
     }
 
     public override async Task<Results<Ok<LicenseDto>, BadRequest>> ExecuteAsync(

@@ -9,6 +9,12 @@ public class CreateBulkEndpoint(ILicenseBuilder licenseService) : EndpointWithou
     public override void Configure()
     {
         Post("/protected/licenses/bulk");
+    
+        Summary(s =>
+        {
+            s.Summary = "Create licenses in bulk (Discord bot)";
+            s.Description = "Protected Discord-bot operation: creates multiple licenses at once.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

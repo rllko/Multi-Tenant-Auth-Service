@@ -21,6 +21,13 @@ public class TeamSentInvitesEndpoint : EndpointWithoutRequest<IEnumerable<Tenant
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.invite")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List invites sent for a team";
+            s.Description = "Returns the team's outgoing invites with sender name/email, status (pending/accepted/declined/expired/revoked), and expiry. Bearer auth; requires the team.invite scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

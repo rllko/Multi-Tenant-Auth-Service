@@ -13,6 +13,12 @@ public class AuthorizeEndpoint(IAuthorizeResultService authorizeService)
         DontThrowIfValidationFails();
         AllowAnonymous();
         EnableAntiforgery();
+    
+        Summary(s =>
+        {
+            s.Summary = "OAuth authorization endpoint";
+            s.Description = "Standard OAuth authorize step: validates the client and redirects with an authorization code.";
+        });
     }
 
     public override async Task<Results<Ok<AuthorizeResponse>, BadRequest>> ExecuteAsync(AuthorizeRequest req,

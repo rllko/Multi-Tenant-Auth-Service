@@ -20,6 +20,14 @@ public class ApplicationCreateClientEndpoint : Endpoint<CreateApplicationDto, IE
         Post("/teams/{teamId:guid}/apps/{appId:guid}/oauth/clients");
         PreProcessor<TenantProcessor<CreateApplicationDto>>();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.create")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Create an OAuth client for an application";
+            s.Description = "Registers a new OAuth client under the application and returns the application's clients. Bearer auth; requires the application.create scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["appId"] = "Application id (GUID)";
+        });
     }
 
 

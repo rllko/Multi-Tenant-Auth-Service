@@ -21,6 +21,12 @@ public class CreateTeamEndpoint(ITeamService teamsService) : EndpointWithoutRequ
         );
 
         PreProcessor<TenantProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "Create a team";
+            s.Description = "Creates a team owned by the authenticated tenant. Body: { name }. Returns the created team. Bearer auth.";
+        });
     }
 
     public override async Task<IResult> ExecuteAsync(CancellationToken ct)
