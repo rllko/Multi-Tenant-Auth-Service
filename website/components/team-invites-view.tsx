@@ -46,8 +46,10 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {CONSTANTS} from "@/app/const"
 import {invitesApi} from "@/lib/api-service"
 import {TenantInvite} from "@/models/invite"
+import {useTeam} from "@/contexts/team-context"
 
 export function TeamInvitesView() {
+    const {selectedTeam} = useTeam()
     const [invites, setInvites] = useState<TenantInvite[]>([])
     const [sentInvites, setSentInvites] = useState<TenantInvite[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -187,6 +189,12 @@ export function TeamInvitesView() {
         const currentInvites = activeTab === "received" ? invites : sentInvites
 
         return currentInvites.filter((invite) => {
+            // sent invites are scoped to the team selected in the sidebar;
+            // received invites are the tenant's personal inbox across teams
+            // ponytail: matched by team name — DTO carries no teamId; switch when backend exposes it
+            const matchesTeam =
+                activeTab === "received" || !selectedTeam || invite.teamName === selectedTeam.name
+
             const matchesSearch =
                 searchQuery === "" ||
                 invite.teamName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -195,7 +203,7 @@ export function TeamInvitesView() {
 
             const matchesStatus = statusFilter === "all" || invite.status?.toLowerCase() === statusFilter
 
-            return matchesSearch && matchesStatus
+            return matchesTeam && matchesSearch && matchesStatus
         })
     }
 
