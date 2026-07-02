@@ -2,21 +2,22 @@
 
 import {useCallback, useEffect, useState} from "react"
 import Link from "next/link"
-import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from "recharts"
-import {format, formatDistanceToNow} from "date-fns"
+import {formatDistanceToNow} from "date-fns"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Skeleton} from "@/components/ui/skeleton"
-import {ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/chart"
 import {useTeam} from "@/contexts/team-context"
 import {RequireTeam} from "./require-team"
 import {CreateTeamModal} from "./create-team-modal"
-import {dashboardApi} from "@/lib/api-service"
+import {appsApi, dashboardApi, licensesApi} from "@/lib/api-service"
 import {Dashboard} from "@/models/dashboard"
+import {Application} from "@/models/application"
+import {License} from "@/models/license"
 import {cn} from "@/lib/utils"
 import {
     Activity,
     AlertCircle,
+    AlertTriangle,
     ArrowRight,
     KeyRound,
     LogIn,
@@ -28,13 +29,6 @@ import {
     Users,
 } from "lucide-react"
 
-const licenseChartConfig = {
-    count: {
-        label: "Licenses issued",
-        color: "hsl(var(--primary))",
-    },
-}
-
 const activityTypeColors: Record<string, string> = {
     login: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
     create: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -43,8 +37,47 @@ const activityTypeColors: Record<string, string> = {
     permission: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
 }
 
+// license buckets computed client-side from unix-second expiry timestamps
+type AppLicenseStats = {
+    total: number
+    active: number
+    expiringSoon: number
+    expired: number
+    failed?: boolean
+}
+
+type AppWithStats = Application & {stats: AppLicenseStats | null}
+
+const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60
+
+function computeLicenseStats(licenses: License[]): AppLicenseStats {
+    const now = Math.floor(Date.now() / 1000)
+
+    let active = 0
+    let expiringSoon = 0
+    let expired = 0
+
+    for (const license of licenses) {
+        if (license.expirationDate <= now) {
+            expired++
+            continue
+        }
+
+        if (license.activated && !license.paused) {
+            active++
+        }
+
+        if (!license.paused && license.expirationDate <= now + SEVEN_DAYS_SECONDS) {
+            expiringSoon++
+        }
+    }
+
+    return {total: licenses.length, active, expiringSoon, expired}
+}
+
 export function DashboardView() {
     const [dashboard, setDashboard] = useState<Dashboard | null>(null)
+    const [apps, setApps] = useState<AppWithStats[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const {selectedTeam} = useTeam()
@@ -55,9 +88,33 @@ export function DashboardView() {
         try {
             setIsLoading(true)
 
-            const data: Dashboard = await dashboardApi.getDashboard(selectedTeam.id)
+            const [overview, teamApps] = await Promise.all([
+                dashboardApi.getDashboard(selectedTeam.id),
+                appsApi.getApps(selectedTeam.id),
+            ])
 
-            setDashboard(data)
+            setDashboard(overview)
+
+            const appList = Array.isArray(teamApps) ? teamApps : []
+
+            // show cards immediately, license buckets resolve per app
+            setApps(appList.map((app) => ({...app, stats: null})))
+
+            const withStats: AppWithStats[] = await Promise.all(
+                appList.map(async (app) => {
+                    try {
+                        const licenses = await licensesApi.getLicenses(selectedTeam.id, app.id)
+
+                        return {...app, stats: computeLicenseStats(Array.isArray(licenses) ? licenses : [])}
+                    } catch (err) {
+                        console.error(`Failed to fetch licenses for app ${app.id}:`, err)
+
+                        return {...app, stats: {total: 0, active: 0, expiringSoon: 0, expired: 0, failed: true}}
+                    }
+                }),
+            )
+
+            setApps(withStats)
             setError(null)
         } catch (err) {
             console.error("Failed to fetch dashboard:", err)
@@ -77,7 +134,9 @@ export function DashboardView() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     {selectedTeam && (
-                        <p className="text-muted-foreground mt-1">What&apos;s happening in {selectedTeam.name}</p>
+                        <p className="text-muted-foreground mt-1">
+                            Your applications in {selectedTeam.name} at a glance
+                        </p>
                     )}
                 </div>
 
@@ -122,120 +181,76 @@ export function DashboardView() {
                     <DashboardSkeleton/>
                 ) : dashboard ? (
                     <>
-                        {/* Stat cards */}
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <StatCard
-                                title="Members"
-                                value={dashboard.members}
-                                subtext={`${dashboard.roles} role${dashboard.roles === 1 ? "" : "s"} defined`}
+                        {/* Compact team strip */}
+                        <div
+                            className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border bg-card px-4 py-3">
+                            <TeamStat
                                 icon={<Users className="h-4 w-4"/>}
+                                value={dashboard.members}
+                                label={dashboard.members === 1 ? "member" : "members"}
                                 href="/dashboard/team/members"
                             />
-                            <StatCard
-                                title="Applications"
-                                value={dashboard.apps}
-                                subtext={
-                                    dashboard.appsInactive > 0
-                                        ? `${dashboard.appsInactive} inactive`
-                                        : "All active"
-                                }
-                                icon={<Package className="h-4 w-4"/>}
-                                href="/dashboard/apps"
+                            <TeamStat
+                                icon={<Shield className="h-4 w-4"/>}
+                                value={dashboard.roles}
+                                label={dashboard.roles === 1 ? "role" : "roles"}
+                                href="/dashboard/team/roles"
                             />
-                            <StatCard
-                                title="Licenses"
-                                value={dashboard.licensesTotal}
-                                subtext={`${dashboard.licensesActive} active · ${dashboard.licensesPaused} paused`}
-                                icon={<KeyRound className="h-4 w-4"/>}
-                                href="/dashboard/apps"
-                            />
-                            <StatCard
-                                title="Pending invites"
-                                value={dashboard.pendingInvites}
-                                subtext={
-                                    dashboard.pendingInvites > 0 ? "Awaiting response" : "No invites outstanding"
-                                }
+                            <TeamStat
                                 icon={<Mail className="h-4 w-4"/>}
+                                value={dashboard.pendingInvites}
+                                label="pending invites"
                                 href="/dashboard/team/invites"
                             />
+                            <TeamStat
+                                icon={<LogIn className="h-4 w-4"/>}
+                                value={dashboard.signInsLast24H}
+                                label="sign-ins · 24h"
+                                href="/dashboard/team/activity"
+                            />
                         </div>
 
-                        {/* Sign-ins strip */}
-                        <div
-                            className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
-                            <div
-                                className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                <LogIn className="h-4 w-4"/>
-                            </div>
-                            <div>
-                                <span className="font-semibold">{dashboard.signInsLast24H}</span>{" "}
-                                <span className="text-muted-foreground">
-                                    sign-in{dashboard.signInsLast24H === 1 ? "" : "s"} by team members in the last 24 hours
-                                </span>
-                            </div>
-                            <Button variant="ghost" size="sm" className="ml-auto" asChild>
-                                <Link href="/dashboard/team/activity">
-                                    Security events
-                                    <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
-                                </Link>
-                            </Button>
-                        </div>
+                        <div className="grid gap-4 lg:grid-cols-3">
+                            {/* Application cards */}
+                            <div className="lg:col-span-2">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h2 className="text-lg font-semibold">Applications</h2>
+                                    <Button variant="ghost" size="sm" asChild>
+                                        <Link href="/dashboard/apps">
+                                            Manage apps
+                                            <ArrowRight className="ml-1.5 h-3.5 w-3.5"/>
+                                        </Link>
+                                    </Button>
+                                </div>
 
-                        {/* Chart + activity */}
-                        <div className="grid gap-4 lg:grid-cols-7">
-                            <Card className="lg:col-span-4">
-                                <CardHeader>
-                                    <CardTitle>License issuance</CardTitle>
-                                    <CardDescription>Licenses created in the last 30 days</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {dashboard.licensesPerDay.length === 0 ? (
-                                        <EmptyPanel
-                                            icon={<KeyRound className="h-8 w-8"/>}
-                                            title="No licenses yet"
-                                            description="Licenses issued by your applications will chart here."
-                                            actionLabel="Go to applications"
-                                            actionHref="/dashboard/apps"
-                                        />
-                                    ) : (
-                                        <ChartContainer config={licenseChartConfig} className="h-[240px] w-full">
-                                            <AreaChart
-                                                data={dashboard.licensesPerDay.map((day) => ({
-                                                    ...day,
-                                                    label: format(new Date(day.date), "MMM d"),
-                                                }))}
-                                                margin={{left: 0, right: 12, top: 8}}
-                                            >
-                                                <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                                                <XAxis
-                                                    dataKey="label"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    minTickGap={24}
-                                                />
-                                                <YAxis
-                                                    allowDecimals={false}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    width={32}
-                                                />
-                                                <ChartTooltip content={<ChartTooltipContent/>}/>
-                                                <Area
-                                                    dataKey="count"
-                                                    type="monotone"
-                                                    fill="var(--color-count)"
-                                                    fillOpacity={0.15}
-                                                    stroke="var(--color-count)"
-                                                    strokeWidth={2}
-                                                />
-                                            </AreaChart>
-                                        </ChartContainer>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                {apps.length === 0 ? (
+                                    <Card>
+                                        <CardContent className="flex flex-col items-center justify-center py-14 text-center">
+                                            <Package className="h-10 w-10 text-muted-foreground/60 mb-3"/>
+                                            <p className="font-medium">No applications yet</p>
+                                            <p className="text-sm text-muted-foreground mt-1 max-w-[300px]">
+                                                Create your first application to start issuing licenses and
+                                                authenticating users.
+                                            </p>
+                                            <Button size="sm" className="mt-4" asChild>
+                                                <Link href="/dashboard/apps">
+                                                    <Plus className="mr-1.5 h-4 w-4"/>
+                                                    Create your first application
+                                                </Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ) : (
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {apps.map((app) => (
+                                            <AppCard key={app.id} app={app}/>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
-                            <Card className="lg:col-span-3">
+                            {/* Recent activity */}
+                            <Card className="lg:col-span-1 h-fit">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                     <div>
                                         <CardTitle>Recent activity</CardTitle>
@@ -250,11 +265,13 @@ export function DashboardView() {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {dashboard.recentActivity.length === 0 ? (
-                                        <EmptyPanel
-                                            icon={<Activity className="h-8 w-8"/>}
-                                            title="No activity yet"
-                                            description="Team events like sign-ins, invites, and app changes will show here."
-                                        />
+                                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                                            <Activity className="h-8 w-8 text-muted-foreground/60 mb-3"/>
+                                            <p className="font-medium">No activity yet</p>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                Team events will show here.
+                                            </p>
+                                        </div>
                                     ) : (
                                         dashboard.recentActivity.map((activity, index) => (
                                             <div key={index} className="flex items-start gap-3">
@@ -286,6 +303,93 @@ export function DashboardView() {
     )
 }
 
+function AppCard({app}: {app: AppWithStats}) {
+    const isActive = (app.status ?? "active") === "active"
+
+    return (
+        <Link href={`/dashboard/apps/${app.id}`} className="block group">
+            <Card className="transition-colors group-hover:border-primary/40 h-full">
+                <CardContent className="p-5 flex flex-col gap-4 h-full">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={cn(
+                                        "h-2 w-2 rounded-full shrink-0",
+                                        isActive ? "bg-green-500" : "bg-muted-foreground/40",
+                                    )}
+                                    title={isActive ? "Active" : "Inactive"}
+                                />
+                                <p className="font-semibold truncate">{app.name}</p>
+                            </div>
+                            {app.description && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{app.description}</p>
+                            )}
+                        </div>
+                        <Package
+                            className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0"/>
+                    </div>
+
+                    {app.stats === null ? (
+                        <div className="space-y-2">
+                            <Skeleton className="h-8 w-20"/>
+                            <Skeleton className="h-3 w-32"/>
+                        </div>
+                    ) : app.stats.failed ? (
+                        <p className="text-xs text-muted-foreground">License counts unavailable</p>
+                    ) : (
+                        <div className="mt-auto">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-bold tracking-tight">{app.stats.active}</span>
+                                <span className="text-xs text-muted-foreground">
+                                    active {app.stats.active === 1 ? "license" : "licenses"} of {app.stats.total}
+                                </span>
+                            </div>
+
+                            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                                {app.stats.expiringSoon > 0 && (
+                                    <span
+                                        className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                                        <AlertTriangle className="h-3.5 w-3.5"/>
+                                        {app.stats.expiringSoon} expiring within 7 days
+                                    </span>
+                                )}
+                                <span className="flex items-center gap-1 text-muted-foreground">
+                                    <KeyRound className="h-3.5 w-3.5"/>
+                                    {app.stats.expired} expired
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </Link>
+    )
+}
+
+function TeamStat({
+                      icon,
+                      value,
+                      label,
+                      href,
+                  }: {
+    icon: React.ReactNode
+    value: number
+    label: string
+    href: string
+}) {
+    return (
+        <Link
+            href={href}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+            <span className="text-muted-foreground/70">{icon}</span>
+            <span className="font-semibold text-foreground">{value}</span>
+            <span>{label}</span>
+        </Link>
+    )
+}
+
 function formatTimeAgo(timestamp: string) {
     try {
         return formatDistanceToNow(new Date(timestamp), {addSuffix: true})
@@ -294,76 +398,17 @@ function formatTimeAgo(timestamp: string) {
     }
 }
 
-function StatCard({
-                      title,
-                      value,
-                      subtext,
-                      icon,
-                      href,
-                  }: {
-    title: string
-    value: number
-    subtext: string
-    icon: React.ReactNode
-    href: string
-}) {
-    return (
-        <Link href={href} className="block group">
-            <Card className="transition-colors group-hover:border-primary/40">
-                <CardContent className="p-5">
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                        <span className="text-muted-foreground group-hover:text-primary transition-colors">
-                            {icon}
-                        </span>
-                    </div>
-                    <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{subtext}</p>
-                </CardContent>
-            </Card>
-        </Link>
-    )
-}
-
-function EmptyPanel({
-                        icon,
-                        title,
-                        description,
-                        actionLabel,
-                        actionHref,
-                    }: {
-    icon: React.ReactNode
-    title: string
-    description: string
-    actionLabel?: string
-    actionHref?: string
-}) {
-    return (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="text-muted-foreground/60 mb-3">{icon}</div>
-            <p className="font-medium">{title}</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-[260px]">{description}</p>
-            {actionLabel && actionHref && (
-                <Button variant="outline" size="sm" className="mt-4" asChild>
-                    <Link href={actionHref}>{actionLabel}</Link>
-                </Button>
-            )}
-        </div>
-    )
-}
-
 function DashboardSkeleton() {
     return (
         <div className="flex flex-col gap-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {Array.from({length: 4}).map((_, i) => (
-                    <Skeleton key={i} className="h-[118px] rounded-lg"/>
-                ))}
-            </div>
-            <Skeleton className="h-[58px] rounded-lg"/>
-            <div className="grid gap-4 lg:grid-cols-7">
-                <Skeleton className="h-[340px] rounded-lg lg:col-span-4"/>
-                <Skeleton className="h-[340px] rounded-lg lg:col-span-3"/>
+            <Skeleton className="h-[52px] rounded-lg"/>
+            <div className="grid gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
+                    {Array.from({length: 4}).map((_, i) => (
+                        <Skeleton key={i} className="h-[160px] rounded-lg"/>
+                    ))}
+                </div>
+                <Skeleton className="h-[340px] rounded-lg"/>
             </div>
         </div>
     )
