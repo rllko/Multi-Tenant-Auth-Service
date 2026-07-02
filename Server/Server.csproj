@@ -28,9 +28,7 @@
         <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.1-dev-02317"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953"/>
         <PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.1"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1"/>
+        <PackageReference Include="FastEndpoints.Swagger" Version="6.1.0-beta.13" />
 
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
     </ItemGroup>
