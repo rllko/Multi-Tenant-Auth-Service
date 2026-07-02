@@ -26,6 +26,13 @@ public class ApplicationCreateEndpoint : Endpoint<CreateApplicationDto, Applicat
         PreProcessor<TenantProcessor<CreateApplicationDto>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.create")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Create an application";
+            s.Description = "Creates an application owned by the team and returns it (id, name, description, status). Name is required. Bearer auth; requires the application.create scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CreateApplicationDto req, CancellationToken ct)

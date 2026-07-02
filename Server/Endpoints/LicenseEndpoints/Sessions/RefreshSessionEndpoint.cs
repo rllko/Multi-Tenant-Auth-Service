@@ -20,6 +20,12 @@ internal class RefreshSessionEndpoint(ILicenseSessionService sessionService)
             20,
             60
         );
+    
+        Summary(s =>
+        {
+            s.Summary = "Refresh a license session";
+            s.Description = "Extends the current end-user license session and rotates its token.";
+        });
     }
 
     public override async Task<Results<Ok<string>, BadRequest<ValidationFailed>>> ExecuteAsync(

@@ -38,6 +38,12 @@ public class LoginEndpoint : Endpoint<LoginRequest>
     {
         Post("/auth/tenant/login");
         AllowAnonymous();
+    
+        Summary(s =>
+        {
+            s.Summary = "Log in to the dashboard";
+            s.Description = "Authenticates a tenant with email and password. Returns a bearer JWT (use it in the Authorization header), expiry, and the tenant profile. Anonymous.";
+        });
     }
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)

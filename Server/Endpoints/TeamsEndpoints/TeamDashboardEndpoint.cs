@@ -13,6 +13,13 @@ public class TeamDashboardEndpoint(IDashboardService dashboardService) : Endpoin
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.fetch_team_members")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Team dashboard overview";
+            s.Description = "Aggregated overview for the dashboard home: member/role counts, app counts by status, license stats and per-day issuance, pending invites, sign-ins in the last 24h, and recent activity. Bearer auth; requires the team.fetch_team_members scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

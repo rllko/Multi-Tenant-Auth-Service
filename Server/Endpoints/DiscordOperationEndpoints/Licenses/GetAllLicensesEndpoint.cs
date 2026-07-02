@@ -11,6 +11,12 @@ public class GetAllLicensesEndpoint(ILicenseService licenseService) : EndpointWi
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
         Get("/protected/licenses");
+    
+        Summary(s =>
+        {
+            s.Summary = "List all licenses (Discord bot)";
+            s.Description = "Protected Discord-bot operation: returns every license.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

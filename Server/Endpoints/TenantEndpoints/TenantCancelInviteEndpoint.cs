@@ -23,6 +23,13 @@ public class TenantCancelInviteEndpoint : EndpointWithoutRequest
         Post("/teams/invites/{inviteToken}/cancel");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "Cancel a sent invite";
+            s.Description = "Revokes a pending invitation. Only the tenant that sent the invite may cancel it. Bearer auth.";
+            s.Params["inviteToken"] = "Invite token from the sent invites listing";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

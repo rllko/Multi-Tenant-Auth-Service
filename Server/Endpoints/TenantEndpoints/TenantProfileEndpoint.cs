@@ -14,6 +14,12 @@ public class TenantProfileEndpoint(ITenantService tenantService) : EndpointWitho
         Post("/me");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
+    
+        Summary(s =>
+        {
+            s.Summary = "Get my profile";
+            s.Description = "Returns the authenticated tenant's profile (id, name, email). Bearer auth.";
+        });
     }
 
 

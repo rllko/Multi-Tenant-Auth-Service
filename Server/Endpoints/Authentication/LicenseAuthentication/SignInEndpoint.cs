@@ -20,6 +20,12 @@ public class SignInEndpoint(
             60
         );
         Post("auth/license/login");
+    
+        Summary(s =>
+        {
+            s.Summary = "Sign in with a license";
+            s.Description = "Authenticates an end user of your application by license credentials and starts a license session.";
+        });
     }
 
     public override async Task<Results<JsonHttpResult<string>, BadRequest<ValidationFailed>>> ExecuteAsync(

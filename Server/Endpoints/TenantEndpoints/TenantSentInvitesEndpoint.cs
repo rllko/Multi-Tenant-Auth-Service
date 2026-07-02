@@ -22,6 +22,12 @@ public class TenantSentInvitesEndpoint : EndpointWithoutRequest<IEnumerable<Tena
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("global.invite_management")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List invites I sent";
+            s.Description = "Returns every invitation created by the authenticated tenant across all teams. Prefer GET /teams/{teamId}/invites/sent for team-scoped listings. Bearer auth; requires the global.invite_management scope.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

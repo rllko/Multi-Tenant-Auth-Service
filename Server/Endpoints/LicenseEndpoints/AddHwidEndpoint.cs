@@ -20,6 +20,12 @@ public class AddHwidEndpoint(ILicenseSessionService sessionService)
     {
         AuthSchemes(LicenseSessionAuth.SchemeName);
         Post("protected/session/hwid");
+    
+        Summary(s =>
+        {
+            s.Summary = "Bind a hardware id to a session";
+            s.Description = "Attaches a HWID to the current license session so future sign-ins are locked to the device.";
+        });
     }
 
     public override async Task<Results<Ok<LicenseSession>, BadRequest<ValidationFailed>>> ExecuteAsync(

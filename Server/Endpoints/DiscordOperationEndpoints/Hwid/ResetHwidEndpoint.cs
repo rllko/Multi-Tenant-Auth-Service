@@ -11,6 +11,12 @@ public class ResetHwidEndpoint(ILicenseService licenseService) : EndpointWithout
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
         Delete("/protected/{discordId}/licenses/{license}");
+    
+        Summary(s =>
+        {
+            s.Summary = "Reset session hardware id (Discord bot)";
+            s.Description = "Protected Discord-bot operation: clears the HWID bound to a license session.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

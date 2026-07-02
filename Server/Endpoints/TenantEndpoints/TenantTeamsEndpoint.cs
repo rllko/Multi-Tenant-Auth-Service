@@ -16,6 +16,12 @@ public class TenantTeamsEndpoint(ITeamService teamsService) : EndpointWithoutReq
             60
         );
         PreProcessor<TenantProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "List my teams";
+            s.Description = "Returns the teams the authenticated tenant belongs to. Use the team id for all /teams/{teamId}/... calls. Bearer auth.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

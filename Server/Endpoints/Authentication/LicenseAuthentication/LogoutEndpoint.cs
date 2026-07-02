@@ -17,6 +17,12 @@ public class LogoutEndpoint(ILicenseSessionService sessionService) : EndpointWit
             60
         );
         PreProcessor<SessionProcessor<EmptyRequest>>();
+    
+        Summary(s =>
+        {
+            s.Summary = "End a license session";
+            s.Description = "Invalidates the current end-user license session token.";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

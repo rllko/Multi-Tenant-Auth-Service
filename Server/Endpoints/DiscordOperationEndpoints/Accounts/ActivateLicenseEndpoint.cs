@@ -19,6 +19,12 @@ public class ActivateLicenseEndpoint(
     {
         AuthSchemes(DiscordBasicAuth.SchemeName);
         Post("/protected/licenses/activate");
+    
+        Summary(s =>
+        {
+            s.Summary = "Activate a license (Discord bot)";
+            s.Description = "Protected Discord-bot operation: activates a license with username/password/email for a Discord user.";
+        });
     }
 
     public override async Task<Results<Ok<LicenseDto>, BadRequest<ValidationFailed>>> ExecuteAsync(

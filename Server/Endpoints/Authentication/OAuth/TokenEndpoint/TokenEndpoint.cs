@@ -12,6 +12,12 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
         Post("auth/token");
         AllowAnonymous();
         EnableAntiforgery();
+    
+        Summary(s =>
+        {
+            s.Summary = "OAuth token endpoint";
+            s.Description = "Exchanges an authorization code (or configured grant) for an access token.";
+        });
     }
 
     public override async Task<Results<Ok<TokenResponse>, BadRequest>> ExecuteAsync(TokenRequest req,

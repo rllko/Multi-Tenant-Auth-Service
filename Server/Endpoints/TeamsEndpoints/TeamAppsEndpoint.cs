@@ -21,6 +21,13 @@ public class TeamAppsEndpoint : EndpointWithoutRequest<IEnumerable<ApplicationDt
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("application.retrieve")));
+    
+        Summary(s =>
+        {
+            s.Summary = "List team applications";
+            s.Description = "Returns the applications owned by the team (id, name, description, status). Bearer auth; requires the application.retrieve scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+        });
     }
 
 

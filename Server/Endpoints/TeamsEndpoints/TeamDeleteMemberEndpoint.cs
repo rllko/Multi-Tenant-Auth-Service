@@ -26,6 +26,14 @@ public class TeamDeleteMemberEndpoint : EndpointWithoutRequest<IEnumerable<Tenan
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
         Options(x => x.WithMetadata(new RequiresScopeAttribute("team.kick")));
+    
+        Summary(s =>
+        {
+            s.Summary = "Remove a team member";
+            s.Description = "Removes the tenant from the team. Bearer auth; requires the team.kick scope.";
+            s.Params["teamId"] = "Team id (GUID)";
+            s.Params["memberId"] = "Tenant id of the member (GUID)";
+        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)
