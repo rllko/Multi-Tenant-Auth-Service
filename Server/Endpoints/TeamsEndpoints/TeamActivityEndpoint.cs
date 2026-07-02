@@ -30,6 +30,8 @@ public class TeamActivityEndpoint(ITeamService teamService, ILoggerService logge
             s.Summary = "Team activity feed";
             s.Description = "Returns recent events for the team's members (sign-ins, invites, role and application changes) with friendly descriptions, a type for badge coloring, timestamp, and user. Bearer auth; requires the log.retrieve_all scope.";
             s.Params["teamId"] = "Team id (GUID)";
+            s.Response(200, "Array of events: { description, type (login|create|update|delete|permission|action), timestamp, user: { name } }");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

@@ -27,6 +27,8 @@ public class TeamMemberRoleEndpoint : Endpoint<UpdateTenantRoleDto>
             s.Description = "Assigns a different role to the member. Body: { roleId: int }. Bearer auth; requires the team.update_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["memberId"] = "Tenant id of the member (GUID)";
+            s.Response(200, "Role updated");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

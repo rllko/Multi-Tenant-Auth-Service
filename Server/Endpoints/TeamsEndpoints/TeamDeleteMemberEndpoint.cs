@@ -33,6 +33,9 @@ public class TeamDeleteMemberEndpoint : EndpointWithoutRequest<IEnumerable<Tenan
             s.Description = "Removes the tenant from the team. Bearer auth; requires the team.kick scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["memberId"] = "Tenant id of the member (GUID)";
+            s.Response(200, "Member removed");
+            s.Response(400, "Member not in team");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

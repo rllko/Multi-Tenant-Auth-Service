@@ -33,6 +33,9 @@ public class ApplicationUpdateEndpoint : Endpoint<UpdateApplicationDto, Applicat
             s.Description = "Partially updates name, description, or status ('active'/'inactive'); omitted fields keep their value. Returns the updated application, 404 when missing. Bearer auth; requires the application.update scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
+            s.Response(200, "The updated application: { id, name, description, status }");
+            s.Response(404, "Application not found");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

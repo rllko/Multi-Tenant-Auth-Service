@@ -33,6 +33,9 @@ public class ApplicationDeleteEndpoint : EndpointWithoutRequest
             s.Description = "Deletes the application and cascades its licenses, sessions, hwids, and OAuth clients. 404 when the application does not exist. Bearer auth; requires the application.delete scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
+            s.Response(200, "Deleted");
+            s.Response(404, "Application not found");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

@@ -27,6 +27,8 @@ public class ApplicationCreateClientEndpoint : Endpoint<CreateApplicationDto, IE
             s.Description = "Registers a new OAuth client under the application and returns the application's clients. Bearer auth; requires the application.create scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
+            s.Response(200, "Array of the application's OAuth clients after creation");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

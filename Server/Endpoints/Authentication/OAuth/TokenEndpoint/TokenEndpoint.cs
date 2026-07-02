@@ -17,6 +17,8 @@ public class TokenEndpoint(IAuthorizeResultService authorizeService)
         {
             s.Summary = "OAuth token endpoint";
             s.Description = "Exchanges an authorization code (or configured grant) for an access token.";
+            s.Response(200, "{ access_token, token_type, expires_in }");
+            s.Response(400, "Invalid grant or client");
         });
     }
 

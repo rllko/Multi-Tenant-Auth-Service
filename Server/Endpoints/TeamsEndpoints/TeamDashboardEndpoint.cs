@@ -19,6 +19,8 @@ public class TeamDashboardEndpoint(IDashboardService dashboardService) : Endpoin
             s.Summary = "Team dashboard overview";
             s.Description = "Aggregated overview for the dashboard home: member/role counts, app counts by status, license stats and per-day issuance, pending invites, sign-ins in the last 24h, and recent activity. Bearer auth; requires the team.fetch_team_members scope.";
             s.Params["teamId"] = "Team id (GUID)";
+            s.Response(200, "{ members, roles, apps, appsInactive, licensesTotal, licensesActive, licensesPaused, pendingInvites, signInsLast24H, licensesPerDay: [{ date, count }], recentActivity: [{ description, type, timestamp, userName }] }");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

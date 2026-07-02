@@ -14,6 +14,7 @@ public class CreateBulkEndpoint(ILicenseBuilder licenseService) : EndpointWithou
         {
             s.Summary = "Create licenses in bulk (Discord bot)";
             s.Description = "Protected Discord-bot operation: creates multiple licenses at once.";
+            s.Response(200, "Array of created license keys");
         });
     }
 

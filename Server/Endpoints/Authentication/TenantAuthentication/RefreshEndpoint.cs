@@ -28,6 +28,8 @@ public class TenantRefreshEndpoint(ITenantService tenantService, IAuthLoggerServ
         {
             s.Summary = "Refresh the tenant session";
             s.Description = "Refreshes the tenant session using the refresh token claim and returns the renewed session info.";
+            s.Response(200, "Renewed session info");
+            s.Response(400, "Refresh token invalid or expired");
         });
     }
 

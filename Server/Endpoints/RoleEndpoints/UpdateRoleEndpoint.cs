@@ -20,6 +20,8 @@ public class UpdateRoleEndpoint(IRoleService roleService) : Endpoint<UpdateRoleD
             s.Description = "Updates a team role's attributes. Currently a stub that returns 200 without persisting. Bearer auth; requires the team.update_roles scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["roleId"] = "Role id (integer)";
+            s.Response(200, "OK (stub, nothing persisted yet)");
+            s.Response(403, "Not a team member or missing scope");
         });
     }
 

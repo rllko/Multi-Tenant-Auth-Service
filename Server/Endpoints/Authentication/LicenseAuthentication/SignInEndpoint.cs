@@ -25,6 +25,8 @@ public class SignInEndpoint(
         {
             s.Summary = "Sign in with a license";
             s.Description = "Authenticates an end user of your application by license credentials and starts a license session.";
+            s.Response(200, "License session with session token for subsequent calls");
+            s.Response(400, "Invalid credentials or expired license");
         });
     }
 
