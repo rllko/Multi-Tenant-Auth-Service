@@ -221,7 +221,7 @@ export function ApplicationsView() {
             if (selectedApp) {
                 // Update existing app
                 const updatedApp = await apiService.apps.updateApp(selectedTeam.id, selectedApp.id, appData)
-                setApps(apps.map((app) => (app.id === selectedApp.id ? {...app, ...updatedApp} : app)))
+                setApps(apps.map((app) => (app.id === selectedApp.id ? updatedApp : app)))
 
                 toast({
                     title: "Application updated",
@@ -237,7 +237,6 @@ export function ApplicationsView() {
                     description: `The application "${newApp.name}" has been created successfully.`,
                 })
             }
-            window.dispatchEvent(new Event("apps-changed"))
         } catch (err) {
             toast({
                 title: "Error",
@@ -262,7 +261,6 @@ export function ApplicationsView() {
             setLoading(true)
             await apiService.apps.deleteApp(selectedTeam.id, appId)
             setApps(apps.filter((app) => app.id !== appId))
-            window.dispatchEvent(new Event("apps-changed"))
 
             toast({
                 title: "Application deleted",
@@ -291,7 +289,7 @@ export function ApplicationsView() {
                 status: newStatus,
             })
 
-            setApps(apps.map((app) => (app.id === appId ? {...app, ...updatedApp} : app)))
+            setApps(apps.map((app) => (app.id === appId ? updatedApp : app)))
 
             toast({
                 title: `Application ${newStatus}`,
@@ -327,7 +325,7 @@ export function ApplicationsView() {
                 regenerateCredentials: true,
             })
 
-            setApps(apps.map((app) => (app.id === appId ? {...app, ...updatedApp} : app)))
+            setApps(apps.map((app) => (app.id === appId ? updatedApp : app)))
 
             toast({
                 title: "Credentials regenerated",

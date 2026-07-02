@@ -22,7 +22,10 @@ import {authApi} from "@/lib/api-service"
 import {Tenant} from "@/models/tenant"
 import {CONSTANTS} from "@/app/const"
 
-export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
+export function DashboardHeader({toggleSidebar, isSidebarOpen}: {
+    toggleSidebar: () => void
+    isSidebarOpen: boolean
+}) {
     const router = useRouter()
     const [showSearch, setShowSearch] = useState(false)
     const {toast} = useToast()
@@ -75,7 +78,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
 
     return (
         <header
-            className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-authio-dark-border bg-authio-dark px-4">
+            className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-card px-4">
             <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 md:hidden">
@@ -87,7 +90,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                             <SelectTrigger
                                 className="w-[180px] h-8 border-none bg-transparent hover:bg-secondary focus:ring-0">
                                 <div className="flex items-center gap-2">
-                                    <Building className="h-4 w-4 text-authio-blue"/>
+                                    <Building className="h-4 w-4 text-primary"/>
                                     <span className="text-sm font-medium">{selectedTeam?.name ?? "Select team"}</span>
                                 </div>
                             </SelectTrigger>
@@ -95,7 +98,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                                 {teams.map((team) => (
                                     <SelectItem key={team.id} value={team.id}>
                                         <div className="flex items-center gap-2">
-                                            <Building className="h-4 w-4 text-authio-blue"/>
+                                            <Building className="h-4 w-4 text-primary"/>
                                             <span>{team.name}</span>
                                         </div>
                                     </SelectItem>
@@ -111,7 +114,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                     <Input
                         type="search"
                         placeholder="Search..."
-                        className="w-full bg-authio-dark-card border-authio-dark-border pl-8 h-9 text-sm"
+                        className="w-full bg-muted/50 border-border pl-8 h-9 text-sm"
                     />
                 </div>
 
@@ -124,7 +127,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild className="md:hidden">
                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Building className="h-4 w-4 text-authio-blue"/>
+                                <Building className="h-4 w-4 text-primary"/>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 md:hidden">
@@ -136,7 +139,7 @@ export function DashboardHeader({toggleSidebar, isSidebarOpen}) {
                                     onClick={() => setSelectedTeam(team)}
                                     className={selectedTeam?.id === team.id ? "bg-secondary" : ""}
                                 >
-                                    <Building className="mr-2 h-4 w-4 text-authio-blue"/>
+                                    <Building className="mr-2 h-4 w-4 text-primary"/>
                                     <span>{team.name}</span>
                                 </DropdownMenuItem>
                             ))}

@@ -93,7 +93,7 @@ public class InviteService(
                        tenant_invite_statuses.name as Status,
                        ti.expires_at as ExpiresAt,
                        ti.created_at as CreatedAt
-                FROM tenant_invites ti 
+                FROM tenant_invites ti
                 JOIN teams on ti.team_id = teams.id
                 JOIN tenant_invite_statuses on ti.status = tenant_invite_statuses.id
                 JOIN tenants on teams.created_by = tenants.id
@@ -103,6 +103,29 @@ public class InviteService(
         using var conn = await connectionFactory.CreateConnectionAsync();
 
         return await conn.QueryAsync<TenantInviteDto>(sql, new { TenantId = tenantId });
+    }
+
+    public async Task<IEnumerable<TenantInviteDto>> GetInvitesSentByTeamAsync(Guid teamId)
+    {
+        const string sql =
+            """
+                SELECT ti.invite_token as InviteToken,
+                       tenants.name as CreatedBy,
+                       teams.name as TeamName,
+                       tenants.email as CreatedByEmail,
+                       tenant_invite_statuses.name as Status,
+                       ti.expires_at as ExpiresAt,
+                       ti.created_at as CreatedAt
+                FROM tenant_invites ti
+                JOIN teams on ti.team_id = teams.id
+                JOIN tenant_invite_statuses on ti.status = tenant_invite_statuses.id
+                JOIN tenants on ti.created_by = tenants.id
+                WHERE ti.team_id = @TeamId;
+            """;
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        return await conn.QueryAsync<TenantInviteDto>(sql, new { TeamId = teamId });
     }
 
     public async Task<Option<TenantInvite>> CreateInviteAsync(string email,
@@ -218,6 +241,19 @@ public class InviteService(
         return affected > 0;
     }
 
+    public async Task<int> CountPendingInvitesByTeamAsync(Guid teamId)
+    {
+        const string sql = @"
+            SELECT count(*)
+            FROM tenant_invites ti
+            JOIN tenant_invite_statuses s ON ti.status = s.id
+            WHERE ti.team_id = @TeamId
+              AND s.slug = 'PENDING';";
+
+        using var conn = await connectionFactory.CreateConnectionAsync();
+
+        return await conn.ExecuteScalarAsync<int>(sql, new { TeamId = teamId });
+    }
     public async Task<bool> RevokeInviteAsync(string token, IDbTransaction? transaction = null)
     {
         const string sql = @"
@@ -234,5 +270,5 @@ public class InviteService(
 
         return affected > 0;
     }
-
+    
 }

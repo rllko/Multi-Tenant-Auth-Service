@@ -13,12 +13,14 @@ public interface IInviteService
     Task<IEnumerable<TenantInviteDto>> GetInvitesByTenantIdAsync(Guid tenantId);
     Task<IEnumerable<TenantInviteDto>> GetInvitesPendingByTenantIdAsync(Guid tenantId);
     Task<IEnumerable<TenantInviteDto>> GetInvitesSentByTenantIdAsync(Guid tenantId);
+    Task<IEnumerable<TenantInviteDto>> GetInvitesSentByTeamAsync(Guid teamId);
 
     Task<bool> AcceptInviteAsync(string token, Guid teamId, Guid userId, Guid invitedBy,
         IDbTransaction? transaction = null);
 
     Task<bool> DeclineInviteAsync(string token, IDbTransaction? transaction = null);
 
+    Task<int> CountPendingInvitesByTeamAsync(Guid teamId);
     Task<bool> RevokeInviteAsync(string token, IDbTransaction? transaction = null);
 
 }

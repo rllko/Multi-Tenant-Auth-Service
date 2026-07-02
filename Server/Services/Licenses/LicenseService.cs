@@ -274,4 +274,41 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         return Option<IEnumerable<LicenseDto>>.Some(licenses);
     }
+
+    public async Task<LicenseStats> GetLicenseStatsByTeamAsync(Guid teamId)
+    {
+        const string sql = @"
+            SELECT count(*)::int as Total,
+                   (count(*) FILTER (WHERE l.activated AND (l.paused IS NOT TRUE)))::int as Active,
+                   (count(*) FILTER (WHERE l.paused IS TRUE))::int as Paused
+            FROM licenses l
+            JOIN applications a ON l.application = a.id
+            WHERE a.team = @TeamId;";
+
+        using var connection = await connectionFactory.CreateConnectionAsync();
+
+        return await connection.QuerySingleAsync<LicenseStats>(sql, new { TeamId = teamId });
+    }
+
+    public async Task<IEnumerable<LicensesPerDay>> GetLicensesPerDayByTeamAsync(Guid teamId, int days)
+    {
+        // creation_date is stored as unix seconds
+        const string sql = @"
+            SELECT to_timestamp(l.creation_date)::date as Date,
+                   count(*)::int as Count
+            FROM licenses l
+            JOIN applications a ON l.application = a.id
+            WHERE a.team = @TeamId
+              AND to_timestamp(l.creation_date) > now() - make_interval(days => @Days)
+            GROUP BY 1
+            ORDER BY 1;";
+
+        using var connection = await connectionFactory.CreateConnectionAsync();
+
+        return await connection.QueryAsync<LicensesPerDay>(sql, new { TeamId = teamId, Days = days });
+    }
 }
+
+public record LicenseStats(int Total, int Active, int Paused);
+
+public record LicensesPerDay(DateTime Date, int Count);

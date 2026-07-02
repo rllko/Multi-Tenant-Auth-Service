@@ -6,6 +6,7 @@ using Authentication.Services.Authentication.AccessToken;
 using Authentication.Services.Authentication.AuthorizeResult;
 using Authentication.Services.Authentication.CodeStorage;
 using Authentication.Services.Clients;
+using Authentication.Services.Dashboard;
 using Authentication.Services.Discords;
 using Authentication.Services.Hwids;
 using Authentication.Services.Invites;
@@ -83,6 +84,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<IInviteService, InviteService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 //SelfLog.Enable(Console.Error);
 var loggerService = new LoggerService();

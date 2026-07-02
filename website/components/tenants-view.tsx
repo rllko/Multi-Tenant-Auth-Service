@@ -94,7 +94,7 @@ export function TenantsView() {
         setOpen(false)
     }
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const {name, value} = e.target
         setNewTenant((prev) => ({...prev, [name]: value}))
     }

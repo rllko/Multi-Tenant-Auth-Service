@@ -23,4 +23,6 @@ public interface ITeamService
     Task<bool> RemoveUserFromTeamAsync(Guid teamId, Guid userId, IDbTransaction? transaction = null);
     Task<IEnumerable<TenantDto>> GetTenantsInTeamAsync(Guid teamId);
     Task<TenantDto> GetTenantInTeamAsync(Guid teamId, Guid tenantId);
+    Task<int> CountTenantsInTeamAsync(Guid teamId);
+    Task<int> CountTeamRolesAsync(Guid teamId);
 }

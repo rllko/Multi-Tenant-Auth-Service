@@ -84,7 +84,7 @@ export default function AppDetailPage() {
         fetchAppDetails()
     }, [selectedTeam, appId])
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target
         setEditedApp((prev) => ({...prev, [name]: value}))
     }
@@ -299,7 +299,7 @@ export default function AppDetailPage() {
                                                 <h3 className="text-sm font-medium text-muted-foreground">Redirect
                                                     URIs</h3>
                                                 <ul className="list-disc list-inside text-sm mt-1 space-y-1">
-                                                    {app.redirectUris.map((uri, index) => (
+                                                    {app.redirectUris.map((uri: string, index: number) => (
                                                         <li key={index} className="text-base font-mono">
                                                             {uri}
                                                         </li>

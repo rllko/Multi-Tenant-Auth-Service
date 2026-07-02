@@ -117,12 +117,12 @@ export function FilesView() {
     return matchesSearch && matchesOrg
   })
 
-  const handleOrganizationChange = (org) => {
+  const handleOrganizationChange = (org: { id: string; name: string }) => {
     setSelectedOrganization(org)
   }
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (file) {
       if (file.size > 50 * 1024 * 1024) {
         toast({
@@ -186,7 +186,7 @@ export function FilesView() {
     }, 3000)
   }
 
-  const handleDeleteFile = (fileId) => {
+  const handleDeleteFile = (fileId: string) => {
     setFiles(files.filter((file) => file.id !== fileId))
     toast({
       title: "File deleted",
@@ -194,7 +194,7 @@ export function FilesView() {
     })
   }
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
@@ -202,12 +202,12 @@ export function FilesView() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString() + " " + date.toLocaleTimeString()
   }
 
-  const getFileIcon = (fileType) => {
+  const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("image/")) {
       return <ImageIcon className="h-5 w-5 text-blue-500" />
     } else if (fileType === "application/pdf") {

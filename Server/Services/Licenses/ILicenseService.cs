@@ -26,4 +26,7 @@ public interface ILicenseService
         IDbTransaction? transaction = null);
 
     Task<License?> UpdateLicenseAsync(License license, IDbTransaction? transaction = null);
+
+    Task<LicenseStats> GetLicenseStatsByTeamAsync(Guid teamId);
+    Task<IEnumerable<LicensesPerDay>> GetLicensesPerDayByTeamAsync(Guid teamId, int days);
 }

@@ -15,7 +15,13 @@ import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Building, ChevronDown, ChevronRight, Edit, Plus} from "lucide-react"
 
-export function OrganizationSelector({organizations, selectedOrganization, onOrganizationChange}) {
+type Organization = { id: string; name: string; members?: number }
+
+export function OrganizationSelector({organizations, selectedOrganization, onOrganizationChange}: {
+    organizations: Organization[]
+    selectedOrganization: Organization
+    onOrganizationChange: (org: Organization) => void
+}) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [createDialogOpen, setCreateDialogOpen] = useState(false)
     const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -31,7 +37,7 @@ export function OrganizationSelector({organizations, selectedOrganization, onOrg
         setEditDialogOpen(false)
     }
 
-    const handleEditClick = (e) => {
+    const handleEditClick = (e: React.MouseEvent) => {
         e.stopPropagation()
         setEditOrgName(selectedOrganization.name)
         setEditDialogOpen(true)
@@ -67,7 +73,7 @@ export function OrganizationSelector({organizations, selectedOrganization, onOrg
                     {isExpanded && (
                         <div className="border-t">
                             <div className="p-2 max-h-[300px] overflow-y-auto">
-                                {organizations.map((org) => (
+                                {organizations.map((org: Organization) => (
                                     <div
                                         key={org.id}
                                         className={`flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-gray-50 ${

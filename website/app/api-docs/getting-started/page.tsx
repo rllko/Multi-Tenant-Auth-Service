@@ -4,6 +4,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Button} from "@/components/ui/button"
 import {CheckCircle, ChevronRight, Code, Copy, FileText, Terminal} from "lucide-react"
+import {NavListItem} from "@/components/nav-list-item"
 
 export const metadata: Metadata = {
     title: "Getting Started",
@@ -19,98 +20,21 @@ export default function GettingStartedPage() {
                         <div className="bg-card rounded-lg border shadow-sm p-4">
                             <h3 className="font-semibold mb-4 text-foreground">On This Page</h3>
                             <ul className="space-y-2 text-sm">
-                                <li>
-                                    <a
-                                        href="#introduction"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Introduction
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#authentication"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Authentication
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#installation"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Installation
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#making-requests"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Making Requests
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#error-handling"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Error Handling
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="#next-steps"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Next Steps
-                                    </a>
-                                </li>
+                                <NavListItem href="#introduction">Introduction</NavListItem>
+                                <NavListItem href="#authentication">Authentication</NavListItem>
+                                <NavListItem href="#installation">Installation</NavListItem>
+                                <NavListItem href="#making-requests">Making Requests</NavListItem>
+                                <NavListItem href="#error-handling">Error Handling</NavListItem>
+                                <NavListItem href="#next-steps">Next Steps</NavListItem>
                             </ul>
 
                             <h3 className="font-semibold mt-8 mb-4 text-foreground">Getting Started</h3>
                             <ul className="space-y-2 text-sm">
-                                <li>
-                                    <Link
-                                        href="/api-docs/getting-started"
-                                        className="text-primary font-medium flex py-1 px-2 rounded bg-primary/10"
-                                    >
-                                        Overview
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/api-docs/authentication"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Authentication
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/api-docs/endpoints"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Endpoints
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/api-docs/sdks"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        SDKs
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/api-docs/examples"
-                                        className="text-muted-foreground hover:text-foreground transition-colors flex py-1 px-2 rounded hover:bg-accent"
-                                    >
-                                        Examples
-                                    </Link>
-                                </li>
+                                <NavListItem href="/api-docs/getting-started" active>Overview</NavListItem>
+                                <NavListItem href="/api-docs/authentication">Authentication</NavListItem>
+                                <NavListItem href="/api-docs/endpoints">Endpoints</NavListItem>
+                                <NavListItem href="/api-docs/sdks">SDKs</NavListItem>
+                                <NavListItem href="/api-docs/examples">Examples</NavListItem>
                             </ul>
                         </div>
                     </div>

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useTeam } from "@/contexts/team-context"
 import { EmptyState } from "./empty-state"
 
-export function SessionsTab({ appId }) {
+export function SessionsTab({ appId }: { appId: string }) {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -45,7 +45,7 @@ export function SessionsTab({ appId }) {
     }
   }
 
-  const revokeSession = async (sessionId) => {
+  const revokeSession = async (sessionId: string) => {
     if (!selectedTeam || !appId) return
 
     try {

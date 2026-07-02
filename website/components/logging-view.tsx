@@ -241,12 +241,12 @@ export function LoggingView() {
         return matchesSearch && matchesType && matchesAction && matchesSeverity && matchesDate
     })
 
-    const formatTimestamp = (timestamp) => {
+    const formatTimestamp = (timestamp: string | number) => {
         const date = new Date(timestamp)
         return date.toLocaleString()
     }
 
-    const getLogTypeIcon = (type, action) => {
+    const getLogTypeIcon = (type: string, action: string) => {
         switch (type) {
             case "license":
                 return <Key className="h-4 w-4"/>
@@ -259,7 +259,7 @@ export function LoggingView() {
         }
     }
 
-    const getSeverityBadge = (severity) => {
+    const getSeverityBadge = (severity: string) => {
         switch (severity) {
             case "info":
                 return (
