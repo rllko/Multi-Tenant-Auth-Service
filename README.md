@@ -1,56 +1,82 @@
-# Authio – Prototype[WIP]
+# Authio
 
-**Authio** is a multi-tenant SaaS platform designed for secure license and session management.
+A multi-tenant SaaS platform for secure license and session management.
 
-**Update:** in a rush i tried to make a frontend. If you're interested you can always check out the old auth [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef)  for the backend without any frontend slop.
+This is a personal side project where I took my old license authentication system and rebuilt it with a multi-tenancy architecture. The original backend (without any frontend) can be found [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef). Contributions and pull requests are welcome!
 
-This is a personal side project where i took my old license authentication sytem and tried to implement a multi tenancy architecture.
-The old auth that can be found here. Contributions and pull requests are welcome!
+# Development
 
----
+The following section focuses on the development part of the project, including prerequisites, how to build and run the code, and how to contribute.
 
-## Development Setup
+### Table of Contents
 
-### 1. Prerequisites
+- [Prerequisites](#prerequisites)
+  - [Web App](#web-app)
+  - [Server App](#server-app)
+  - [Docker](#docker)
+- [Applications](#applications)
+  - [Quick Start](#quick-start)
+  - [First Login](#first-login)
+  - [Web App](#web-app-1)
+  - [Server App](#server-app-1)
+  - [Migration Utility](#migration-utility)
+  - [External Database (Optional)](#external-database-optional)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
 
-Ensure the following services are available:
+## Prerequisites
 
-- PostgreSQL server
-- Redis server
+### Web App
 
-> These services, along with NGINX, are included in the `docker-compose.yml` file to simplify local development.
+The web application runs on [Node.js](https://nodejs.org/) version 22.
 
-### 2. Configuration
+Install the dependencies inside the `website` directory with:
 
-Create a `.env` file based on the provided `.env.example`:
-
-```bash
-cp .env.example .env
+```shell
+npm install
 ```
 
-### 3. Start the Services
+### Server App
 
-To build and spin up the stack using Docker:
+The server and migration utility are written in [C#](https://learn.microsoft.com/en-us/dotnet/csharp/) and target [.NET](https://dotnet.microsoft.com/) `10.0` (see [global.json](global.json)).
 
-```bash
-docker compose up --build
-```
+### Docker
 
-The first run builds the images and may take a few minutes. This starts PostgreSQL, Redis, the key generator, the database migrator, the API server, NGINX, and the web app. The `migration` service applies the database migrations once and then exits — a `migration_utility_c ... Exited (0)` status is **expected** and means it succeeded, not that it crashed.
+To run the application stack in containers, the [Docker Engine](https://docs.docker.com/engine/) with the [Docker Compose](https://docs.docker.com/compose/) plugin is expected to be installed. The stack requires [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/), both of which are already included in the [Docker Compose file](docker-compose.yml) along with NGINX.
+
+## Applications
+
+### Quick Start
+
+1. Create a `.env` file based on the provided `.env.example`:
+
+   ```shell
+   cp .env.example .env
+   ```
+
+1. Build and run the whole stack with Docker:
+
+   ```shell
+   docker compose up --build
+   ```
+
+The first run builds the images and may take a few minutes. This starts PostgreSQL, Redis, the key generator, the database migration utility, the API server, NGINX, and the web app.
+
+> [!NOTE]
+> The `migration` service applies the database migrations once and then exits — a `migration_utility_c ... Exited (0)` status is **expected** and means it succeeded, not that it crashed.
 
 Once running, the stack is reachable at:
 
-| Service | URL |
-| --- | --- |
-| API server (direct) | <http://localhost:8080> |
-| Web app / API via NGINX | <http://localhost> |
-| PostgreSQL | `localhost:5432` (user `postgres`, database `auth`) |
+| Service                 | URL                                                 |
+| ----------------------- | --------------------------------------------------- |
+| API server (direct)     | <http://localhost:8080>                             |
+| Web app / API via NGINX | <http://localhost>                                  |
+| Web app (dev, direct)   | <http://localhost:3000>                             |
+| PostgreSQL              | `localhost:5432` (user `postgres`, database `auth`) |
 
 Use `docker compose up -d` to run in the background, and `docker compose down` to stop the stack — add `-v` to also wipe the database volume and start completely fresh.
 
-> If you intend to run this on a VM, deployment is as simple as uploading the project to your VPS and configuring the files provided [here](https://github.com/rllko/Multi-Tenant-Auth-Service/releases).
-
-### 4. First Login
+### First Login
 
 The database migrations seed a bootstrap admin tenant so you can log in out-of-the-box:
 
@@ -59,13 +85,36 @@ The database migrations seed a bootstrap admin tenant so you can log in out-of-t
 
 This account is the Team Owner of the seeded `test` team.
 
+> [!WARNING]
 > Change the password or remove this account before deploying to production.
 
----
+### Web App
 
-## External Database (Optional)
+The web application can be found in the `website` directory. It uses [Next.js](https://nextjs.org/) with [React](https://react.dev/) and [Tailwind CSS](https://tailwindcss.com/).
 
-If you prefer running Authio with an external PostgreSQL database, execute the following SQL commands to setup the logger:
+The web application contains several scripts to lint, build and run the project. To check the available scripts, run the following command inside the `website` directory:
+
+```shell
+npm run
+```
+
+In the Docker Compose stack, the web app runs in development mode ([Dockerfile.dev](website/Dockerfile.dev)) with hot reload, and talks to the API through the `NEXT_PUBLIC_API_URL` environment variable.
+
+### Server App
+
+The server application can be found in the `Server` directory. It is an ASP.NET Core application that serves the REST API consumed by the web app.
+
+The server requires a [PostgreSQL](https://www.postgresql.org/) database for persistent data and [Redis](https://redis.io/) for session state. Both are available as services in the [Docker Compose file](docker-compose.yml). The keys used by the server are generated by the `keygen` service and shared through a Docker volume.
+
+The server is configured through environment variables (see [.env.example](.env.example)), most importantly `DATABASE_URL`, `DATABASE_LOGGER_URL`, and `REDIS_URL`.
+
+### Migration Utility
+
+The database migrations can be found in the `MigrationUtility/Database/Scripts` directory. The migration utility is a standalone .NET application that applies the migrations and exits; it runs automatically as the `migration` service in the Docker Compose stack, and can also be run manually against any PostgreSQL instance by setting `DATABASE_URL`.
+
+### External Database (Optional)
+
+If you prefer running Authio with an external PostgreSQL database, execute the following SQL commands to set up the activity logger:
 
 ```sql
 CREATE USER authio_serilog WITH PASSWORD 'authio.24';
@@ -79,4 +128,24 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authio_se
 GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 ```
 
-> Be sure to replace hardcoded credentials in production environments and setup the admin password after running the migration.
+> [!WARNING]
+> Be sure to replace hardcoded credentials in production environments and set up the admin password after running the migration.
+
+## Deployment
+
+To run this on a VM, upload the project to your VPS and configure the files provided in the [releases](https://github.com/rllko/Multi-Tenant-Auth-Service/releases). The `Deployment` directory contains the production Docker Compose file and NGINX configuration, and the `certbot` directory holds the [Let's Encrypt](https://letsencrypt.org/) certificates used by NGINX for HTTPS.
+
+## Contributing
+
+### Branches
+
+- The [main branch](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/main) contains the latest code
+- To develop a new feature or fix a bug, a new branch should be created based on the main branch
+
+### Issues
+
+- Features and bugs should exist as a [GitHub issue](https://github.com/rllko/Multi-Tenant-Auth-Service/issues) with an appropriate description
+
+### Pull Requests
+
+- To merge code into the main branch, a pull request should be opened with a description of the change
