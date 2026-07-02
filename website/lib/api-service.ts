@@ -1,14 +1,14 @@
-import {CONSTANTS} from '@/app/const'
+import { CONSTANTS } from '@/app/const'
 
-import {DEFAULT_TIMEOUT, handleApiError, withTimeout} from "./api-timeout"
-import {Team} from "@/lib/schemas";
-import {Tenant} from "@/models/tenant";
-import {CreateRoleDto, Role} from "@/models/role";
-import {TenantInvite} from "@/models/invite";
-import {Dashboard} from "@/models/dashboard";
-import {Application, UpdateApplicationDto} from "@/models/application";
-import {License} from "@/models/license";
-import {Permission} from "@/models/permission";
+import { DEFAULT_TIMEOUT, handleApiError, withTimeout } from "./api-timeout"
+import { Team } from "@/lib/schemas";
+import { Tenant } from "@/models/tenant";
+import { CreateRoleDto, Role } from "@/models/role";
+import { TenantInvite } from "@/models/invite";
+import { Dashboard } from "@/models/dashboard";
+import { Application, UpdateApplicationDto } from "@/models/application";
+import { License } from "@/models/license";
+import { Permission } from "@/models/permission";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -17,7 +17,7 @@ const getAuthHeader = (): { Authorization?: string } => {
     if (typeof window !== "undefined") {
         const token = localStorage.getItem(CONSTANTS.TOKEN_NAME)
         if (token) {
-            return {Authorization: `Bearer ${token}`}
+            return { Authorization: `Bearer ${token}` }
         }
     }
     return {}
@@ -130,13 +130,13 @@ export const authApi = {
     login: async (email: string, password: string) => {
         return fetchApi("/auth/tenant/login", {
             method: "POST",
-            body: JSON.stringify({email, password}),
+            body: JSON.stringify({ email, password }),
         })
     },
     register: async (email: string, password: string, name: string) => {
         return fetchApi("/auth/tenant/register", {
             method: "POST",
-            body: JSON.stringify({email, password, name}),
+            body: JSON.stringify({ email, password, name }),
         })
     },
     logout: async () => {
@@ -162,7 +162,7 @@ export const teamsApi = {
     createTeam: async (name: string): Promise<Team> => {
         return fetchApi("/teams", {
             method: "POST",
-            body: JSON.stringify({name}),
+            body: JSON.stringify({ name }),
         })
     },
     updateTeam: async (teamId: string, data: object): Promise<void> => {
@@ -172,7 +172,7 @@ export const teamsApi = {
         })
     },
     deleteTeam: async (teamId: string) => {
-        return fetchApi(`/teams/${teamId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}`, { method: "DELETE" })
     },
     getTeamMembers: async (teamId: string): Promise<Tenant[]> => {
         return fetchApi(`/teams/${teamId}/members`)
@@ -183,16 +183,16 @@ export const teamsApi = {
     inviteTeamMember: async (teamId: string, email: string, inviteMessage: string) => {
         return fetchApi(`/teams/${teamId}/members`, {
             method: "POST",
-            body: JSON.stringify({email, inviteMessage}),
+            body: JSON.stringify({ email, inviteMessage }),
         })
     },
     removeTeamMember: async (teamId: string, userId: string,) => {
-        return fetchApi(`/teams/${teamId}/members/${userId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/members/${userId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
     updateTeamMember: async (teamId: string, userId: string, roleId: string | number) => {
         return fetchApi(`/teams/${teamId}/members/${userId}`, {
             method: "PATCH",
-            body: JSON.stringify({roleId: Number(roleId)}),
+            body: JSON.stringify({ roleId: Number(roleId) }),
         }, DEFAULT_TIMEOUT, false)
     },
 }
@@ -221,7 +221,7 @@ export const appsApi = {
         }, DEFAULT_TIMEOUT, false)
     },
     deleteApp: async (teamId: string, appId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/apps/${appId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -246,7 +246,7 @@ export const licensesApi = {
         }, DEFAULT_TIMEOUT, false)
     },
     deleteLicense: async (teamId: string, appId: string, licenseId: string): Promise<void> => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/apps/${appId}/licenses/${licenseId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -256,7 +256,7 @@ export const sessionsApi = {
         return fetchApi(`/teams/${teamId}/apps/${appId}/sessions`)
     },
     terminateSession: async (teamId: string, appId: string, sessionId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/sessions/${sessionId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/apps/${appId}/sessions/${sessionId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -278,7 +278,7 @@ export const oauthApi = {
         }, DEFAULT_TIMEOUT, false)
     },
     deleteClient: async (teamId: string, appId: string, clientId: string) => {
-        return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
     getClientSessions: async (teamId: string, appId: string, clientId: string) => {
         return fetchApi(`/teams/${teamId}/apps/${appId}/oauth/clients/${clientId}/sessions`)
@@ -330,7 +330,7 @@ export const rolesApi = {
         if (!teamId) {
             throw new Error("Team ID is required to delete a role")
         }
-        return fetchApi(`/teams/${teamId}/roles/${roleId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/roles/${roleId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -373,14 +373,14 @@ export const permissionsApi = {
         }
         return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions`, {
             method: "POST",
-            body: JSON.stringify({permissionId}),
+            body: JSON.stringify({ permissionId }),
         }, DEFAULT_TIMEOUT, false)
     },
     removePermission: async (teamId: string, roleId: string, permissionId: string): Promise<void> => {
         if (!teamId) {
             throw new Error("Team ID is required to remove a permission")
         }
-        return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions/${permissionId}`, {method: "DELETE"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/${teamId}/roles/${roleId}/permissions/${permissionId}`, { method: "DELETE" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -452,13 +452,13 @@ export const invitesApi = {
         return fetchApi("/teams/invites/pending")
     },
     acceptInvite: async (inviteToken: string) => {
-        return fetchApi(`/teams/invites/${inviteToken}/accept`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/invites/${inviteToken}/accept`, { method: "POST" }, DEFAULT_TIMEOUT, false)
     },
     declineInvite: async (inviteToken: string) => {
-        return fetchApi(`/teams/invites/${inviteToken}/decline`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/invites/${inviteToken}/decline`, { method: "POST" }, DEFAULT_TIMEOUT, false)
     },
     cancelInvite: async (inviteToken: string) => {
-        return fetchApi(`/teams/invites/${inviteToken}/cancel`, {method: "POST"}, DEFAULT_TIMEOUT, false)
+        return fetchApi(`/teams/invites/${inviteToken}/cancel`, { method: "POST" }, DEFAULT_TIMEOUT, false)
     },
 }
 
@@ -492,7 +492,7 @@ export const tenantsApi = {
         if (!teamId) {
             throw new Error("Team ID is required to delete a tenant")
         }
-        return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, {method: "DELETE"})
+        return fetchApi(`/teams/${teamId}/tenants/${tenantId}`, { method: "DELETE" })
     },
     inviteTenant: async (
         teamId: string,

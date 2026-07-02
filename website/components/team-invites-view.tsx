@@ -64,7 +64,6 @@ export function TeamInvitesView() {
     const [confirmAction, setConfirmAction] = useState<"accept" | "decline" | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
 
-    // Fetch invites; sent tab is scoped to the team selected in the sidebar
     useEffect(() => {
         fetchInvites()
     }, [activeTab, selectedTeam])

@@ -172,8 +172,10 @@ export function ActivityView({activities = [], teamId, onRefresh, isRefreshing =
                         <CardTitle>User Activity</CardTitle>
                         <CardDescription>User-initiated actions and events</CardDescription>
                     </CardHeader>
+
                     <CardContent>
                         <div className="text-center py-6 text-muted-foreground">Filter set to user activity</div>
+
                     </CardContent>
                 </Card>
             </TabsContent>

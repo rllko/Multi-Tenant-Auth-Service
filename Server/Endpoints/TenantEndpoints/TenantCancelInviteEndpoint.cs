@@ -7,12 +7,12 @@ using FastEndpoints;
 
 namespace Authentication.Endpoints.TenantEndpoints;
 
-public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
+public class TenantCancelInviteEndpoint : EndpointWithoutRequest
 {
     private readonly IActivityLoggerService _activityLogger;
     private readonly IInviteService _inviteService;
 
-    public TenantAcceptInviteEndpoint(IInviteService inviteService, IActivityLoggerService activityLogger)
+    public TenantCancelInviteEndpoint(IInviteService inviteService, IActivityLoggerService activityLogger)
     {
         _inviteService = inviteService;
         _activityLogger = activityLogger;
@@ -20,7 +20,7 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/teams/invites/{inviteToken}/accept");
+        Post("/teams/invites/{inviteToken}/cancel");
         PreProcessor<TenantProcessor<EmptyRequest>>();
         DontThrowIfValidationFails();
     }
@@ -42,24 +42,26 @@ public class TenantAcceptInviteEndpoint : EndpointWithoutRequest
 
         await invite.Match(async inv =>
             {
-                if (inv.TenantId != session.TenantId)
+                // only the tenant that sent the invite may cancel it
+                if (inv.CreatedBy != session!.TenantId)
                 {
                     await SendForbiddenAsync(ct);
 
                     return;
                 }
 
-                var teams = await _inviteService.AcceptInviteAsync(token, inv.TeamId, inv.TenantId, inv.CreatedBy);
+                var revoked = await _inviteService.RevokeInviteAsync(token);
 
-                if (teams)
+                if (revoked)
                 {
-                    _activityLogger.LogEvent(ActivityEventType.InviteAccepted, inv.TenantId.ToString(),
-                        session!.TenantId.ToString(), new { inv.TeamId });
+                    _activityLogger.LogEvent(ActivityEventType.InviteRevoked, inv.TenantId.ToString(),
+                        session.TenantId.ToString(), new { inv.TeamId });
 
                     await SendOkAsync(ct);
                 }
                 else
                 {
+                    AddError("invite is no longer pending");
                     await SendErrorsAsync(cancellation: ct);
                 }
             }, async () => await SendForbiddenAsync(ct)

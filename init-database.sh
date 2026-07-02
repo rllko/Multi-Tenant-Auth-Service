@@ -10,4 +10,6 @@ EOSQL
 
 psql -U "$POSTGRES_USER" -d activity_logs <<-EOSQL
   CREATE SCHEMA activity_logs AUTHORIZATION authio_serilog;
+  GRANT ALL ON SCHEMA public TO authio_serilog;
+  ALTER DATABASE activity_logs OWNER TO authio_serilog;
 EOSQL

@@ -98,8 +98,6 @@ builder.Host.UseSerilog(Log.Logger);
 //builder.Logging.ClearProviders();
 #warning add this when testing
 
-var yuh = await loggerService.GetLoggerConnectionAsync();
-
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlDbConnectionFactory());
