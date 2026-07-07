@@ -127,6 +127,8 @@ app.UseAuthentication()
     .UseAntiforgeryFE()
     .UseFastEndpoints(c => c.Binding.UsePropertyNamingPolicy = true);
 
-app.UseSwaggerGen(uiConfig: u => u.Path = "/api/docs/ui");
+// docs are hidden in production
+if (!app.Environment.IsProduction())
+    app.UseSwaggerGen(uiConfig: u => u.Path = "/api/docs/ui");
 
 app.Run();
