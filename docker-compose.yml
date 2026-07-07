@@ -70,6 +70,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_LOGGER_URL=${DATABASE_LOGGER_URL}
       - REDIS_URL=${REDIS_URL}
+      # local compose runs as Development so /api/docs/ui stays available;
+      # production deploys default to Production and serve no docs
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
     volumes:
       - secrets:/app/secrets
     depends_on:
