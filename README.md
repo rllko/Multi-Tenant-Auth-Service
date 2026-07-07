@@ -2,11 +2,11 @@
 
 A multi-tenant SaaS platform for secure license and session management.
 
-This is a personal side project where I took my old license authentication system and rebuilt it with a multi-tenancy architecture. The original backend (without any frontend) can be found [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef). Contributions and pull requests are welcome!
+This is a side project of mine in which I took my previous license authentication service and recreated it with multi-tenancy architecture. Original backend (no frontend) may be found [here](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/6dd760773f648f1f214d2a4ecdfe3522a5d57eef). Contributions and pull requests are greatly appreciated!
 
 # Development
 
-The following section focuses on the development part of the project, including prerequisites, how to build and run the code, and how to contribute.
+Below is information regarding the development aspect of this project, specifically prerequisites, building and running the codebase, and contributing to it.
 
 ### Table of Contents
 
@@ -39,32 +39,31 @@ npm install
 
 ### Server App
 
-The server and migration utility are written in [C#](https://learn.microsoft.com/en-us/dotnet/csharp/) and target [.NET](https://dotnet.microsoft.com/) `10.0` (see [global.json](global.json)).
+The server and migration utilities are written in [C#](https://learn.microsoft.com/en-us/dotnet/csharp/) and target [.NET](https://dotnet.microsoft.com/) `10.0` (see [global.json](global.json)).
 
 ### Docker
 
-To run the application stack in containers, the [Docker Engine](https://docs.docker.com/engine/) with the [Docker Compose](https://docs.docker.com/compose/) plugin is expected to be installed. The stack requires [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/), both of which are already included in the [Docker Compose file](docker-compose.yml) along with NGINX.
+The execution of the application stack in containers will require installation of the [Docker Engine](https://docs.docker.com/engine/) with the [Docker Compose](https://docs.docker.com/compose/) plugin. It will require [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/), both of which are provided in the [Docker Compose configuration.
 
 ## Applications
 
 ### Quick Start
-
-1. Create a `.env` file based on the provided `.env.example`:
+1. Create a `.env` file using the template file `.env.example`:
 
    ```shell
    cp .env.example .env
    ```
 
-1. Build and run the whole stack with Docker:
+2. Start everything up using Docker:
 
    ```shell
    docker compose up --build
    ```
 
-The first run builds the images and may take a few minutes. This starts PostgreSQL, Redis, the key generator, the database migration utility, the API server, NGINX, and the web app.
+For the initial run, building will be required, which can take a while. This launches the PostgreSQL, Redis, key generator, database migration tool, API server, NGINX, and website itself.
 
 > [!NOTE]
-> The `migration` service applies the database migrations once and then exits — a `migration_utility_c ... Exited (0)` status is **expected** and means it succeeded, not that it crashed.
+> After applying database migrations once and exiting, the `migration` service ends execution with the following message: `migration_utility_container ... Exited (0)` which is an **expected outcome**, indicating success and not crash.
 
 Once running, the stack is reachable at:
 
@@ -75,47 +74,50 @@ Once running, the stack is reachable at:
 | Web app (dev, direct)   | <http://localhost:3000>                             |
 | PostgreSQL              | `localhost:5432` (user `postgres`, database `auth`) |
 
-Use `docker compose up -d` to run in the background, and `docker compose down` to stop the stack — add `-v` to also wipe the database volume and start completely fresh.
+Use `docker compose up -d` to run in the background, and `docker compose down` to stop the stack. Add `-v` to also wipe the database volume and start completely fresh.
 
 ### First Login
 
-The database migrations seed a bootstrap admin tenant so you can log in out-of-the-box:
+A bootstrap admin tenant is created via database migrations for an out-of-the-box first login with:
 
 - **Email:** `admin@authio.com`
 - **Password:** `admin123`
 
-This account is the Team Owner of the seeded `test` team.
+Note that this is the owner of the seeded `test` team.
 
 > [!WARNING]
 > Change the password or remove this account before deploying to production.
-
 ### Web App
 
-The web application can be found in the `website` directory. It uses [Next.js](https://nextjs.org/) with [React](https://react.dev/) and [Tailwind CSS](https://tailwindcss.com/).
+Web app is located in the `website` folder and uses [Next.js](https://nextjs.org/) along with [React](https://react.dev/) and [Tailwind CSS](https://tailwindcss.com/).
 
-The web application contains several scripts to lint, build and run the project. To check the available scripts, run the following command inside the `website` directory:
+The web app includes several scripts for linting, building, and running the project. To list all available scripts execute the following command from the `website` folder:
 
 ```shell
 npm run
 ```
 
-In the Docker Compose stack, the web app runs in development mode ([Dockerfile.dev](website/Dockerfile.dev)) with hot reload, and talks to the API through the `NEXT_PUBLIC_API_URL` environment variable.
+In the Docker Compose stack, the web app works in the development mode ([Dockerfile.dev](website/Dockerfile.dev)) with hot reload and consumes the API via the `NEXT_PUBLIC_API_URL` environment variable.
 
 ### Server App
 
-The server application can be found in the `Server` directory. It is an ASP.NET Core application that serves the REST API consumed by the web app.
+Server application is located in the `Server` folder. It is an ASP.NET Core application and it provides the REST API which is consumed by the web app.
 
-The server requires a [PostgreSQL](https://www.postgresql.org/) database for persistent data and [Redis](https://redis.io/) for session state. Both are available as services in the [Docker Compose file](docker-compose.yml). The keys used by the server are generated by the `keygen` service and shared through a Docker volume.
+The server needs the [PostgreSQL](https://www.postgresql.org/) database for storing the persistent data and [Redis](https://redis.io/) for the session state. Both of them are provided as services in the [Docker Compose configuration file](docker-compose.yml). Keys used by the server are generated by the `keygen` service and passed via a Docker volume.
 
-The server is configured through environment variables (see [.env.example](.env.example)), most importantly `DATABASE_URL`, `DATABASE_LOGGER_URL`, and `REDIS_URL`.
+Configuration of the server happens through environment variables (see [.env.example](.env.example)). The most important among them are `DATABASE_URL`, `DATABASE_LOGGER_URL`, and `REDIS_URL`.
 
 ### Migration Utility
 
-The database migrations can be found in the `MigrationUtility/Database/Scripts` directory. The migration utility is a standalone .NET application that applies the migrations and exits; it runs automatically as the `migration` service in the Docker Compose stack, and can also be run manually against any PostgreSQL instance by setting `DATABASE_URL`.
+Database migrations are located under the `MigrationUtility/Database/Scripts` folder. The migration utility is an independent .NET tool that applies the migrations and exits. It is executed automatically as part of the `migration` service from the Docker Compose configuration, but can also be run manually against any PostgreSQL database by specifying `DATABASE_URL`.
 
 ### External Database (Optional)
 
-If you prefer running Authio with an external PostgreSQL database, execute the following SQL commands to set up the activity logger:
+Should you choose to use the external PostgreSQL database for your Authio deployment, run the following SQL queries to configure the activity logger.
+
+
+> [!WARNING]
+> Don't forget to remove hardcoded credentials from production systems and set up the admin password after executing the migration.
 
 ```sql
 CREATE USER authio_serilog WITH PASSWORD 'authio.24';
@@ -132,59 +134,35 @@ GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 > [!WARNING]
 > Be sure to replace hardcoded credentials in production environments and set up the admin password after running the migration.
 
-## Payload Encryption (Legacy Design)
+## Payload Encryption (Legacy Architecture)
 
-This section documents how the original single-tenant service protected traffic
-between a licensed client application (for example a game trainer or a desktop
-app) and the API. The scheme is **symmetric authenticated encryption**: the
-client and the server share a secret key and every request/response body is
-encrypted and authenticated with it. Nobody on the wire — not even someone who
-already terminated TLS at a proxy — can read or tamper with a payload without the
-key.
+This section describes the mechanism used by the original single-tenant service to protect communications between a licensed client application (e.g., a game trainer or a desktop app) and the API endpoint. It is symmetric authenticated encryption: both client and server know the same secret key and use it to encrypt and authenticate every request/response body. No entity on the network connection, including anyone who has decrypted the TLS connection using a proxy, will be able to read or modify the payload without the key.
 
-### Why symmetric, on top of HTTPS
+### Why symmetric, in addition to HTTPS
 
-HTTPS secures the *transport*. It does nothing once the request leaves the TLS
-layer: a customer can attach a debugger to their own machine, set a breakpoint in
-the HTTP client, and read or rewrite the plaintext the app is about to send. For
-a licensing system that is the whole threat model — the attacker owns the client.
-A second, application-level symmetric layer means the useful bytes (the license
-key, the HWID, the session token) are ciphertext *before* they ever touch the
-socket, and the server refuses anything whose authentication tag does not verify.
+HTTPS ensures the *transport* security. No more work happens once the request is out of the TLS stack: a customer can attach a debugger to their machine, set a breakpoint in the HTTP client code, and inspect or modify the plaintext that is going to be sent by the application. This is the entirety of threat model for the licensing system, where the attacker controls the client. The second, application-level symmetric encryption layer ensures that the payload bytes (the license key, the HWID, the session token) are ciphertext before even being written to the socket and the server rejects everything that does not verify.
 
 ### The cipher
 
-Encryption uses **ChaCha20-Poly1305**, an AEAD (Authenticated Encryption with
-Associated Data) construction, via [`NSec.Cryptography`](https://nsec.rocks/)
-(`NSec.Cryptography` package, still referenced in `Server/Server.csproj`).
+Encryption is done using the **ChaCha20-Poly1305** scheme, which is an AEAD (Authenticated Encryption with Associated Data) mode implemented via [`NSec.Cryptography`](https://nsec.rocks/) library (`NSec.Cryptography` package, still used in `Server/Server.csproj`):
 
-- **ChaCha20** is the stream cipher that produces the ciphertext.
-- **Poly1305** is the one-time authenticator that produces a 16-byte tag. The tag
-  is verified on decrypt; a single flipped bit makes the whole payload fail.
-- One AEAD operation therefore gives **confidentiality + integrity** in a single
-  pass — there is no separate HMAC step.
+- **ChaCha20** is the stream cipher responsible for the encryption.
+- **Poly1305** is the one-time authenticator generating a 16-byte tag; on decryption the tag is verified, and any single flipped bit renders the entire payload invalid.
+- So, one AEAD mode provides both **confidentiality and integrity** in one operation.
 
-Keys are 256-bit (32 bytes). They are minted once by the `keygen` sidecar
-container at first boot (`keygen/entrypoint.sh`) and written to a shared secrets
-volume:
+Keys are 256-bit (32 bytes). They are generated only once in `keygen` sidecar
+container on the first startup (`keygen/entrypoint.sh`) and saved to the shared secrets volume:
 
 | Secret file          | Env var    | Purpose                                            |
 | -------------------- | ---------- | -------------------------------------------------- |
 | `/secrets/Chacha20`  | `CHACHA`   | Symmetric key for **payload** encrypt/decrypt      |
 | `/secrets/symmetricKey` | `SYM_KEY` | HS256 key used to **sign session-token JWTs**      |
 
-`Server/HostedServices/EnvironmentVariableService.cs` loads these into the
-process environment at startup. In the multi-tenant rewrite each application also
-carries its own `ClientDecryptionChaChaKey`
-(`Server/Models/Entities/Application.cs`), so the payload key can be scoped
-per-application instead of one global key.
+`Server/HostedServices/EnvironmentVariableService.cs` reads these keys into the process environment. In the multi-tenant version each application also has its own `ClientDecryptionChaChaKey` (`Server/Models/Entities/Application.cs`), so the payload key is scoped to the application instead of one key for all.
 
 ### Nonce discipline
 
-ChaCha20-Poly1305 uses a 96-bit (12-byte) nonce. **A key + nonce pair must never
-repeat** — reuse leaks the keystream and breaks Poly1305. Every message carries a
-fresh random nonce, prepended to the ciphertext so the receiver can strip it back
-off before decrypting:
+ChaCha20-Poly1305 requires 96-bit (12 bytes) nonce. **Nonce+key combination cannot repeat!** The reuse discloses the keystream and breaks Poly1305 authentication. Each message contains a nonce, which is a randomly generated number. The nonce is prepended to the ciphertext so that the recipient can remove it before decryption.
 
 ```
 ┌────────────┬──────────────────────────────┬─────────────┐
@@ -193,16 +171,11 @@ off before decrypting:
         └──────────── all base64url-encoded on the wire ────┘
 ```
 
-License keys use the same base64url-without-padding encoding, handled by
-`Guider` (`Server/Services/Guider.cs`): a 16-byte GUID becomes a 22-char string
-with `+/` mapped to `-_`, which is what the customer sees and pastes into the app.
+License keys also use base64url without padding encoding, implemented in `Guider` (`Server/Services/Guider.cs`): 16 bytes of GUID are encoded into 22 characters with `+/` replaced by `-_`.
 
 ### Provisioning the key
 
-Before any encrypted call, the client must hold the application's ChaCha key. It
-is handed out once, at integration time, from the dashboard — never embedded in a
-build in plaintext and never sent in an encrypted body (chicken-and-egg).
-
+Before any encrypted call, the client must hold the application's ChaCha key. It is handed out once, at integration time from the dashboard, never embedded in a build in plaintext and never sent in an encrypted body (chicken-and-egg).
 ```mermaid
 sequenceDiagram
     actor Dev as Tenant (dashboard)
@@ -219,9 +192,7 @@ sequenceDiagram
 
 ### Encrypted request/response cycle
 
-Once the client has the key, every call is sealed on the way out and opened on
-the way in. The session token (issued at sign-in) travels *inside* the encrypted
-body, so it is never exposed even if TLS is stripped.
+After obtaining the key, all calls made will be encrypted before sending and decrypted after receiving. The session token (generated on log-in) is located inside the encrypted body and therefore not exposed regardless of TLS stripping.
 
 ```mermaid
 sequenceDiagram
@@ -250,9 +221,7 @@ sequenceDiagram
 
 ### Where it sits in the middleware chain
 
-The crypto layer wraps the handler: it decrypts inbound bodies before model
-binding and encrypts outbound bodies after the handler returns, so endpoint code
-only ever sees plaintext DTOs.
+The cryptographic layer encloses the handler: it decrypts the body prior to model binding and encrypts the body after handler execution, such that only plain DTOs can be received.
 
 ```mermaid
 flowchart LR
@@ -263,31 +232,16 @@ flowchart LR
     B -. tag fails .-> E[["400 reject"]]
 ```
 
-### Certificate pinning + enforced TLS on the client
+### Certificate pinning + required TLS on the client side
 
-The encrypted payload protects the *contents* of a request; certificate pinning
-protects *who the client will talk to at all*. Any executable that interacts with
-the auth API is **required** to:
+Encrypted payloads protect the *content* of an HTTP request; certificate pinning is responsible for protecting *who the client connects to*. In order to access the auth API, any binary must **require to**:
 
-- **Enforce TLS on every connection.** Plain-HTTP is refused outright — the
-  client never falls back to `http://`, never follows a redirect off HTTPS, and
-  aborts if the handshake does not complete.
-- **Pin the auth server's certificate.** The client ships with the expected
-  server certificate (or its public-key hash / SPKI) baked in and compares it
-  against what the server presents during the handshake. If the presented
-  certificate is not the pinned one, the connection is dropped **before** any
-  payload — encrypted or not — is sent.
+- **Enable TLS for all connections.** HTTP requests will be blocked out-of-the-box without allowing to fallback to `http://` protocol, to be redirected to insecure locations or to proceed after TLS handshake error.
+- **Implement certificate pinning.** A hard-coded certificate of the auth server (or the public key/SPKI) is embedded in the application and the application ensures that the server has a pinned certificate. If not, the connection will be refused by the client before passing any payload data, be it encrypted or plain-text.
 
-Why this matters for a licensing system: the attacker owns the machine, so the
-usual next step after failing to read the ciphertext is to **man-in-the-middle
-themselves** — install a local root CA (Fiddler, mitmproxy, Charles), point the
-app at a fake endpoint, and try to replay or forge auth responses. A trusted
-local root defeats ordinary TLS validation because the OS now "trusts" the
-proxy's cert. Pinning ignores the OS trust store entirely: only the one embedded
-certificate is accepted, so a self-signed MITM cert — even a "valid" one — fails
-the check and the client stops talking. Combined with the ChaCha payload layer,
-an attacker cannot read traffic, cannot substitute the server, and cannot get the
-client to emit anything to an endpoint it does not recognise.
+Why is this important for the license manager? As we now know the attacker has the control over the machine, the next step after failed extraction of the cipher will be **man-in-the-middle**
+attack where one installs a root CA locally (Fiddler, mitmproxy or Charles), redirects the application to the faked authentication endpoint and tries to replay or forge authentication responses. A trusted root CA will bypass all TLS validation as OS "trusts" the certificates of the proxy.
+Pinning totally ignores OS trust store and uses only one embedded certificate, which means that even "valid" MITM certificates will fail verification and will block any communications between client and server. Combined with the ChaCha payload layer this approach will prevent any traffic interception or substitution of server and client's connection to it.
 
 ```mermaid
 flowchart TD
@@ -295,43 +249,39 @@ flowchart TD
     B -- no --> X[["Abort: TLS required"]]
     B -- yes --> C[TLS handshake]
     C --> D{Presented cert == pinned cert?}
-    D -- no --> Y[["Abort: pin mismatch — likely MITM"]]
+    D -- no --> Y[["Abort: pin mismatch - likely MITM"]]
     D -- yes --> E[Send ChaCha-sealed payload]
     E --> F[Receive + decrypt response]
 ```
 
-> Pinning has an operational cost: when the server certificate rotates, clients
-> pinned to the old one break. Mitigate by pinning the **public key / SPKI**
-> (survives reissue with the same key) or by shipping a small backup pin set, and
-> by rotating on a schedule the client build cadence can keep up with.
+> The operational overhead associated with the use of pinning is that in case of
+> rotating the certificate of the server, all clients that are pinned to the old
+> certificate would fail to work. This issue should be addressed via pinning of
+> **public key / SPKI** (it does not change even after the certificate reissuance with the
+> same key) or by offering a backup pinset.
 
-### Threat coverage at a glance
-
-| Attack                                   | Mitigation                                             |
-| ---------------------------------------- | ------------------------------------------------------ |
-| Read secrets after TLS termination       | Body is ciphertext before it hits the socket           |
-| Tamper with a field (e.g. bump expiry)   | Poly1305 tag verification fails → request rejected     |
-| Replay a captured request                | Fresh per-message nonce; pair with a session/timestamp |
-| Extract the key from traffic             | Key is never transmitted; provisioned out of band      |
-| MITM with a locally-trusted root CA      | Certificate pinning ignores the OS trust store         |
-| Downgrade / redirect to plain HTTP       | Client enforces TLS and refuses non-HTTPS connections  |
+| Attack                                     | Mitigation                                            |
+| ------------------------------------------ | ----------------------------------------------------- |
+| Steal secrets after TLS termination        | Body is encrypted before reaching the network socket  |
+| Modify a field (for instance, modify expiry)| Poly1305 tag validation fails → request is rejected  |
+| Replay a captured request                   | New nonce for each message; use session/timestamping  |
+| Obtain the key from traffic                | Key is never transferred and provided out of band     |
+| MITM attack with a local root CA            | Certificate pinning does not use OS trust store      |
+| Downgrade/redirect to HTTP                 | Client requires HTTPS and denies any other connections |
 
 > [!NOTE]
-> This describes the legacy client↔server payload scheme. In the current
-> multi-tenant codebase the ChaCha key is provisioned per application
-> (`ClientDecryptionChaChaKey`) but the encrypt/decrypt middleware is not yet
-> wired end-to-end — see `LICENSE_INTEGRATION_PLAN.md` for where it lands.
+> It is the legacy client↔server payload schema. In the current multi-tenant implementation, the ChaCha key is provisioned per application (`ClientDecryptionChaChaKey`) but the encryption/decryption middleware is not implemented yet.
 
 ## Deployment
 
-To run this on a VM, upload the project to your VPS and configure the files provided in the [releases](https://github.com/rllko/Multi-Tenant-Auth-Service/releases). The `Deployment` directory contains the production Docker Compose file and NGINX configuration, and the `certbot` directory holds the [Let's Encrypt](https://letsencrypt.org/) certificates used by NGINX for HTTPS.
+In order to run it in a VM, you need to upload the project to your VPS and configure the provided files in the [releases](https://github.com/rllko/Multi-Tenant-Auth-Service/releases). The `Deployment` folder includes the production `docker-compose.yml` and NGINX config. The `certbot` folder includes Let's Encrypt certificates for NGINX's HTTPS.
 
 ## Contributing
 
 ### Branches
 
-- The [main branch](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/main) contains the latest code
-- To develop a new feature or fix a bug, a new branch should be created based on the main branch
+- the [main branch](https://github.com/rllko/Multi-Tenant-Auth-Service/tree/main) is the most up-to-date
+- for the development of a new feature or bugfix, a new branch should be created from the main branch
 
 ### Issues
 
