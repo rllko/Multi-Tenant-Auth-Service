@@ -263,6 +263,48 @@ flowchart LR
     B -. tag fails .-> E[["400 reject"]]
 ```
 
+### Certificate pinning + enforced TLS on the client
+
+The encrypted payload protects the *contents* of a request; certificate pinning
+protects *who the client will talk to at all*. Any executable that interacts with
+the auth API is **required** to:
+
+- **Enforce TLS on every connection.** Plain-HTTP is refused outright — the
+  client never falls back to `http://`, never follows a redirect off HTTPS, and
+  aborts if the handshake does not complete.
+- **Pin the auth server's certificate.** The client ships with the expected
+  server certificate (or its public-key hash / SPKI) baked in and compares it
+  against what the server presents during the handshake. If the presented
+  certificate is not the pinned one, the connection is dropped **before** any
+  payload — encrypted or not — is sent.
+
+Why this matters for a licensing system: the attacker owns the machine, so the
+usual next step after failing to read the ciphertext is to **man-in-the-middle
+themselves** — install a local root CA (Fiddler, mitmproxy, Charles), point the
+app at a fake endpoint, and try to replay or forge auth responses. A trusted
+local root defeats ordinary TLS validation because the OS now "trusts" the
+proxy's cert. Pinning ignores the OS trust store entirely: only the one embedded
+certificate is accepted, so a self-signed MITM cert — even a "valid" one — fails
+the check and the client stops talking. Combined with the ChaCha payload layer,
+an attacker cannot read traffic, cannot substitute the server, and cannot get the
+client to emit anything to an endpoint it does not recognise.
+
+```mermaid
+flowchart TD
+    A[Client starts request] --> B{Scheme == https?}
+    B -- no --> X[["Abort: TLS required"]]
+    B -- yes --> C[TLS handshake]
+    C --> D{Presented cert == pinned cert?}
+    D -- no --> Y[["Abort: pin mismatch — likely MITM"]]
+    D -- yes --> E[Send ChaCha-sealed payload]
+    E --> F[Receive + decrypt response]
+```
+
+> Pinning has an operational cost: when the server certificate rotates, clients
+> pinned to the old one break. Mitigate by pinning the **public key / SPKI**
+> (survives reissue with the same key) or by shipping a small backup pin set, and
+> by rotating on a schedule the client build cadence can keep up with.
+
 ### Threat coverage at a glance
 
 | Attack                                   | Mitigation                                             |
@@ -271,6 +313,8 @@ flowchart LR
 | Tamper with a field (e.g. bump expiry)   | Poly1305 tag verification fails → request rejected     |
 | Replay a captured request                | Fresh per-message nonce; pair with a session/timestamp |
 | Extract the key from traffic             | Key is never transmitted; provisioned out of band      |
+| MITM with a locally-trusted root CA      | Certificate pinning ignores the OS trust store         |
+| Downgrade / redirect to plain HTTP       | Client enforces TLS and refuses non-HTTPS connections  |
 
 > [!NOTE]
 > This describes the legacy client↔server payload scheme. In the current
