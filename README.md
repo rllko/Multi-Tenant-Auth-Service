@@ -21,6 +21,7 @@ The following section focuses on the development part of the project, including 
   - [Server App](#server-app-1)
   - [Migration Utility](#migration-utility)
   - [External Database (Optional)](#external-database-optional)
+- [Payload Encryption (Legacy Design)](#payload-encryption-legacy-design)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
 
@@ -130,6 +131,196 @@ GRANT USAGE, CREATE ON SCHEMA public TO authio_serilog;
 
 > [!WARNING]
 > Be sure to replace hardcoded credentials in production environments and set up the admin password after running the migration.
+
+## Payload Encryption (Legacy Design)
+
+This section documents how the original single-tenant service protected traffic
+between a licensed client application (for example a game trainer or a desktop
+app) and the API. The scheme is **symmetric authenticated encryption**: the
+client and the server share a secret key and every request/response body is
+encrypted and authenticated with it. Nobody on the wire — not even someone who
+already terminated TLS at a proxy — can read or tamper with a payload without the
+key.
+
+### Why symmetric, on top of HTTPS
+
+HTTPS secures the *transport*. It does nothing once the request leaves the TLS
+layer: a customer can attach a debugger to their own machine, set a breakpoint in
+the HTTP client, and read or rewrite the plaintext the app is about to send. For
+a licensing system that is the whole threat model — the attacker owns the client.
+A second, application-level symmetric layer means the useful bytes (the license
+key, the HWID, the session token) are ciphertext *before* they ever touch the
+socket, and the server refuses anything whose authentication tag does not verify.
+
+### The cipher
+
+Encryption uses **ChaCha20-Poly1305**, an AEAD (Authenticated Encryption with
+Associated Data) construction, via [`NSec.Cryptography`](https://nsec.rocks/)
+(`NSec.Cryptography` package, still referenced in `Server/Server.csproj`).
+
+- **ChaCha20** is the stream cipher that produces the ciphertext.
+- **Poly1305** is the one-time authenticator that produces a 16-byte tag. The tag
+  is verified on decrypt; a single flipped bit makes the whole payload fail.
+- One AEAD operation therefore gives **confidentiality + integrity** in a single
+  pass — there is no separate HMAC step.
+
+Keys are 256-bit (32 bytes). They are minted once by the `keygen` sidecar
+container at first boot (`keygen/entrypoint.sh`) and written to a shared secrets
+volume:
+
+| Secret file          | Env var    | Purpose                                            |
+| -------------------- | ---------- | -------------------------------------------------- |
+| `/secrets/Chacha20`  | `CHACHA`   | Symmetric key for **payload** encrypt/decrypt      |
+| `/secrets/symmetricKey` | `SYM_KEY` | HS256 key used to **sign session-token JWTs**      |
+
+`Server/HostedServices/EnvironmentVariableService.cs` loads these into the
+process environment at startup. In the multi-tenant rewrite each application also
+carries its own `ClientDecryptionChaChaKey`
+(`Server/Models/Entities/Application.cs`), so the payload key can be scoped
+per-application instead of one global key.
+
+### Nonce discipline
+
+ChaCha20-Poly1305 uses a 96-bit (12-byte) nonce. **A key + nonce pair must never
+repeat** — reuse leaks the keystream and breaks Poly1305. Every message carries a
+fresh random nonce, prepended to the ciphertext so the receiver can strip it back
+off before decrypting:
+
+```
+┌────────────┬──────────────────────────────┬─────────────┐
+│ nonce (12) │ ciphertext (len = plaintext) │  tag (16)   │
+└────────────┴──────────────────────────────┴─────────────┘
+        └──────────── all base64url-encoded on the wire ────┘
+```
+
+License keys use the same base64url-without-padding encoding, handled by
+`Guider` (`Server/Services/Guider.cs`): a 16-byte GUID becomes a 22-char string
+with `+/` mapped to `-_`, which is what the customer sees and pastes into the app.
+
+### Provisioning the key
+
+Before any encrypted call, the client must hold the application's ChaCha key. It
+is handed out once, at integration time, from the dashboard — never embedded in a
+build in plaintext and never sent in an encrypted body (chicken-and-egg).
+
+```mermaid
+sequenceDiagram
+    actor Dev as Tenant (dashboard)
+    participant API as Authio API
+    participant DB as Database
+    participant App as Client app build
+
+    Dev->>API: Create application
+    API->>DB: store app + ClientDecryptionChaChaKey (32 bytes)
+    API-->>Dev: app id + ChaCha key (shown once)
+    Dev->>App: embed key in the obfuscated client
+    Note over App: key lives only in the compiled client,<br/>never in a plaintext request
+```
+
+### Encrypted request/response cycle
+
+Once the client has the key, every call is sealed on the way out and opened on
+the way in. The session token (issued at sign-in) travels *inside* the encrypted
+body, so it is never exposed even if TLS is stripped.
+
+```mermaid
+sequenceDiagram
+    participant App as Client app
+    participant MW as Server crypto middleware
+    participant EP as Endpoint handler
+
+    Note over App: build JSON payload<br/>{ licenseKey, hwid, sessionToken, ... }
+    App->>App: nonce = random(12)
+    App->>App: sealed = ChaCha20Poly1305.Encrypt(key, nonce, json)
+    App->>MW: POST /auth/license/login<br/>body = base64url(nonce ‖ sealed ‖ tag)
+    MW->>MW: split nonce / ciphertext / tag
+    MW->>MW: plaintext = Decrypt(key, nonce, ciphertext, tag)
+    alt tag invalid
+        MW-->>App: 400 (tampered / wrong key)
+    else tag valid
+        MW->>EP: hand decrypted JSON to handler
+        EP->>EP: validate license, create session
+        EP-->>MW: response object
+        MW->>MW: nonce2 = random(12)
+        MW->>MW: sealed2 = Encrypt(key, nonce2, response)
+        MW-->>App: base64url(nonce2 ‖ sealed2 ‖ tag2)
+    end
+    App->>App: Decrypt(key, nonce2, ...) → plaintext response
+```
+
+### Where it sits in the middleware chain
+
+The crypto layer wraps the handler: it decrypts inbound bodies before model
+binding and encrypts outbound bodies after the handler returns, so endpoint code
+only ever sees plaintext DTOs.
+
+```mermaid
+flowchart LR
+    A[HTTPS / NGINX] --> B[decrypt middleware]
+    B -->|plaintext JSON| C[FastEndpoints handler]
+    C -->|plaintext result| D[encrypt middleware]
+    D --> A
+    B -. tag fails .-> E[["400 reject"]]
+```
+
+### Certificate pinning + enforced TLS on the client
+
+The encrypted payload protects the *contents* of a request; certificate pinning
+protects *who the client will talk to at all*. Any executable that interacts with
+the auth API is **required** to:
+
+- **Enforce TLS on every connection.** Plain-HTTP is refused outright — the
+  client never falls back to `http://`, never follows a redirect off HTTPS, and
+  aborts if the handshake does not complete.
+- **Pin the auth server's certificate.** The client ships with the expected
+  server certificate (or its public-key hash / SPKI) baked in and compares it
+  against what the server presents during the handshake. If the presented
+  certificate is not the pinned one, the connection is dropped **before** any
+  payload — encrypted or not — is sent.
+
+Why this matters for a licensing system: the attacker owns the machine, so the
+usual next step after failing to read the ciphertext is to **man-in-the-middle
+themselves** — install a local root CA (Fiddler, mitmproxy, Charles), point the
+app at a fake endpoint, and try to replay or forge auth responses. A trusted
+local root defeats ordinary TLS validation because the OS now "trusts" the
+proxy's cert. Pinning ignores the OS trust store entirely: only the one embedded
+certificate is accepted, so a self-signed MITM cert — even a "valid" one — fails
+the check and the client stops talking. Combined with the ChaCha payload layer,
+an attacker cannot read traffic, cannot substitute the server, and cannot get the
+client to emit anything to an endpoint it does not recognise.
+
+```mermaid
+flowchart TD
+    A[Client starts request] --> B{Scheme == https?}
+    B -- no --> X[["Abort: TLS required"]]
+    B -- yes --> C[TLS handshake]
+    C --> D{Presented cert == pinned cert?}
+    D -- no --> Y[["Abort: pin mismatch — likely MITM"]]
+    D -- yes --> E[Send ChaCha-sealed payload]
+    E --> F[Receive + decrypt response]
+```
+
+> Pinning has an operational cost: when the server certificate rotates, clients
+> pinned to the old one break. Mitigate by pinning the **public key / SPKI**
+> (survives reissue with the same key) or by shipping a small backup pin set, and
+> by rotating on a schedule the client build cadence can keep up with.
+
+### Threat coverage at a glance
+
+| Attack                                   | Mitigation                                             |
+| ---------------------------------------- | ------------------------------------------------------ |
+| Read secrets after TLS termination       | Body is ciphertext before it hits the socket           |
+| Tamper with a field (e.g. bump expiry)   | Poly1305 tag verification fails → request rejected     |
+| Replay a captured request                | Fresh per-message nonce; pair with a session/timestamp |
+| Extract the key from traffic             | Key is never transmitted; provisioned out of band      |
+| MITM with a locally-trusted root CA      | Certificate pinning ignores the OS trust store         |
+| Downgrade / redirect to plain HTTP       | Client enforces TLS and refuses non-HTTPS connections  |
+
+> [!NOTE]
+> This describes the legacy client↔server payload scheme. In the current
+> multi-tenant codebase the ChaCha key is provisioned per application
+> (`ClientDecryptionChaChaKey`) but the encrypt/decrypt middleware is not yet
+> wired end-to-end — see `LICENSE_INTEGRATION_PLAN.md` for where it lands.
 
 ## Deployment
 
