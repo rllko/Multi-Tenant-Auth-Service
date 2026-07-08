@@ -29,7 +29,7 @@ public class ApplicationLicensesEndpoint : EndpointWithoutRequest<IEnumerable<Li
         Summary(s =>
         {
             s.Summary = "List licenses of an application";
-            s.Description = "Returns all licenses issued for the application, including activation, pause, ban/revoke state, and expiry (unix seconds). Bearer auth; requires the license.retrieve_info scope.";
+            s.Description = "Returns all licenses issued for the routed application. No request body. Includes activation, pause, ban/revoke state, revoked timestamp, max sessions, username, and expiry (unix seconds). Bearer auth; requires the license.retrieve_info scope.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Response<IEnumerable<LicenseDto>>(200, "Array of licenses: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");

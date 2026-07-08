@@ -57,11 +57,11 @@ public class CreateApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Create an application license";
-            s.Description = "Creates one license for the application. Returns the created license including its display key. Bearer auth; requires license.create.";
+            s.Description = "Creates one license for the application. Body: { expiresInDays: int > 0, maxSessions?: short >= 0, email?: string, username?: string, password?: string, generateKey?: bool, customKey?: GUID or 22-character key }. Returns the created license including its display key. Bearer auth; requires license.create.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Response<LicenseDto>(200, "Created license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
-            s.Response<ErrorResponse>(400, "Invalid request or validation failure");
+            s.Response<ErrorResponse>(400, "Invalid request, expiresInDays <= 0, maxSessions < 0, invalid customKey, or license builder validation failure");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
         });
     }
@@ -165,7 +165,7 @@ public class GetApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Get an application license";
-            s.Description = "Returns a single license only when it belongs to the routed application. Bearer auth; requires license.retrieve_info.";
+            s.Description = "Returns a single license only when it belongs to the routed application. No request body. Bearer auth; requires license.retrieve_info.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
@@ -209,12 +209,12 @@ public class UpdateApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Update an application license";
-            s.Description = "Partially updates email, username, maxSessions, expiresAt/expiresInDays, or paused. Bearer auth; requires license.update.";
+            s.Description = "Partially updates an app license. Body: { email?: string, username?: string, maxSessions?: short >= 0, expiresInDays?: int > 0, expiresAt?: unix seconds, paused?: bool }. If both expiresAt and expiresInDays are supplied, expiresAt wins. Bearer auth; requires license.update.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
-            s.Response<LicenseDto>(200, "Updated license");
-            s.Response<ErrorResponse>(400, "Invalid request or validation failure");
+            s.Response<LicenseDto>(200, "Updated license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
+            s.Response<ErrorResponse>(400, "Invalid request, maxSessions < 0, expiresInDays <= 0, validation failure, or update failed");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
             s.Response(404, "License not found for this app");
         });
@@ -321,12 +321,12 @@ public class ExtendApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Extend an application license";
-            s.Description = "Adds days, months, or years to a license expiration and logs old/new expiration. Bearer auth; requires license.update.";
+            s.Description = "Extends a license from max(now, current expiration). Body: { amount: int > 0, unit: 'days' | 'months' | 'years', reason?: string }. Logs old/new expiration without logging secrets. Bearer auth; requires license.update.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
-            s.Response<LicenseDto>(200, "Extended license");
-            s.Response<ErrorResponse>(400, "Invalid amount/unit or validation failure");
+            s.Response<LicenseDto>(200, "Extended license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
+            s.Response<ErrorResponse>(400, "amount <= 0, unit is not days/months/years, or validation failure");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
             s.Response(404, "License not found for this app");
         });
@@ -399,7 +399,7 @@ public class DeleteApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Delete an application license";
-            s.Description = "Deletes one license if it belongs to the application; sessions cascade via FK. Bearer auth; requires license.delete.";
+            s.Description = "Deletes one license if it belongs to the routed application. No request body. Sessions cascade via FK; response includes the active session count observed before delete. Bearer auth; requires license.delete.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
@@ -465,11 +465,11 @@ public class BanApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Ban an application license";
-            s.Description = "Sets banned=true and disables active sessions. Bearer auth; requires license.ban.";
+            s.Description = "Sets banned=true and disables active sessions for the license. Body: { reason?: string }. Logs sessions revoked and reason without logging secrets. Bearer auth; requires license.ban.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
-            s.Response<LicenseDto>(200, "Banned license");
+            s.Response<LicenseDto>(200, "Banned license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
             s.Response<ErrorResponse>(400, "Validation failure");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
             s.Response(404, "License not found for this app");
@@ -529,11 +529,11 @@ public class UnbanApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Unban an application license";
-            s.Description = "Sets banned=false for a license. Bearer auth; requires license.ban.";
+            s.Description = "Sets banned=false for a license. Body: { reason?: string }. Logs reason without logging secrets. Bearer auth; requires license.ban.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
-            s.Response<LicenseDto>(200, "Unbanned license");
+            s.Response<LicenseDto>(200, "Unbanned license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
             s.Response<ErrorResponse>(400, "Validation failure");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
             s.Response(404, "License not found for this app");
@@ -587,11 +587,11 @@ public class RevokeApplicationLicenseEndpoint(
         Summary(s =>
         {
             s.Summary = "Revoke an application license";
-            s.Description = "Sets revoked=true/revokedAt and disables active sessions. Bearer auth; requires license.ban.";
+            s.Description = "Sets revoked=true/revokedAt and disables active sessions. Body: { reason?: string }. Logs revokedAt, sessions revoked, and reason without logging secrets. Bearer auth; requires license.ban.";
             s.Params["teamId"] = "Team id (GUID)";
             s.Params["appId"] = "Application id (GUID)";
             s.Params["licenseId"] = "License id";
-            s.Response<LicenseDto>(200, "Revoked license");
+            s.Response<LicenseDto>(200, "Revoked license: { id, value, creationDate, activated, paused, banned, revoked, revokedAt, expirationDate, email, username, maxSessions, discord }");
             s.Response<ErrorResponse>(400, "Validation failure");
             s.Response(403, "Not a team member, missing scope, or app is outside this team");
             s.Response(404, "License not found for this app");
