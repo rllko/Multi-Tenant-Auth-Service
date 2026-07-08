@@ -24,63 +24,61 @@ public class LicenseSessionAuth(
 
         var authHeader = Request.Headers.Authorization[0];
 
-        if (authHeader?.StartsWith(SchemeName) is true)
+        if (authHeader?.StartsWith(SchemeName) is not true)
         {
-            var token = authHeader[SchemeName.Length..].Trim();
-            LicenseSession? session = null;
-
-            // if (session.Active is false)
-            // {
-            /*var error = new ValidationFailure(
-                "session_inactive",
-                "This session is not active, try logging in again");
-            return new ValidationFailed(error);
-        }
-
-        if (session.License.Paused)
-        {
-            var error = new ValidationFailure("license_paused",
-                "This license is paused, contact support for more info.");
-        }
-
-        // if it was created more than one day ago, refresh
-        if (DateTimeOffset.Now.ToUnixTimeSeconds() > session.RefreshedAt)
-        {
-            var error = new ValidationFailure("error", "Session could not be created");
-            return new ValidationFailed(error);
-        }*/
-
-            if (Guid.TryParse(token, out var tokenGuid) &&
-                (session = await sessionService.GetSessionByTokenAsync(tokenGuid)) != null)
-            {
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Authentication,
-                        session.AuthorizationToken!.ToString()!),
-                    new Claim(ClaimTypes.NameIdentifier,
-                        session.License.Username!),
-                    new Claim(ClaimTypes.Expiration,
-                        session.License.ExpiresAt.ToString()),
-                    new Claim(ClaimTypes.Role,
-                        session.CreatedAt.ToString())
-                };
-                var identity = new ClaimsIdentity(claims, SchemeName);
-                var principal = new ClaimsPrincipal(identity);
-                var ticket = new AuthenticationTicket(principal, SchemeName);
-
-                return AuthenticateResult.Success(ticket);
-            }
-
             Response.StatusCode = 401;
             Response.Headers.Append("WWW-Authenticate", "Basic realm=\"website.com\"");
-
             return AuthenticateResult.Fail("Invalid Authorization Header");
         }
 
-        Response.StatusCode = 401;
-        Response.Headers.Append("WWW-Authenticate", "Basic realm=\"website.com\"");
+        var token = authHeader[SchemeName.Length..].Trim();
+        if (Guid.TryParse(token, out var tokenGuid) is false)
+        {
+            Response.StatusCode = 401;
+            Response.Headers.Append("WWW-Authenticate", "Basic realm=\"website.com\"");
+            return AuthenticateResult.Fail("Invalid Authorization Header");
+        }
 
-        return AuthenticateResult.Fail("Invalid Authorization Header");
+        var session = await sessionService.GetSessionByTokenAsync(tokenGuid);
+        var validationFailure = ValidateSession(session);
+        if (validationFailure is not null)
+        {
+            Response.StatusCode = 401;
+            return AuthenticateResult.Fail(validationFailure);
+        }
+
+        Context.Items["Session"] = session;
+        Context.Items["session"] = session;
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Authentication, session!.AuthorizationToken!.ToString()!),
+            new Claim("session-token", session.AuthorizationToken!.ToString()!),
+            new Claim(ClaimTypes.NameIdentifier, session.License.Username ?? string.Empty),
+            new Claim(ClaimTypes.Expiration, session.License.ExpiresAt.ToString()),
+            new Claim(ClaimTypes.Role, session.CreatedAt.ToString())
+        };
+        var identity = new ClaimsIdentity(claims, SchemeName);
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, SchemeName);
+
+        return AuthenticateResult.Success(ticket);
+    }
+
+    private static string? ValidateSession(LicenseSession? session)
+    {
+        if (session is null) return "Session not found";
+        if (session.Active is false) return "Session is inactive";
+        if (session.License is null) return "License not found";
+        if (session.License.Paused) return "License is paused";
+        if (session.License.Banned) return "License is banned";
+        if (session.License.Revoked) return "License is revoked";
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (session.License.ExpiresAt <= now) return "License is expired";
+        if (session.RefreshedAt is not null && now - session.RefreshedAt > 86_400) return "Session is stale";
+
+        return null;
     }
 
     private bool IsPublicEndpoint()

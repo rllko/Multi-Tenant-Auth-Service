@@ -136,6 +136,21 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
         return await connection.QuerySingleAsync<ApplicationCounts>(sql, new { TeamId = teamId });
     }
 
+    public async Task<bool> ApplicationBelongsToTeamAsync(Guid teamId, Guid appId)
+    {
+        const string sql = @"
+            SELECT EXISTS (
+                SELECT 1
+                FROM applications
+                WHERE id = @AppId
+                  AND team = @TeamId
+            );";
+
+        using var connection = await connectionFactory.CreateConnectionAsync();
+
+        return await connection.ExecuteScalarAsync<bool>(sql, new { TeamId = teamId, AppId = appId });
+    }
+
     private string GenerateClientSecret()
     {
 #warning move this away to the client
