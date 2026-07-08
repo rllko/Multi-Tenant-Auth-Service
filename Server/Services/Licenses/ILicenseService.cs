@@ -15,9 +15,14 @@ public interface ILicenseService
         long discordId,
         IDbTransaction? transaction = null);
 
-    Task<License?> GetLicenseByIdAsync(long licenseId);
-    Task<License?> GetLicenseByValueAsync(Guid license);
+    Task<License?> GetLicenseByIdAsync(long licenseId, IDbTransaction? transaction = null);
+    Task<License?> GetLicenseByValueAsync(Guid license, IDbTransaction? transaction = null);
     Task<License?> GetLicenseByCreationDateAsync(DateTime license);
+    Task<License?> GetLicenseForAppAsync(long licenseId, Guid appId, IDbTransaction? transaction = null);
+    Task<License?> ExtendLicenseForAppAsync(long licenseId, Guid appId, int amount, string unit, IDbTransaction? transaction = null);
+    Task<License?> SetLicenseBannedAsync(long licenseId, Guid appId, bool banned, IDbTransaction? transaction = null);
+    Task<License?> SetLicenseRevokedAsync(long licenseId, Guid appId, long revokedAt, IDbTransaction? transaction = null);
+    Task<int> DeleteLicensesForAppAsync(IEnumerable<long> licenseIds, Guid appId, IDbTransaction? transaction = null);
     Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null);
     Task<IEnumerable<License>> GetAllLicensesAsync();
 

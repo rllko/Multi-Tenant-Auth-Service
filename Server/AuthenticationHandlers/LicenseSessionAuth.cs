@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Authentication.Models.Entities;
 using Authentication.Services.Licenses.Sessions;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,7 @@ public class LicenseSessionAuth(
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public const string SchemeName = "Session";
+    private const int SessionRefreshLifetimeInDays = 1;
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -29,30 +31,26 @@ public class LicenseSessionAuth(
             var token = authHeader[SchemeName.Length..].Trim();
             LicenseSession? session = null;
 
-            // if (session.Active is false)
-            // {
-            /*var error = new ValidationFailure(
-                "session_inactive",
-                "This session is not active, try logging in again");
-            return new ValidationFailed(error);
-        }
-
-        if (session.License.Paused)
-        {
-            var error = new ValidationFailure("license_paused",
-                "This license is paused, contact support for more info.");
-        }
-
-        // if it was created more than one day ago, refresh
-        if (DateTimeOffset.Now.ToUnixTimeSeconds() > session.RefreshedAt)
-        {
-            var error = new ValidationFailure("error", "Session could not be created");
-            return new ValidationFailed(error);
-        }*/
-
             if (Guid.TryParse(token, out var tokenGuid) &&
                 (session = await sessionService.GetSessionByTokenAsync(tokenGuid)) != null)
             {
+                if (session.Active is false ||
+                    session.License is null ||
+                    session.License.Paused ||
+                    session.License.Banned ||
+                    session.License.Revoked ||
+                    session.License.ExpiresAt <= DateTimeOffset.UtcNow.ToUnixTimeSeconds() ||
+                    (session.RefreshedAt != null && DateTimeOffset.UtcNow.ToUnixTimeSeconds() > DateTimeOffset
+                        .FromUnixTimeSeconds((long)session.RefreshedAt)
+                        .AddDays(SessionRefreshLifetimeInDays).ToUnixTimeSeconds()))
+                {
+                    Response.StatusCode = 401;
+                    var error = new ValidationFailure("error", "Session could not be created");
+                    return AuthenticateResult.Fail(error.ErrorMessage);
+                }
+
+                Context.Items["session"] = session;
+
                 var claims = new[]
                 {
                     new Claim(ClaimTypes.Authentication,
@@ -70,11 +68,6 @@ public class LicenseSessionAuth(
 
                 return AuthenticateResult.Success(ticket);
             }
-
-            Response.StatusCode = 401;
-            Response.Headers.Append("WWW-Authenticate", "Basic realm=\"website.com\"");
-
-            return AuthenticateResult.Fail("Invalid Authorization Header");
         }
 
         Response.StatusCode = 401;

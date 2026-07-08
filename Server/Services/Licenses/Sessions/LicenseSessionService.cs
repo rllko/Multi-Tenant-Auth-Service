@@ -20,185 +20,193 @@ public class LicenseSessionService(
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE id = @Id;";
+        const string query = @"
+            SELECT
+                id AS session_id,
+                session_token,
+                hwid,
+                license_id,
+                refreshed_at,
+                is_active,
+                created_at
+            FROM user_sessions
+            WHERE id = @Id;";
 
-        var session =
-            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { Id = id });
-
-        return session;
+        var row = await connection.QueryFirstOrDefaultAsync(query, new { Id = id });
+        return row is null ? null : MapSession(row);
     }
 
     public async Task<IEnumerable<LicenseSession>> GetSessionsByLicenseAsync(long licenseId)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE license_id = @licenseId;";
+        const string query = @"
+            SELECT
+                id AS session_id,
+                session_token,
+                hwid,
+                license_id,
+                refreshed_at,
+                is_active,
+                created_at
+            FROM user_sessions
+            WHERE license_id = @licenseId
+              AND is_active IS TRUE;";
 
-        var results = await connection.QueryMultipleAsync(getDiscordIdQuery, new { licenseId });
-
-        var reader = await results.ReadAsync();
-
-        var sessions = reader.Select(x =>
-        {
-            var xy = x;
-
-            return new LicenseSession
-            {
-                AuthorizationToken = x.session_token,
-                LicenseId = x.license_id,
-                RefreshedAt = x.refreshed_at,
-                Active = x.is_active,
-                CreatedAt = x.created_at,
-                HwidId = x.hwid
-            };
-        });
-
-        return sessions;
+        var rows = await connection.QueryAsync(query, new { licenseId });
+        return rows.Select(MapSession).ToList();
     }
 
     public async Task<LicenseSession?> GetSessionByTokenAsync(Guid token)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery =
-            @"SELECT us.*,l.*,l.expires_at as licenseExpiration FROM user_sessions us
-         join public.licenses l on l.id = us.license_id
-         join hwids hw on hw.id = us.hwid
-         WHERE session_token = @token;";
-#warning manually map the 3 idk
+        const string query = @"
+            SELECT
+                us.id AS session_id,
+                us.session_token,
+                us.hwid,
+                us.license_id,
+                us.refreshed_at,
+                us.is_active,
+                us.created_at,
+                l.id AS l_id,
+                l.value AS l_value,
+                l.discordid AS l_discordid,
+                l.max_sessions AS l_max_sessions,
+                l.email AS l_email,
+                l.username AS l_username,
+                l.creation_date AS l_creation_date,
+                l.activated_at AS l_activated_at,
+                l.password AS l_password,
+                l.expires_at AS l_expires_at,
+                l.paused AS l_paused,
+                l.activated AS l_activated,
+                l.application AS l_application,
+                l.banned AS l_banned,
+                l.revoked AS l_revoked,
+                l.revoked_at AS l_revoked_at
+            FROM user_sessions us
+            JOIN public.licenses l ON l.id = us.license_id
+            LEFT JOIN hwids hw ON hw.id = us.hwid
+            WHERE us.session_token = @token;";
 
-        var session =
-            await connection.QueryAsync<dynamic, dynamic, LicenseSession>(getDiscordIdQuery,
-                (x, y) =>
-                {
-                    var license = new License
-                    {
-                        Id = y.id,
-                        Value = y.value,
-                        DiscordId = y.discordid,
-                        MaxSessions = y.max_sessions,
-                        Email = y.email,
-                        Username = y.username,
-                        CreationDate = y.creation_date is not null
-                            ? DateTimeOffset.FromUnixTimeSeconds(y.creation_date)
-                            : null,
-                        ActivatedAt = y.activated_at is not null ? y.actvated_at : null,
-                        Password = y.password,
-                        ExpiresAt = y.expires_at,
-                        Paused = y.paused,
-                        Activated = y.activated
-                    };
-
-                    return new LicenseSession
-                    {
-                        AuthorizationToken = x.session_token,
-                        LicenseId = x.license_id,
-                        SessionId = x.id,
-                        RefreshedAt = x.refreshed_at,
-                        Active = x.is_active,
-                        CreatedAt = x.created_at,
-                        HwidId = x.hwid,
-                        License = license
-                    };
-                }
-                , new
-                {
-                    token
-                }, splitOn: "id,license_id");
-
-        return session.FirstOrDefault();
+        var row = await connection.QueryFirstOrDefaultAsync(query, new { token });
+        return row is null ? null : MapSessionWithLicense(row);
     }
 
     public async Task<LicenseSession?> GetSessionByHwidAsync(long id)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE hwid = @Id;";
+        const string query = @"
+            SELECT
+                id AS session_id,
+                session_token,
+                hwid,
+                license_id,
+                refreshed_at,
+                is_active,
+                created_at
+            FROM user_sessions
+            WHERE hwid = @id;";
 
-        var session =
-            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { hwid = id });
-
-        return session;
+        var row = await connection.QueryFirstOrDefaultAsync(query, new { id });
+        return row is null ? null : MapSession(row);
     }
 
     public async Task<Result<LicenseSession, ValidationFailed>> UpdateSessionAsync(LicenseSession session,
         IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"
+                UPDATE user_sessions
+                SET session_token = COALESCE(@AuthorizationToken, session_token),
+                    hwid = COALESCE(@HwidId, hwid),
+                    license_id = @LicenseId,
+                    refreshed_at = COALESCE(@RefreshedAt, refreshed_at),
+                    is_active = @Active
+                WHERE id = @SessionId
+                RETURNING session_token;";
 
-        var addDiscordIdQuery =
-            @"UPDATE user_sessions
-	        SET session_token = @SessionId,
-                hwid = CASE WHEN @HwidId IS NOT NULL THEN @HwidId ELSE hwid END, 
-                license_id = @LicenseId,
-                ip_address = CASE WHEN @IpAddress IS NOT NULL THEN @IpAddress ELSE ip_address END,
-                refreshed_at = CASE WHEN @RefreshedAt IS NOT NULL THEN @RefreshedAt ELSE refreshed_at END
-	        WHERE id = @SessionId returning session_token";
-
-        var newSessionToken =
-            await connection.QueryFirstAsync<Guid>(addDiscordIdQuery,
+            var newSessionToken = await connection.QueryFirstAsync<Guid>(query,
                 new
                 {
-                    session,
+                    session.AuthorizationToken,
                     session.SessionId,
                     session.HwidId,
                     session.LicenseId,
-                    session.IpAddress,
-                    session.RefreshedAt
+                    session.RefreshedAt,
+                    session.Active
                 },
                 transaction);
 
-        var newSession = await GetSessionByTokenAsync(newSessionToken);
+            var newSession = await GetSessionByTokenAsync(newSessionToken);
+            if (newSession != null) return newSession;
 
-        if (newSession != null) return newSession;
-
-        throw new Exception("what");
+            var error = new ValidationFailure("session", "session could not be updated");
+            return new ValidationFailed(error);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<Result<LicenseSession, ValidationFailed>> CreateSessionWithTokenAsync(SignInRequest request)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
+        using var transaction = connection.BeginTransaction();
 
-        var transaction = connection.BeginTransaction();
-
-        // validate credentials
         if (await accountService.CheckLicensePassword(request.Username, request.Password) is false)
         {
             var error = new ValidationFailure("invalid_credentials", "invalid username or password");
-
             return new ValidationFailed(error);
         }
 
-        // check if license is valid -- TODO create checkValidLicense
         var license = await licenseService.GetLicenseByUsername(request.Username);
 
         if (license is null)
         {
             var error = new ValidationFailure("internal_error", "something went wrong D:");
-
             return new ValidationFailed(error);
         }
 
-        // check for existing sessions
-        var sessions = await GetSessionsByLicenseAsync(license.Id);
-
-        if (sessions?.Count() >= license.MaxSessions && license.MaxSessions > 0)
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (license.Paused)
         {
-            var error = new ValidationFailure("error_max_sessions", "max sessions reached.");
-
+            var error = new ValidationFailure("license_paused", "license is paused");
             return new ValidationFailed(error);
         }
 
-        // check if license has time left
-        if (license.ExpiresAt < DateTimeOffset.Now.ToUnixTimeSeconds())
+        if (license.Banned)
+        {
+            var error = new ValidationFailure("license_banned", "license is banned");
+            return new ValidationFailed(error);
+        }
+
+        if (license.Revoked)
+        {
+            var error = new ValidationFailure("license_revoked", "license is revoked");
+            return new ValidationFailed(error);
+        }
+
+        if (license.ExpiresAt <= now)
         {
             var error = new ValidationFailure("error_license_expired", "license expired.");
+            return new ValidationFailed(error);
+        }
 
+        var sessions = await GetSessionsByLicenseAsync(license.Id);
+        if (sessions.Count() >= license.MaxSessions && license.MaxSessions > 0)
+        {
+            var error = new ValidationFailure("error_max_sessions", "max sessions reached.");
             return new ValidationFailed(error);
         }
 
         var newSession = await CreateLicenseSessionAsync(license.Id, transaction: transaction);
-
         transaction.Commit();
 
         return newSession;
@@ -206,7 +214,7 @@ public class LicenseSessionService(
 
     public async Task<Result<LicenseSession, ValidationFailed>> RefreshLicenseSession(LicenseSession session)
     {
-        session.RefreshedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+        session.RefreshedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var result = await UpdateSessionAsync(session);
 
         return result;
@@ -214,57 +222,82 @@ public class LicenseSessionService(
 
     public async Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"UPDATE user_sessions SET session_token = null, is_active = false WHERE id = @id;";
+            var affectedRows = await connection.ExecuteAsync(query, new { id }, transaction);
 
-        const string addDiscordIdQuery = @"UPDATE user_sessions SET session_token = null WHERE id = @id;";
+            return affectedRows > 0;
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
+    }
 
-        //const string addDiscordIdQuery = @"DELETE FROM user_sessions WHERE id = @id;";
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
+    public async Task<int> RevokeSessionsByLicenseAsync(long licenseId, IDbTransaction? transaction = null)
+    {
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"
+                UPDATE user_sessions
+                SET is_active = false
+                WHERE license_id = @licenseId
+                  AND is_active IS TRUE;";
 
-        return affectedRows1 > 0;
+            return await connection.ExecuteAsync(query, new { licenseId }, transaction);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<LicenseSession> CreateLicenseSessionAsync(long licenseId, string? ipAddress = null,
         IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            var license = await licenseService.GetLicenseByIdAsync(licenseId, transaction);
+            if (license is null) throw new InvalidOperationException("license could not be found");
 
-        var createdAt = DateTimeOffset.Now;
+            var createdAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var expiration = DateTimeOffset.Now.AddDays(1);
+            const string query = @"
+                INSERT INTO user_sessions (license_id, ip_address, created_at, refreshed_at, application)
+                VALUES (@licenseId, @ipAddress, @createdAt, @refreshedAt, @application)
+                RETURNING
+                    id AS session_id,
+                    session_token,
+                    hwid,
+                    license_id,
+                    refreshed_at,
+                    is_active,
+                    created_at;";
 
-        const string query = @"INSERT INTO user_sessions (license_id, ip_address,created_at,refreshed_at)
-        VALUES ( @licenseId, @ipAddress,@expiration,@createdAt) RETURNING *;";
-
-        var reader =
-            await connection.QueryAsync(query,
+            var row = await connection.QueryFirstAsync(query,
                 new
                 {
-                    licenseId, ipAddress, expiration = expiration.ToUnixTimeSeconds(),
-                    createdAt = createdAt.ToUnixTimeSeconds()
+                    licenseId,
+                    ipAddress,
+                    createdAt,
+                    refreshedAt = createdAt,
+                    application = license.Application
                 },
                 transaction);
 
-        var license = await licenseService.GetLicenseByIdAsync(licenseId);
+            var newSession = MapSession(row);
+            newSession.License = license;
 
-        var newSession = reader.Select(x =>
+            return newSession;
+        }
+        finally
         {
-            var xy = x;
-
-            return new LicenseSession
-            {
-                AuthorizationToken = x.session_token,
-                LicenseId = x.license_id,
-                Active = x.is_active,
-                RefreshedAt = x.refreshed_at,
-                CreatedAt = x.created_at,
-                HwidId = x.hwid,
-                License = license
-            };
-        }).First();
-
-        return newSession;
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<Result<LicenseSession, ValidationFailed>> SetupSessionHwid(LicenseSession licenseSession,
@@ -275,7 +308,6 @@ public class LicenseSessionService(
         if (hwid is null)
         {
             var error = new ValidationFailure("error", "hwid could not be created");
-
             return new ValidationFailed(error);
         }
 
@@ -288,24 +320,90 @@ public class LicenseSessionService(
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery = @"SELECT * FROM user_sessions WHERE session_token = @sessionToken;";
+        const string query = @"
+            SELECT
+                id AS session_id,
+                session_token,
+                hwid,
+                license_id,
+                refreshed_at,
+                is_active,
+                created_at
+            FROM user_sessions
+            WHERE session_token = @sessionToken;";
 
-        var session =
-            connection.QueryFirstOrDefault<LicenseSession>(getDiscordIdQuery, new { licenseId = sessionToken });
-
-        return session;
+        var row = await connection.QueryFirstOrDefaultAsync(query, new { sessionToken });
+        return row is null ? null : MapSession(row);
     }
 
     public async Task<LicenseDto?> GetLicenseBySessionTokenAsync(long sessionId)
     {
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        var getDiscordIdQuery =
-            @"SELECT l.*  FROM user_sessions us INNER JOIN licenses l ON us.license_id = l.id WHERE us.id = @sessionId;";
+        const string query = @"
+            SELECT l.id
+            FROM user_sessions us
+            INNER JOIN licenses l ON us.license_id = l.id
+            WHERE us.id = @sessionId;";
 
-        var session = await
-            connection.QueryFirstOrDefaultAsync<LicenseDto>(getDiscordIdQuery, new { sessionId });
+        var licenseId = await connection.QueryFirstOrDefaultAsync<long?>(query, new { sessionId });
+        if (licenseId is null) return null;
+
+        var license = await licenseService.GetLicenseByIdAsync(licenseId.Value);
+        return license?.MapToDto();
+    }
+
+    private async Task<IDbConnection> GetConnectionAsync(IDbTransaction? transaction)
+    {
+        return transaction?.Connection ?? await connectionFactory.CreateConnectionAsync();
+    }
+
+    private static void DisposeIfOwned(IDbConnection connection, IDbTransaction? transaction)
+    {
+        if (transaction?.Connection is null) connection.Dispose();
+    }
+
+    private static LicenseSession MapSession(dynamic row)
+    {
+        var values = (IDictionary<string, object?>)row;
+
+        return new LicenseSession
+        {
+            AuthorizationToken = LicenseRowMapper.ToGuid(values, "session_token"),
+            LicenseId = LicenseRowMapper.ToLong(values, "license_id") ?? 0,
+            SessionId = LicenseRowMapper.ToGuid(values, "session_id") ?? Guid.Empty,
+            RefreshedAt = LicenseRowMapper.ToLong(values, "refreshed_at"),
+            Active = LicenseRowMapper.ToBool(values, "is_active"),
+            CreatedAt = LicenseRowMapper.ToLong(values, "created_at") ?? 0,
+            HwidId = LicenseRowMapper.ToLong(values, "hwid")
+        };
+    }
+
+    private static LicenseSession MapSessionWithLicense(dynamic row)
+    {
+        var values = (IDictionary<string, object?>)row;
+        var session = MapSession(row);
+        session.License = new License
+        {
+            Id = LicenseRowMapper.ToLong(values, "l_id")!.Value,
+            Value = LicenseRowMapper.ToGuid(values, "l_value")!.Value,
+            Application = LicenseRowMapper.ToGuid(values, "l_application") ?? Guid.Empty,
+            DiscordId = LicenseRowMapper.ToLong(values, "l_discordid"),
+            MaxSessions = LicenseRowMapper.ToShort(values, "l_max_sessions") ?? 1,
+            Email = LicenseRowMapper.ToString(values, "l_email"),
+            Username = LicenseRowMapper.ToString(values, "l_username"),
+            CreationDate = DateTimeOffset.FromUnixTimeSeconds(LicenseRowMapper.ToLong(values, "l_creation_date") ?? 0),
+            ActivatedAt = LicenseRowMapper.ToLong(values, "l_activated_at"),
+            Password = LicenseRowMapper.ToString(values, "l_password"),
+            ExpiresAt = LicenseRowMapper.ToLong(values, "l_expires_at") ?? 0,
+            Paused = LicenseRowMapper.ToBool(values, "l_paused"),
+            Activated = LicenseRowMapper.ToBool(values, "l_activated"),
+            Banned = LicenseRowMapper.ToBool(values, "l_banned"),
+            Revoked = LicenseRowMapper.ToBool(values, "l_revoked"),
+            RevokedAt = LicenseRowMapper.ToLong(values, "l_revoked_at")
+        };
 
         return session;
     }
+
 }

@@ -18,6 +18,7 @@ public interface IApplicationService
         IDbTransaction transaction);
 
     Task<bool> DeleteApplicationAsync(Guid applicationId, IDbTransaction? transaction);
+    Task<bool> ApplicationBelongsToTeamAsync(Guid teamId, Guid appId);
 
     Task<ApplicationCounts> CountApplicationsByTeamAsync(Guid teamId);
 }

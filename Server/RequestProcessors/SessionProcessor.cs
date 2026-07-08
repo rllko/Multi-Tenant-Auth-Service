@@ -7,6 +7,8 @@ namespace Authentication.RequestProcessors;
 
 public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
 {
+    private const int SessionRefreshLifetimeInDays = 1;
+
     public async Task PreProcessAsync(IPreProcessorContext<TRequest> ctx, CancellationToken ct)
     {
         var sessionService = ctx.HttpContext.RequestServices.GetRequiredService<ILicenseSessionService>();
@@ -21,20 +23,10 @@ public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
 
         var session = await sessionService.GetSessionByTokenAsync(tokenGuid);
 
-#warning please make this more complete, add checks
-        // check if session is active
         if (session is null)
         {
             ctx.ValidationFailures.Add(
                 new ValidationFailure("invalid_session", "Session could not be found"));
-            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
-            return;
-        }
-
-        if (session.License.ExpiresAt < DateTimeOffset.Now.ToUnixTimeSeconds())
-        {
-            ctx.ValidationFailures.Add(
-                new ValidationFailure("expired_license", "Your license is expired"));
             await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
             return;
         }
@@ -48,25 +40,58 @@ public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
             return;
         }
 
+        if (session.License is null)
+        {
+            ctx.ValidationFailures.Add(
+                new ValidationFailure("invalid_license", "License could not be found"));
+            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
+            return;
+        }
+
         if (session.License.Paused)
         {
-            ctx.ValidationFailures.Add(new ValidationFailure("paused_paused",
+            ctx.ValidationFailures.Add(new ValidationFailure("license_paused",
                 "This license is paused, contact support for more info."));
             await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
             return;
         }
 
-        // if it was created more than one day ago, refresh
-        if (session.RefreshedAt != null && DateTimeOffset.Now.ToUnixTimeSeconds() > DateTimeOffset
+        if (session.License.Banned)
+        {
+            ctx.ValidationFailures.Add(new ValidationFailure("license_banned",
+                "This license is banned, contact support for more info."));
+            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
+            return;
+        }
+
+        if (session.License.Revoked)
+        {
+            ctx.ValidationFailures.Add(new ValidationFailure("license_revoked",
+                "This license has been revoked, contact support for more info."));
+            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (session.License.ExpiresAt <= now)
+        {
+            ctx.ValidationFailures.Add(
+                new ValidationFailure("expired_license", "Your license is expired"));
+            await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
+            return;
+        }
+
+        if (session.RefreshedAt != null && now > DateTimeOffset
                 .FromUnixTimeSeconds((long)session.RefreshedAt)
-                .AddDays(1).ToUnixTimeSeconds())
+                .AddDays(SessionRefreshLifetimeInDays).ToUnixTimeSeconds())
         {
             ctx.ValidationFailures.Add(new ValidationFailure(
                 "not_refreshed",
                 "Session could not be created"));
             await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
+            return;
         }
 
-        ctx.HttpContext.Items["Session"] = session;
+        ctx.HttpContext.Items["session"] = session;
     }
 }

@@ -9,132 +9,163 @@ namespace Authentication.Services.Licenses;
 
 public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseService
 {
+    private const string LicenseColumns = @"
+        id,
+        value,
+        discordid,
+        max_sessions,
+        email,
+        username,
+        creation_date,
+        activated_at,
+        password,
+        expires_at,
+        paused,
+        activated,
+        application,
+        banned,
+        revoked,
+        revoked_at";
+
     public async Task<IEnumerable<License>> GetLicensesByDiscordId(long discordId)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        var getDiscordIdQuery =
-            @"SELECT l.* FROM licenses l 
-            WHERE discordid = @discordId;";
-
-        var licenseList = await
-            connection.QueryAsync<dynamic>(getDiscordIdQuery, new { discordId });
-
-        return licenseList.Select(x => new License
+        var connection = await OpenConnectionAsync();
+        try
         {
-            Id = x.id,
-            Value = x.value,
-            DiscordId = x.discordid,
-            MaxSessions = x.max_sessions,
-            Email = x.email,
-            Username = x.username,
-            CreationDate = x.creation_date is not null
-                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
-                : null,
-            ActivatedAt = x.activated_at is not null ? x.activated_at : null,
-            Password = x.password,
-            ExpiresAt = x.expires_at,
-            Paused = x.paused,
-            Activated = x.activated
-        }).ToList();
+            var rows = await connection.QueryAsync($"SELECT {LicenseColumns} FROM licenses WHERE discordid = @discordId;",
+                new { discordId });
+
+            return rows.Select(MapLicense).ToList();
+        }
+        finally
+        {
+            connection.Dispose();
+        }
     }
 
-    public async Task<License?> GetLicenseByIdAsync(long licenseId)
+    public async Task<License?> GetLicenseByIdAsync(long licenseId, IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            var row = await connection.QuerySingleOrDefaultAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE id = @licenseId;",
+                new { licenseId }, transaction);
 
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE id = @licenseId;";
-
-        var license = await
-            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseId });
-
-        return license;
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
-    public async Task<License?> GetLicenseByValueAsync(Guid licenseValue)
+    public async Task<License?> GetLicenseByValueAsync(Guid licenseValue, IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            var row = await connection.QuerySingleOrDefaultAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE value = @licenseValue;",
+                new { licenseValue }, transaction);
 
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE value = @licenseValue;";
-
-        var license = await
-            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue });
-
-        return license;
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<License?> GetLicenseByCreationDateAsync(DateTime date)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await OpenConnectionAsync();
+        try
+        {
+            var row = await connection.QuerySingleOrDefaultAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE creation_date = @date;",
+                new { date });
 
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE creation_date = @date;";
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            connection.Dispose();
+        }
+    }
 
-        var license = await
-            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { date });
+    public async Task<License?> GetLicenseForAppAsync(long licenseId, Guid appId, IDbTransaction? transaction = null)
+    {
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            var row = await connection.QuerySingleOrDefaultAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE id = @licenseId AND application = @appId;",
+                new { licenseId, appId }, transaction);
 
-        return license;
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<IEnumerable<License>> GetAllLicensesAsync()
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        var getDiscordIdQuery = @"SELECT * FROM licenses;";
-
-        await using var multi = await connection.QueryMultipleAsync(getDiscordIdQuery);
-
-        // Custom mapping
-        var licenses = (await multi.ReadAsync<dynamic>()).Select(x => new License
+        var connection = await OpenConnectionAsync();
+        try
         {
-            Id = x.id,
-            Value = x.value,
-            DiscordId = x.discordid,
-            MaxSessions = x.max_sessions,
-            Email = x.email,
-            Username = x.username,
-            CreationDate = x.creation_date is not null
-                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
-                : null,
-            ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
-            Password = x.password,
-            ExpiresAt = x.expires_at,
-            Paused = x.paused,
-            Activated = x.activated
-        }).ToList();
-
-        return licenses;
+            var rows = await connection.QueryAsync($"SELECT {LicenseColumns} FROM licenses;");
+            return rows.Select(MapLicense).ToList();
+        }
+        finally
+        {
+            connection.Dispose();
+        }
     }
 
-    /// <summary>
-    ///     Update discord most likely
-    /// </summary>
-    /// <param name="license"></param>
-    /// <param name="transaction"></param>
-    /// <returns></returns>
     public async Task<License?> UpdateLicenseAsync(License license,
         IDbTransaction? transaction = null)
     {
-// #warning here, add license validator
-//         var validationResult = await validator.ValidateAsync(license);
-//         if (!validationResult.IsValid) return null;
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"
+                UPDATE licenses
+                SET
+                    password = @Password,
+                    username = @Username,
+                    discordid = @DiscordId,
+                    email = @Email,
+                    paused = @Paused,
+                    activated = @Activated,
+                    activated_at = @ActivatedAt,
+                    max_sessions = @MaxSessions,
+                    expires_at = @ExpiresAt,
+                    banned = @Banned,
+                    revoked = @Revoked,
+                    revoked_at = @RevokedAt
+                WHERE id = @Id
+                RETURNING
+                    id,
+                    value,
+                    discordid,
+                    max_sessions,
+                    email,
+                    username,
+                    creation_date,
+                    activated_at,
+                    password,
+                    expires_at,
+                    paused,
+                    activated,
+                    application,
+                    banned,
+                    revoked,
+                    revoked_at;";
 
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        var query = @"
-            UPDATE Licenses
-            SET 
-                password = @Password,
-                username = @Username,
-                discordid = @DiscordId,
-                email = @Email,
-                paused = @Paused,
-                activated = @Activated,
-                activated_at = @ActivatedAt
-            WHERE id = @Id returning *";
-
-
-        var updatedLicense =
-            await connection.QuerySingleAsync<License>(query, new
+            var row = await connection.QuerySingleOrDefaultAsync(query, new
             {
                 license.Password,
                 license.Username,
@@ -143,65 +174,186 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
                 license.Paused,
                 license.Activated,
                 license.ActivatedAt,
+                license.MaxSessions,
+                license.ExpiresAt,
+                license.Banned,
+                license.Revoked,
+                license.RevokedAt,
                 license.Id
             }, transaction);
 
-        return updatedLicense;
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
+    }
+
+    public async Task<License?> ExtendLicenseForAppAsync(long licenseId, Guid appId, int amount, string unit,
+        IDbTransaction? transaction = null)
+    {
+        if (amount <= 0) return null;
+
+        var license = await GetLicenseForAppAsync(licenseId, appId, transaction);
+        if (license is null) return null;
+
+        if (TryCalculateExtendedExpiration(license.ExpiresAt, amount, unit, out var newExpiration) is false)
+            return null;
+
+        license.ExpiresAt = newExpiration;
+        return await UpdateLicenseAsync(license, transaction);
+    }
+
+    public async Task<License?> SetLicenseBannedAsync(long licenseId, Guid appId, bool banned,
+        IDbTransaction? transaction = null)
+    {
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"
+                UPDATE licenses
+                SET banned = @banned
+                WHERE id = @licenseId AND application = @appId
+                RETURNING
+                    id,
+                    value,
+                    discordid,
+                    max_sessions,
+                    email,
+                    username,
+                    creation_date,
+                    activated_at,
+                    password,
+                    expires_at,
+                    paused,
+                    activated,
+                    application,
+                    banned,
+                    revoked,
+                    revoked_at;";
+
+            var row = await connection.QuerySingleOrDefaultAsync(query, new { licenseId, appId, banned }, transaction);
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
+    }
+
+    public async Task<License?> SetLicenseRevokedAsync(long licenseId, Guid appId, long revokedAt,
+        IDbTransaction? transaction = null)
+    {
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"
+                UPDATE licenses
+                SET revoked = TRUE,
+                    revoked_at = @revokedAt
+                WHERE id = @licenseId AND application = @appId
+                RETURNING
+                    id,
+                    value,
+                    discordid,
+                    max_sessions,
+                    email,
+                    username,
+                    creation_date,
+                    activated_at,
+                    password,
+                    expires_at,
+                    paused,
+                    activated,
+                    application,
+                    banned,
+                    revoked,
+                    revoked_at;";
+
+            var row = await connection.QuerySingleOrDefaultAsync(query, new { licenseId, appId, revokedAt }, transaction);
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
+    }
+
+    public async Task<int> DeleteLicensesForAppAsync(IEnumerable<long> licenseIds, Guid appId,
+        IDbTransaction? transaction = null)
+    {
+        var ids = licenseIds.Distinct().ToArray();
+        if (ids.Length == 0) return 0;
+
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"DELETE FROM licenses WHERE application = @appId AND id = ANY(@ids);";
+            return await connection.ExecuteAsync(query, new { ids, appId }, transaction);
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<bool> DeleteLicenseAsync(long id, IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        const string addDiscordIdQuery = @"DELETE FROM public.licenses WHERE id = @id;";
-
-        var affectedRows1 =
-            await connection.ExecuteAsync(addDiscordIdQuery, new { id }, transaction);
-
-        return affectedRows1 > 0;
+        var connection = await GetConnectionAsync(transaction);
+        try
+        {
+            const string query = @"DELETE FROM licenses WHERE id = @id;";
+            var affectedRows = await connection.ExecuteAsync(query, new { id }, transaction);
+            return affectedRows > 0;
+        }
+        finally
+        {
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<Either<bool, ValidationFailed>> UpdateLicenseListAsync(
         IEnumerable<License> licenses,
         IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await GetConnectionAsync(transaction);
+        var ownsTransaction = transaction is null;
+        var activeTransaction = transaction ?? connection.BeginTransaction();
 
-        var transactional = transaction ?? connection.BeginTransaction();
-        // yikes, improve later
-        foreach (var license in licenses) await UpdateLicenseAsync(license, transactional);
-
-        return true;
+        try
+        {
+            foreach (var license in licenses) await UpdateLicenseAsync(license, activeTransaction);
+            if (ownsTransaction) activeTransaction.Commit();
+            return true;
+        }
+        catch
+        {
+            if (ownsTransaction) activeTransaction.Rollback();
+            throw;
+        }
+        finally
+        {
+            if (ownsTransaction) activeTransaction.Dispose();
+            DisposeIfOwned(connection, transaction);
+        }
     }
 
     public async Task<License?> GetLicenseByUsername(string username)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE username = @username;";
-
-        var x = await
-            connection.QuerySingleAsync(getDiscordIdQuery, new { username });
-
-        var license = new License
+        var connection = await OpenConnectionAsync();
+        try
         {
-            Id = x.id,
-            Value = x.value,
-            DiscordId = x.discordid,
-            MaxSessions = x.max_sessions,
-            Email = x.email,
-            Username = x.username,
-            CreationDate = x.creation_date is not null
-                ? DateTimeOffset.FromUnixTimeSeconds(x.creation_date)
-                : null,
-            ActivatedAt = x.activated_at is not null ? x.actvated_at : null,
-            Password = x.password,
-            ExpiresAt = x.expires_at,
-            Paused = x.paused,
-            Activated = x.activated
-        };
+            var row = await connection.QuerySingleOrDefaultAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE username = @username;",
+                new { username });
 
-        return license;
+            return row is null ? null : MapLicense(row);
+        }
+        finally
+        {
+            connection.Dispose();
+        }
     }
 
     public async Task<Result<LicenseDto, ValidationFailed>> ActivateLicense(Guid licenseValue, string username,
@@ -209,40 +361,32 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
         long discordId,
         IDbTransaction? transaction = null)
     {
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        var getDiscordIdQuery = @"SELECT * FROM licenses WHERE value = @licenseValue;";
-
-        var license = await
-            connection.QuerySingleOrDefaultAsync<License>(getDiscordIdQuery, new { licenseValue });
+        var license = await GetLicenseByValueAsync(licenseValue, transaction);
 
         if (license == null)
         {
             var error = new ValidationFailure("License", "License activation failed");
-
             return new ValidationFailed(error);
         }
 
         if (license.Activated)
         {
             var error = new ValidationFailure("License", "License is already activated");
-
             return new ValidationFailed(error);
         }
 
         license.Activated = true;
         license.Username = username;
-        license.ActivatedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+        license.ActivatedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         license.Password = PasswordHashing.HashPassword(password);
         license.DiscordId = discordId;
         license.Email = email;
 
-        license = await UpdateLicenseAsync(license);
+        license = await UpdateLicenseAsync(license, transaction);
 
         if (license is null)
         {
             var error = new ValidationFailure("License", "License activation failed");
-
             return new ValidationFailed(error);
         }
 
@@ -251,28 +395,21 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
     public async Task<Option<IEnumerable<LicenseDto>>> GetLicenseByApplication(Guid application)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await OpenConnectionAsync();
+        try
+        {
+            var rows = await connection.QueryAsync(
+                $"SELECT {LicenseColumns} FROM licenses WHERE application = @application ORDER BY creation_date DESC;",
+                new { application });
 
-        var getApplicationIdQuery = """
-                                    SELECT 
-                                        l.id as Id, 
-                                        l.value as Value,
-                                        l.activated_at as ActivatedAt,
-                                        l.username as Username,
-                                        l.paused as Paused,
-                                        l.expires_at as ExpirationDate,
-                                        l.email as Email,
-                                        l.discordid as Discord,
-                                        l.max_sessions as MaxSessions,
-                                        l.creation_date as CreationDate
-                                        FROM licenses l 
-                                            WHERE application = @application;
-                                    """;
-
-        var licenses = await
-            connection.QueryAsync<LicenseDto>(getApplicationIdQuery, new { application });
-
-        return Option<IEnumerable<LicenseDto>>.Some(licenses);
+            var licenses = new List<LicenseDto>();
+            foreach (var row in rows) licenses.Add(MapLicense(row).MapToDto());
+            return Option<IEnumerable<LicenseDto>>.Some(licenses);
+        }
+        finally
+        {
+            connection.Dispose();
+        }
     }
 
     public async Task<LicenseStats> GetLicenseStatsByTeamAsync(Guid teamId)
@@ -285,14 +422,19 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             JOIN applications a ON l.application = a.id
             WHERE a.team = @TeamId;";
 
-        using var connection = await connectionFactory.CreateConnectionAsync();
-
-        return await connection.QuerySingleAsync<LicenseStats>(sql, new { TeamId = teamId });
+        var connection = await OpenConnectionAsync();
+        try
+        {
+            return await connection.QuerySingleAsync<LicenseStats>(sql, new { TeamId = teamId });
+        }
+        finally
+        {
+            connection.Dispose();
+        }
     }
 
     public async Task<IEnumerable<LicensesPerDay>> GetLicensesPerDayByTeamAsync(Guid teamId, int days)
     {
-        // creation_date is stored as unix seconds
         const string sql = @"
             SELECT to_timestamp(l.creation_date)::date as Date,
                    count(*)::int as Count
@@ -303,9 +445,86 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
             GROUP BY 1
             ORDER BY 1;";
 
-        using var connection = await connectionFactory.CreateConnectionAsync();
+        var connection = await OpenConnectionAsync();
+        try
+        {
+            return await connection.QueryAsync<LicensesPerDay>(sql, new { TeamId = teamId, Days = days });
+        }
+        finally
+        {
+            connection.Dispose();
+        }
+    }
 
-        return await connection.QueryAsync<LicensesPerDay>(sql, new { TeamId = teamId, Days = days });
+    private async Task<IDbConnection> OpenConnectionAsync()
+    {
+        return await connectionFactory.CreateConnectionAsync();
+    }
+
+    private async Task<IDbConnection> GetConnectionAsync(IDbTransaction? transaction)
+    {
+        return transaction?.Connection ?? await OpenConnectionAsync();
+    }
+
+    private static void DisposeIfOwned(IDbConnection connection, IDbTransaction? transaction)
+    {
+        if (transaction?.Connection is null) connection.Dispose();
+    }
+
+    private static License MapLicense(dynamic row)
+    {
+        var values = (IDictionary<string, object?>)row;
+
+        return new License
+        {
+            Id = LicenseRowMapper.ToLong(values, "id")!.Value,
+            Value = LicenseRowMapper.ToGuid(values, "value")!.Value,
+            Application = LicenseRowMapper.ToGuid(values, "application") ?? Guid.Empty,
+            DiscordId = LicenseRowMapper.ToLong(values, "discordid"),
+            MaxSessions = LicenseRowMapper.ToShort(values, "max_sessions") ?? 1,
+            Email = LicenseRowMapper.ToString(values, "email"),
+            Username = LicenseRowMapper.ToString(values, "username"),
+            CreationDate = DateTimeOffset.FromUnixTimeSeconds(LicenseRowMapper.ToLong(values, "creation_date") ?? 0),
+            ActivatedAt = LicenseRowMapper.ToLong(values, "activated_at"),
+            Password = LicenseRowMapper.ToString(values, "password"),
+            ExpiresAt = LicenseRowMapper.ToLong(values, "expires_at") ?? 0,
+            Paused = LicenseRowMapper.ToBool(values, "paused"),
+            Activated = LicenseRowMapper.ToBool(values, "activated"),
+            Banned = LicenseRowMapper.ToBool(values, "banned"),
+            Revoked = LicenseRowMapper.ToBool(values, "revoked"),
+            RevokedAt = LicenseRowMapper.ToLong(values, "revoked_at")
+        };
+    }
+
+
+    private static bool TryCalculateExtendedExpiration(long currentExpiration, int amount, string unit,
+        out long newExpiration)
+    {
+        var current = DateTimeOffset.FromUnixTimeSeconds(currentExpiration);
+        var normalizedUnit = unit.Trim().ToLowerInvariant();
+
+        DateTimeOffset updated;
+        switch (normalizedUnit)
+        {
+            case "day":
+            case "days":
+                updated = current.AddDays(amount);
+                break;
+            case "month":
+            case "months":
+                updated = current.AddMonths(amount);
+                break;
+            case "year":
+            case "years":
+                updated = current.AddYears(amount);
+                break;
+            default:
+                newExpiration = currentExpiration;
+                return false;
+        }
+
+        newExpiration = updated.ToUnixTimeSeconds();
+        return true;
     }
 }
 

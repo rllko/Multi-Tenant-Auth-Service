@@ -27,5 +27,7 @@ public interface ILicenseSessionService
 
     Task<Result<LicenseSession, ValidationFailed>> SetupSessionHwid(LicenseSession licenseSession, HwidDto hwidDto);
 
+    Task<int> RevokeSessionsByLicenseAsync(long licenseId, IDbTransaction? transaction = null);
+
     Task<bool> DeleteSessionTokenAsync(Guid id, IDbTransaction? transaction = null);
 }
