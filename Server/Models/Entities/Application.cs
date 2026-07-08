@@ -10,8 +10,8 @@ public class Application
 
     public string Name { get; set; }
     public string? Description { get; set; }
-    public required string ClientDecryptionChaChaKey { get; set; }
-    public required string ServerApiSecret { get; set; }
+    public string? ClientDecryptionChaChaKey { get; set; }
+    public string? ServerApiSecret { get; set; }
     public Guid DefaultKeySchema { get; set; }
     public Guid? Team { get; set; }
 }
