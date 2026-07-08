@@ -369,13 +369,13 @@ public class LicenseSessionService(
 
         return new LicenseSession
         {
-            AuthorizationToken = ToGuid(values, "session_token"),
-            LicenseId = ToLong(values, "license_id") ?? 0,
-            SessionId = ToGuid(values, "session_id") ?? Guid.Empty,
-            RefreshedAt = ToLong(values, "refreshed_at"),
-            Active = ToBool(values, "is_active"),
-            CreatedAt = ToLong(values, "created_at") ?? 0,
-            HwidId = ToLong(values, "hwid")
+            AuthorizationToken = LicenseRowMapper.ToGuid(values, "session_token"),
+            LicenseId = LicenseRowMapper.ToLong(values, "license_id") ?? 0,
+            SessionId = LicenseRowMapper.ToGuid(values, "session_id") ?? Guid.Empty,
+            RefreshedAt = LicenseRowMapper.ToLong(values, "refreshed_at"),
+            Active = LicenseRowMapper.ToBool(values, "is_active"),
+            CreatedAt = LicenseRowMapper.ToLong(values, "created_at") ?? 0,
+            HwidId = LicenseRowMapper.ToLong(values, "hwid")
         };
     }
 
@@ -385,55 +385,25 @@ public class LicenseSessionService(
         var session = MapSession(row);
         session.License = new License
         {
-            Id = ToLong(values, "l_id")!.Value,
-            Value = ToGuid(values, "l_value")!.Value,
-            Application = ToGuid(values, "l_application") ?? Guid.Empty,
-            DiscordId = ToLong(values, "l_discordid"),
-            MaxSessions = ToShort(values, "l_max_sessions") ?? 1,
-            Email = ToString(values, "l_email"),
-            Username = ToString(values, "l_username"),
-            CreationDate = DateTimeOffset.FromUnixTimeSeconds(ToLong(values, "l_creation_date") ?? 0),
-            ActivatedAt = ToLong(values, "l_activated_at"),
-            Password = ToString(values, "l_password"),
-            ExpiresAt = ToLong(values, "l_expires_at") ?? 0,
-            Paused = ToBool(values, "l_paused"),
-            Activated = ToBool(values, "l_activated"),
-            Banned = ToBool(values, "l_banned"),
-            Revoked = ToBool(values, "l_revoked"),
-            RevokedAt = ToLong(values, "l_revoked_at")
+            Id = LicenseRowMapper.ToLong(values, "l_id")!.Value,
+            Value = LicenseRowMapper.ToGuid(values, "l_value")!.Value,
+            Application = LicenseRowMapper.ToGuid(values, "l_application") ?? Guid.Empty,
+            DiscordId = LicenseRowMapper.ToLong(values, "l_discordid"),
+            MaxSessions = LicenseRowMapper.ToShort(values, "l_max_sessions") ?? 1,
+            Email = LicenseRowMapper.ToString(values, "l_email"),
+            Username = LicenseRowMapper.ToString(values, "l_username"),
+            CreationDate = DateTimeOffset.FromUnixTimeSeconds(LicenseRowMapper.ToLong(values, "l_creation_date") ?? 0),
+            ActivatedAt = LicenseRowMapper.ToLong(values, "l_activated_at"),
+            Password = LicenseRowMapper.ToString(values, "l_password"),
+            ExpiresAt = LicenseRowMapper.ToLong(values, "l_expires_at") ?? 0,
+            Paused = LicenseRowMapper.ToBool(values, "l_paused"),
+            Activated = LicenseRowMapper.ToBool(values, "l_activated"),
+            Banned = LicenseRowMapper.ToBool(values, "l_banned"),
+            Revoked = LicenseRowMapper.ToBool(values, "l_revoked"),
+            RevokedAt = LicenseRowMapper.ToLong(values, "l_revoked_at")
         };
 
         return session;
     }
 
-    private static string? ToString(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToString(value) : null;
-    }
-
-    private static long? ToLong(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToInt64(value) : null;
-    }
-
-    private static short? ToShort(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToInt16(value) : null;
-    }
-
-    private static bool ToBool(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is bool boolValue && boolValue;
-    }
-
-    private static Guid? ToGuid(IDictionary<string, object?> values, string key)
-    {
-        if (values.TryGetValue(key, out var value) is false || value is null) return null;
-        return value switch
-        {
-            Guid guid => guid,
-            string stringValue when Guid.TryParse(stringValue, out var guid) => guid,
-            _ => null
-        };
-    }
 }

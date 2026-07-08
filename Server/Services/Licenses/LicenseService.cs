@@ -477,55 +477,25 @@ public class LicenseService(IDbConnectionFactory connectionFactory) : ILicenseSe
 
         return new License
         {
-            Id = ToLong(values, "id")!.Value,
-            Value = ToGuid(values, "value")!.Value,
-            Application = ToGuid(values, "application") ?? Guid.Empty,
-            DiscordId = ToLong(values, "discordid"),
-            MaxSessions = ToShort(values, "max_sessions") ?? 1,
-            Email = ToString(values, "email"),
-            Username = ToString(values, "username"),
-            CreationDate = DateTimeOffset.FromUnixTimeSeconds(ToLong(values, "creation_date") ?? 0),
-            ActivatedAt = ToLong(values, "activated_at"),
-            Password = ToString(values, "password"),
-            ExpiresAt = ToLong(values, "expires_at") ?? 0,
-            Paused = ToBool(values, "paused"),
-            Activated = ToBool(values, "activated"),
-            Banned = ToBool(values, "banned"),
-            Revoked = ToBool(values, "revoked"),
-            RevokedAt = ToLong(values, "revoked_at")
+            Id = LicenseRowMapper.ToLong(values, "id")!.Value,
+            Value = LicenseRowMapper.ToGuid(values, "value")!.Value,
+            Application = LicenseRowMapper.ToGuid(values, "application") ?? Guid.Empty,
+            DiscordId = LicenseRowMapper.ToLong(values, "discordid"),
+            MaxSessions = LicenseRowMapper.ToShort(values, "max_sessions") ?? 1,
+            Email = LicenseRowMapper.ToString(values, "email"),
+            Username = LicenseRowMapper.ToString(values, "username"),
+            CreationDate = DateTimeOffset.FromUnixTimeSeconds(LicenseRowMapper.ToLong(values, "creation_date") ?? 0),
+            ActivatedAt = LicenseRowMapper.ToLong(values, "activated_at"),
+            Password = LicenseRowMapper.ToString(values, "password"),
+            ExpiresAt = LicenseRowMapper.ToLong(values, "expires_at") ?? 0,
+            Paused = LicenseRowMapper.ToBool(values, "paused"),
+            Activated = LicenseRowMapper.ToBool(values, "activated"),
+            Banned = LicenseRowMapper.ToBool(values, "banned"),
+            Revoked = LicenseRowMapper.ToBool(values, "revoked"),
+            RevokedAt = LicenseRowMapper.ToLong(values, "revoked_at")
         };
     }
 
-    private static string? ToString(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToString(value) : null;
-    }
-
-    private static long? ToLong(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToInt64(value) : null;
-    }
-
-    private static short? ToShort(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is not null ? Convert.ToInt16(value) : null;
-    }
-
-    private static bool ToBool(IDictionary<string, object?> values, string key)
-    {
-        return values.TryGetValue(key, out var value) && value is bool boolValue && boolValue;
-    }
-
-    private static Guid? ToGuid(IDictionary<string, object?> values, string key)
-    {
-        if (values.TryGetValue(key, out var value) is false || value is null) return null;
-        return value switch
-        {
-            Guid guid => guid,
-            string stringValue when Guid.TryParse(stringValue, out var guid) => guid,
-            _ => null
-        };
-    }
 
     private static bool TryCalculateExtendedExpiration(long currentExpiration, int amount, string unit,
         out long newExpiration)
