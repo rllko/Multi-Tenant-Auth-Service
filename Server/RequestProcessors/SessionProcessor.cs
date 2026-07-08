@@ -7,12 +7,13 @@ namespace Authentication.RequestProcessors;
 
 public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
 {
+    private const int SessionRefreshLifetimeInDays = 1;
+
     public async Task PreProcessAsync(IPreProcessorContext<TRequest> ctx, CancellationToken ct)
     {
         var sessionService = ctx.HttpContext.RequestServices.GetRequiredService<ILicenseSessionService>();
 
-        var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Authentication)
-                    ?? ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "session-token");
+        var token = ctx.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Authentication);
 
         if (token is null || Guid.TryParse(token.Value, out var tokenGuid) is false)
         {
@@ -80,16 +81,17 @@ public class SessionProcessor<TRequest> : IPreProcessor<TRequest>
             return;
         }
 
-        if (session.RefreshedAt != null && now - session.RefreshedAt > 86_400)
+        if (session.RefreshedAt != null && now > DateTimeOffset
+                .FromUnixTimeSeconds((long)session.RefreshedAt)
+                .AddDays(SessionRefreshLifetimeInDays).ToUnixTimeSeconds())
         {
             ctx.ValidationFailures.Add(new ValidationFailure(
                 "not_refreshed",
-                "Session must be refreshed"));
+                "Session could not be created"));
             await ctx.HttpContext.Response.SendErrorsAsync(ctx.ValidationFailures, cancellation: ct);
             return;
         }
 
-        ctx.HttpContext.Items["Session"] = session;
         ctx.HttpContext.Items["session"] = session;
     }
 }

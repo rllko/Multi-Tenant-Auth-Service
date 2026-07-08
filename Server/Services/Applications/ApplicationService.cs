@@ -138,17 +138,14 @@ public class ApplicationService(IDbConnectionFactory connectionFactory) : IAppli
 
     public async Task<bool> ApplicationBelongsToTeamAsync(Guid teamId, Guid appId)
     {
-        const string sql = @"
-            SELECT EXISTS (
-                SELECT 1
-                FROM applications
-                WHERE id = @AppId
-                  AND team = @TeamId
-            );";
+        const string getApplicationQuery = @"SELECT * FROM applications WHERE id = @Id AND team = @TeamId;";
 
         using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return await connection.ExecuteScalarAsync<bool>(sql, new { TeamId = teamId, AppId = appId });
+        var application = await
+            connection.QueryFirstOrDefaultAsync<ApplicationDto>(getApplicationQuery, new { Id = appId, TeamId = teamId });
+
+        return application is not null;
     }
 
     private string GenerateClientSecret()

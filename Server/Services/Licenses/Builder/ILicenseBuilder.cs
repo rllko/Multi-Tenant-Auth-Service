@@ -18,8 +18,4 @@ public interface ILicenseBuilder
     Task<IEnumerable<LicenseDto>> CreateLicenseInBulk(int amount, int licenseExpirationInDays,
         long? discordId = null, string? email = null, string? password = null,
         IDbTransaction? transaction = null);
-
-    Task<IEnumerable<LicenseDto>> CreateLicenseInBulk(Guid application, int amount, int licenseExpirationInDays,
-        short? maxSessions = null, long? discordId = null, string? email = null, string? password = null,
-        IDbTransaction? transaction = null);
 }
